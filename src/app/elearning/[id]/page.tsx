@@ -662,14 +662,14 @@ export default function ElearningDetailPage() {
                       <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-black text-sm flex items-center justify-center">
-                            {(leadInstructor?.fullName || "NC").slice(0, 2).toUpperCase()}
+                            {(leadInstructor?.fullName || "BL").slice(0, 2).toUpperCase()}
                           </div>
                           <div>
                             <div className="font-bold text-xs text-slate-900 dark:text-white">
-                              {leadInstructor?.fullName || "Chuyên gia ĐMST NacenTech"}
+                              {leadInstructor?.fullName || "Ban Cố vấn Kỹ thuật BACLINK"}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {leadInstructor?.degree || "Chuyên gia cao cấp"} · {leadInstructor?.organization || "Viện Đổi mới sáng tạo Quốc gia"}
+                              {leadInstructor?.degree || "Cố vấn kỹ thuật cao cấp"} · {leadInstructor?.organization || "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)"}
                             </div>
                           </div>
                         </div>

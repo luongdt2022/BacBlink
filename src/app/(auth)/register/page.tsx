@@ -133,7 +133,7 @@ export default function RegisterPage() {
         const loginData = await loginRes.json();
         if (loginData?.accessToken && loginData?.user?.id && loginData?.user?.role) {
           authClient.setSession(loginData.accessToken, loginData.user);
-          toast.success("Đăng ký thành công! Chào mừng bạn gia nhập NacenTech.", "Xin chào!");
+          toast.success("Đăng ký thành công! Chào mừng bạn gia nhập Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK).", "Xin chào!");
           const targetPath = getRedirectPathByRole(loginData.user.role) || "/";
           router.push(targetPath);
           return;
@@ -160,41 +160,55 @@ export default function RegisterPage() {
       <div className="mx-auto w-full max-w-6xl">
         <div className="mb-7 text-center lg:hidden">
           <div className="mb-3 flex justify-center">
-            <img
-              src="/NACENTECH_Main-Logo-G.png"
-              alt="NacenTech Logo"
-              className="h-11 w-auto object-contain"
-            />
+            <div className="size-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-lg overflow-hidden">
+              <img
+                src="/baclink-logo-256.png"
+                alt="BACLINK Logo"
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
           </div>
-          <h1 className="type-section-title text-slate-900 dark:text-white">Đăng ký tài khoản</h1>
+          <h1 className="type-section-title text-slate-900 dark:text-white">Đăng ký tài khoản BACLINK</h1>
           <p className="mx-auto mt-2 max-w-xl text-body text-slate-600 dark:text-slate-400">
-            Gia nhập Mạng lưới Đổi mới sáng tạo & Chuyên gia KH&CN NacenTech
+            Gia nhập Mạng lưới Chuỗi cung ứng &amp; Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)
           </p>
         </div>
 
         <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)] lg:grid lg:grid-cols-[0.82fr_1.18fr] dark:border-slate-800 dark:bg-slate-900">
-          <aside className="relative hidden overflow-hidden bg-brand-800 px-10 py-12 text-white lg:flex lg:flex-col">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(45,212,191,0.32),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.12),transparent_42%)]" />
+          <aside className="relative hidden overflow-hidden bg-gradient-to-br from-[#081026] via-[#0D1938] to-[#162D66] px-10 py-12 text-white lg:flex lg:flex-col justify-between">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.32),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_42%)]" />
             <div className="relative">
-              <img
-                src="/NACENTECH_Main-Logo-G.png"
-                alt="NacenTech Logo"
-                className="h-12 w-auto object-contain brightness-0 invert"
-              />
-              <p className="mt-14 text-sm font-semibold uppercase tracking-[0.16em] text-teal-100">NacenTech Network</p>
-              <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight">Một tài khoản, kết nối cả hệ sinh thái.</h1>
+              <div className="flex items-center gap-3">
+                <div className="size-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-lg shrink-0 overflow-hidden">
+                  <img
+                    src="/baclink-logo-256.png"
+                    alt="BACLINK Logo"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                <div>
+                  <span className="text-lg font-extrabold tracking-tight text-white block leading-none">
+                    BACLINK
+                  </span>
+                  <span className="text-xs font-medium text-amber-300 block mt-1">
+                    Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
+                  </span>
+                </div>
+              </div>
+              <p className="mt-12 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">BACLINK Industrial Network</p>
+              <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight">Gia nhập cộng đồng sản xuất công nghiệp Kinh Bắc.</h1>
               <p className="mt-5 max-w-sm text-lg leading-8 text-slate-100">
-                Bắt đầu với tài khoản công chúng. Hồ sơ chuyên môn và vai trò nghiệp vụ sẽ được xác thực, phân quyền theo quy trình.
+                Khởi tạo tài khoản thành viên nhanh chóng. Hồ sơ Doanh nghiệp Hội viên và Ban Cố vấn Kỹ thuật được xét duyệt tập trung 1 cấp bởi Ban Quản trị BACLINK.
               </p>
             </div>
-            <div className="relative mt-auto space-y-4 pt-12 text-sm leading-6 text-teal-50">
+            <div className="relative mt-auto space-y-4 pt-12 text-sm leading-6 text-cyan-50">
               {[
                 "Đăng ký nhanh, an toàn và minh bạch.",
                 "Bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.",
-                "Nâng cấp vai trò sau khi hồ sơ được phê duyệt.",
+                "Nâng cấp lên Doanh nghiệp Hội viên hoặc Cố vấn Kỹ thuật sau khi phê duyệt.",
               ].map((item) => (
                 <div className="flex items-start gap-3" key={item}>
-                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-200" />
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -203,9 +217,9 @@ export default function RegisterPage() {
 
           <section className="px-5 py-7 sm:px-8 sm:py-9 lg:px-12 lg:py-11">
             <header className="mb-7">
-              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand-700 dark:text-teal-300">Tài khoản NacenTech</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.14em] text-cyan-600 dark:text-cyan-400">Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh</p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Tạo tài khoản mới</h2>
-              <p className="mt-2 max-w-2xl text-body text-slate-600 dark:text-slate-400">Điền thông tin cơ bản để bắt đầu sử dụng nền tảng.</p>
+              <p className="mt-2 max-w-2xl text-body text-slate-600 dark:text-slate-400">Điền thông tin cơ bản để bắt đầu tham gia cổng kết nối chuỗi cung ứng BACLINK.</p>
             </header>
 
           {error && (
@@ -269,7 +283,7 @@ export default function RegisterPage() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="nguyenvanan@institute.gov.vn"
+                    placeholder="nguyenvanan@doanhnghiep.vn"
                     className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700"
                   />
                 </div>
@@ -333,7 +347,7 @@ export default function RegisterPage() {
                     className="h-4 w-4 text-brand-700 focus:ring-innovation-500 border-slate-300 rounded mt-0.5 focus-ring accent-brand-700 dark:border-slate-700 dark:text-brand-200"
                   />
                   <label htmlFor="acceptPdpd" className="ml-3 block text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    Tôi đồng ý để Hệ thống NacenTech thu thập và xử lý dữ liệu cá nhân cho mục đích xác thực hồ sơ và kết nối chuyên gia theo quy định tại <strong>Nghị định 13/2023/NĐ-CP</strong> về Bảo vệ Dữ liệu Cá nhân.
+                    Tôi đồng ý để Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) thu thập và xử lý dữ liệu cá nhân cho mục đích xác thực hồ sơ hội viên và kết nối giao thương theo quy định tại <strong>Nghị định 13/2023/NĐ-CP</strong> về Bảo vệ Dữ liệu Cá nhân.
                   </label>
                 </div>
               </div>

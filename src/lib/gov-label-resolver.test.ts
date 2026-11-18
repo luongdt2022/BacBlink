@@ -251,9 +251,9 @@ describe("T080 [FE-LabelResolver] GovLabelResolver Unit Tests", () => {
   });
 
   describe("resolveGovRequestType", () => {
-    it("resolves government approval request types", () => {
+    it("resolves BACLINK approval request types without ĐMST", () => {
       const expert = resolveGovRequestType("EXPERT");
-      expect(expert.label).toBe("Chuyên gia KH&CN");
+      expect(expert.label).toBe("Ban Cố vấn Kỹ thuật");
       expect(expert.badgeClass).toContain("purple");
 
       const shop = resolveGovRequestType("SHOP");
@@ -264,37 +264,38 @@ describe("T080 [FE-LabelResolver] GovLabelResolver Unit Tests", () => {
       expect(techOffer.label).toBe("Sản phẩm / Sáng chế TRL");
 
       const demand = resolveGovRequestType("DEMAND");
-      expect(demand.label).toBe("Nhu cầu Công nghệ");
+      expect(demand.label).toBe("Nhu cầu Mua & Đặt hàng");
       expect(demand.badgeClass).toContain("blue");
 
       const account = resolveGovRequestType("ACCOUNT");
       expect(account.label).toBe("Tài khoản Pháp nhân");
 
       const ent = resolveGovRequestType("ENTERPRISE");
-      expect(ent.label).toBe("Doanh nghiệp ĐMST");
+      expect(ent.label).toBe("Doanh nghiệp Hội viên");
       expect(ent.badgeClass).toContain("cyan");
     });
 
     it("handles lowercase and whitespace trimming", () => {
-      expect(resolveGovRequestType("expert").label).toBe("Chuyên gia KH&CN");
+      expect(resolveGovRequestType("expert").label).toBe("Ban Cố vấn Kỹ thuật");
       expect(resolveGovRequestType("  shop  ").label).toBe("Sản phẩm / Sáng chế TRL");
     });
 
     it("handles null, undefined, and custom types", () => {
-      expect(resolveGovRequestType(null).label).toBe("Hồ sơ công vụ");
-      expect(resolveGovRequestType(undefined).label).toBe("Hồ sơ công vụ");
+      expect(resolveGovRequestType(null).label).toBe("Hồ sơ thẩm định");
+      expect(resolveGovRequestType(undefined).label).toBe("Hồ sơ thẩm định");
       expect(resolveGovRequestType("CUSTOM_TYPE").label).toBe("CUSTOM_TYPE");
     });
   });
 
   describe("resolveRoleDisplayName", () => {
-    it("resolves role names to proper civil service titles", () => {
-      expect(resolveRoleDisplayName("PROVINCIAL_ADMIN")).toBe("Lãnh đạo Sở (Admin)");
-      expect(resolveRoleDisplayName("PROVINCE_LEADER")).toBe("Lãnh đạo Sở (Checker)");
-      expect(resolveRoleDisplayName("PROVINCE_OFFICER")).toBe("Chuyên viên Thẩm tra (Maker)");
-      expect(resolveRoleDisplayName("SUPER_ADMIN")).toBe("Quản trị Tối cao Tầng 0");
-      expect(resolveRoleDisplayName(null)).toBe("Cán bộ công vụ");
-      expect(resolveRoleDisplayName(undefined)).toBe("Cán bộ công vụ");
+    it("resolves role names to BACLINK 3-tier titles without Sở remnants", () => {
+      expect(resolveRoleDisplayName("ADMIN")).toBe("Quản trị Hiệp hội BACLINK");
+      expect(resolveRoleDisplayName("SUPER_ADMIN")).toBe("Quản trị Hiệp hội BACLINK");
+      expect(resolveRoleDisplayName("PROVINCIAL_ADMIN")).toBe("Điều phối Địa bàn BACLINK");
+      expect(resolveRoleDisplayName("PROVINCE_LEADER")).toBe("Trưởng ban Thẩm định BACLINK");
+      expect(resolveRoleDisplayName("PROVINCE_OFFICER")).toBe("Chuyên viên Thẩm tra BACLINK");
+      expect(resolveRoleDisplayName(null)).toBe("Thành viên BACLINK");
+      expect(resolveRoleDisplayName(undefined)).toBe("Thành viên BACLINK");
     });
   });
 

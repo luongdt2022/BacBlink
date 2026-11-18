@@ -50,8 +50,8 @@ export default function ProfilePage() {
 
   const roleName = getRoleDisplayName(user.role);
   const isExpert = user.role?.toUpperCase() === "VERIFIED_EXPERT" || user.role?.toUpperCase() === "EXPERT";
-  const isEnterprise = ["BUYER", "SELLER", "INNOVATION_ENTITY"].includes(user.role?.toUpperCase() ?? "");
-  const isAdmin = ["SUPER_ADMIN", "ADMIN", "GOV", "PROVINCIAL_ADMIN"].includes(user.role?.toUpperCase() ?? "");
+  const isEnterprise = ["ENTERPRISE", "BUYER", "SELLER", "INNOVATION_ENTITY"].includes(user.role?.toUpperCase() ?? "");
+  const isAdmin = ["SUPER_ADMIN", "OPERATOR_ADMIN", "ADMIN"].includes(user.role?.toUpperCase() ?? "");
 
   // Generate Monogram from name
   const initials = user.fullName
@@ -61,7 +61,7 @@ export default function ProfilePage() {
         .slice(-2)
         .join("")
         .toUpperCase()
-    : "NT";
+    : "BL";
 
   return (
     <main className="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 lg:py-12 dark:bg-slate-950">
@@ -89,7 +89,7 @@ export default function ProfilePage() {
               <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-xl font-bold text-slate-950 dark:text-white">
-                    {user.fullName || "Thành viên NacenTech"}
+                    {user.fullName || "Thành viên BACLINK"}
                   </h2>
                   <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 border border-brand-200 dark:bg-brand-950 dark:text-brand-300">
                     <ShieldCheck className="w-3.5 h-3.5" />
@@ -185,7 +185,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="py-2.5 flex justify-between">
                   <dt className="text-slate-500">Phạm vi tác quyền:</dt>
-                  <dd className="text-slate-900 dark:text-white">{user.scopeType || "GLOBAL"} ({user.scopeId || "Toàn quốc"})</dd>
+                  <dd className="text-slate-900 dark:text-white">{user.scopeType || "GLOBAL"} ({user.scopeId || "Hiệp hội BACLINK"})</dd>
                 </div>
                 <div className="py-2.5 flex justify-between">
                   <dt className="text-slate-500">Loại tài khoản:</dt>
@@ -232,11 +232,11 @@ export default function ProfilePage() {
                     Trở Thành Chuyên Gia KH&CN
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Kê khai học vị, hồ sơ nghiên cứu Scopus và bằng sáng chế để được Sở KH&CN thẩm định cấp chứng chỉ <strong>VERIFIED_EXPERT</strong>.
+                    Kê khai học vị, hồ sơ nghiên cứu và bằng sáng chế để được Hội đồng BACLINK Bắc Ninh thẩm định cấp chứng nhận <strong>VERIFIED_EXPERT</strong>.
                   </p>
                   <ul className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xuất hiện trên Danh bạ Chuyên gia toàn quốc
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xuất hiện trên Mạng lưới Chuyên gia BACLINK Bắc Ninh
                     </li>
                     <li className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Tiếp nhận lời mời tư vấn từ Doanh nghiệp
@@ -268,14 +268,14 @@ export default function ProfilePage() {
                     <Building2 className="w-6 h-6" />
                   </div>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Định Danh Doanh Nghiệp ĐMST
+                    Định Danh Doanh Nghiệp Hội Viên BACLINK
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Liên kết Mã số thuế (MST) của pháp nhân để đăng bài toán tìm mua (Bên Mua) hoặc niêm yết chào bán công nghệ (Bên Bán).
+                    Liên kết Mã số thuế (MST) của pháp nhân để đăng bài toán tìm mua (Bên Mua) hoặc niêm yết chào bán công nghệ & năng lực sản xuất (Bên Bán).
                   </p>
                   <ul className="space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                     <li className="flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xác thực tự động CSDL Doanh nghiệp ĐMST
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Xác thực tự động Định Danh Doanh Nghiệp Hội Viên BACLINK
                     </li>
                     <li className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Kích hoạt Radar Ghép nối Cung–Cầu AI
@@ -323,7 +323,7 @@ export default function ProfilePage() {
                     <div className="font-bold text-xs text-teal-900 dark:text-teal-300 flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-teal-700" /> Console Quản Trị
                     </div>
-                    <p className="text-xs text-slate-500">Trung tâm quản trị giám sát và kiểm duyệt toàn quốc.</p>
+                    <p className="text-xs text-slate-500">Trung tâm quản trị giám sát và kiểm duyệt Hiệp hội BACLINK.</p>
                   </Link>
                 )}
 

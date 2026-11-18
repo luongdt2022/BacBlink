@@ -417,7 +417,7 @@ export default function ExpertsDirectoryPage() {
     if (user.organizationName) {
       setModalCompanyName(user.organizationName);
     } else if (!modalCompanyName) {
-      setModalCompanyName("Doanh nghiệp Đổi mới sáng tạo");
+      setModalCompanyName("Doanh nghiệp Hội viên");
     }
     if (user.fullName) setModalContactName(user.fullName);
     if (user.phone || user.phoneNumber) setModalContactPhone(user.phone || user.phoneNumber || "");
@@ -439,7 +439,7 @@ export default function ExpertsDirectoryPage() {
           organizationName: modalCompanyName,
           email: modalContactEmail,
           phone: modalContactPhone,
-          message: `${modalProblemSummary}\nHình thức tư vấn: ${modalMode === "ONLINE" ? "Trực tuyến" : "Khảo sát trực tiếp"}`,
+          message: `${modalProblemSummary}\nHình thức tư vấn: ${modalMode === "ONLINE" ? "Trực tuyến" : "Tư vấn trực tiếp tại nhà máy"}`,
         }),
       });
       const result = await response.json();
@@ -530,7 +530,7 @@ export default function ExpertsDirectoryPage() {
               </Link>
             </div>
 
-            {/* Compact Search Bar (đồng bộ chiều cao h-10 với DN ĐMST) */}
+            {/* Compact Search Bar (đồng bộ chiều cao h-10 với Danh bạ Doanh nghiệp) */}
             <form onSubmit={handleSearchSubmit} className="mt-4 flex flex-col sm:flex-row gap-2.5 max-w-2xl">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -814,7 +814,7 @@ export default function ExpertsDirectoryPage() {
                       ) : selectedProvinces.length === 1 ? (
                         provinceOptions.find((p) => p.code === selectedProvinces[0])?.name || selectedProvinces[0]
                       ) : (
-                        `Đã chọn (${selectedProvinces.length} Tỉnh/TP)`
+                        `Đã chọn (${selectedProvinces.length} địa bàn/KCN)`
                       )}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0 text-slate-400">
@@ -855,28 +855,12 @@ export default function ExpertsDirectoryPage() {
                     tabIndex={-1}
                     aria-hidden="true"
                   >
-                    <option value="">Tất cả địa bàn (34 Sở KH&CN)</option>
-                    <optgroup label="Miền Bắc (12 Tỉnh/TP)">
-                      {provinceOptions.filter((p) => p.region === "NORTH" || !p.region).map((prov) => (
-                        <option key={prov.code} value={prov.code}>
-                          {prov.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Miền Trung & Tây Nguyên (10 Tỉnh/TP)">
-                      {provinceOptions.filter((p) => p.region === "CENTRAL").map((prov) => (
-                        <option key={prov.code} value={prov.code}>
-                          {prov.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Miền Nam (12 Tỉnh/TP)">
-                      {provinceOptions.filter((p) => p.region === "SOUTH").map((prov) => (
-                        <option key={prov.code} value={prov.code}>
-                          {prov.name}
-                        </option>
-                      ))}
-                    </optgroup>
+                    <option value="">Tất cả địa bàn (Bắc Ninh)</option>
+                    {provinceOptions.map((prov) => (
+                      <option key={prov.code} value={prov.code}>
+                        {prov.name}
+                      </option>
+                    ))}
                   </select>
 
                   {/* Dropdown Floating Panel */}
@@ -1751,13 +1735,13 @@ export default function ExpertsDirectoryPage() {
                         onChange={() => setModalMode("ONSITE")}
                         className="text-brand-700"
                       />
-                      <span>Khảo sát trực tiếp tại xưởng</span>
+                      <span>Tư vấn trực tiếp tại nhà máy</span>
                     </label>
                   </div>
                 </div>
 
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-caption leading-relaxed dark:bg-amber-950/60 dark:border-amber-900 dark:text-amber-200">
-                  <strong>Lưu ý bảo mật:</strong> Yêu cầu được gửi tới đội ngũ NacenTech để điều phối. Không chia sẻ thông tin bí mật kinh doanh trước khi ký Thỏa thuận bảo mật (NDA).
+                  <strong>Lưu ý bảo mật:</strong> Yêu cầu được gửi tới Ban Thư ký &amp; Cố vấn Kỹ thuật BACLINK để điều phối. Không chia sẻ thông tin bí mật kinh doanh trước khi ký Thỏa thuận bảo mật (NDA).
                 </div>
 
                 <div className="flex justify-end gap-2 pt-2">

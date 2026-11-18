@@ -18,7 +18,13 @@ import { authClient, normalizePlatformRole } from "@/lib/auth-client";
 import { Async } from "@/components/ui/async";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
-import { resolveRoleName } from "@/lib/label-resolver";
+
+function resolveBaclink3TierRoleLabel(role?: string | null): string {
+  const normalized = normalizePlatformRole(role);
+  if (normalized === "ADMIN") return "Ban Quản trị Hiệp hội";
+  if (normalized === "ENTERPRISE") return "Doanh nghiệp Hội viên";
+  return "Thành viên công chúng";
+}
 
 interface RoleMatrixItem {
   code: string;
@@ -156,11 +162,11 @@ export default function AdminRolesPage() {
     const normalized = normalizePlatformRole(role);
     switch (normalized) {
       case "ADMIN":
-        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-200">{role}</span>;
+        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800 border border-red-200">ADMIN</span>;
       case "ENTERPRISE":
-        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200">{role}</span>;
+        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-teal-100 text-teal-800 border border-teal-200">ENTERPRISE</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">{role}</span>;
+        return <span className="px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-800 border border-gray-200">PUBLIC_USER</span>;
     }
   };
 
@@ -221,7 +227,7 @@ export default function AdminRolesPage() {
           </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
             <div className="text-xs font-semibold text-gray-500 uppercase">Phạm Vi Dữ Liệu</div>
-            <div className="text-2xl font-bold text-nacen-green-600 mt-1">GLOBAL + IDOR</div>
+            <div className="text-2xl font-bold text-emerald-600 mt-1">GLOBAL + IDOR</div>
             <div className="text-xs text-gray-400 mt-0.5">Tách biệt theo OrganizationId</div>
           </div>
           <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-xs">
@@ -440,7 +446,7 @@ export default function AdminRolesPage() {
                       <td className="py-3 px-4">
                         <div className="space-y-0.5">
                           {getRoleBadge(o.role)}
-                          <div className="text-xs text-gray-500">{resolveRoleName(o.role)}</div>
+                          <div className="text-xs text-gray-500">{resolveBaclink3TierRoleLabel(o.role)}</div>
                         </div>
                       </td>
                       <td className="py-3 px-4">
@@ -575,9 +581,9 @@ export default function AdminRolesPage() {
                       }}
                       className="form-control"
                     >
-                      <option value="ADMIN">ADMIN (Ban Quản trị BACLINK)</option>
+                      <option value="ADMIN">ADMIN (Ban Quản trị Hiệp hội)</option>
                       <option value="ENTERPRISE">ENTERPRISE (Doanh nghiệp Hội viên)</option>
-                      <option value="PUBLIC_USER">PUBLIC_USER (Thành viên đại chúng)</option>
+                      <option value="PUBLIC_USER">PUBLIC_USER (Thành viên công chúng)</option>
                     </select>
                   </div>
 

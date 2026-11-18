@@ -157,13 +157,12 @@ export default function PublicMatrixExplorerPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-10 px-4 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto space-y-4">
+      <section className="relative overflow-hidden workspace-banner text-white py-10 px-4 border-b border-brand-800 shadow-md">
+        <div className="relative z-10 max-w-7xl mx-auto space-y-4">
           <div className="max-w-3xl space-y-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-brand-100 text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              Cổng Tri Thức & Định Hướng Đổi Mới Sáng Tạo
+              Ma Trận Ngành Công Nghiệp &amp; Năng Lực Sản Xuất Bắc Ninh
             </span>
             <h1 className="type-page-title">
               Tra Cứu Ma Trận 8 Ngành Công Nghiệp &amp; Địa Bàn KCN Bắc Ninh
@@ -247,7 +246,9 @@ export default function PublicMatrixExplorerPage() {
                   </div>
                   <div>
                     <h4 className="font-extrabold text-xs text-slate-900 line-clamp-1">{sector.name}</h4>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{sector.tt17Code || "TT17 chuẩn"}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">
+                      {sector.code.startsWith("IND_") ? `Ngành công nghiệp (${sector.code})` : `Mã phân ngành: ${sector.code}`}
+                    </p>
                   </div>
                 </div>
               );

@@ -124,7 +124,7 @@ export const TRL_LEVEL_DETAILS: TrlLevelDetail[] = [
       "Mô hình bán công nghiệp (Breadboard / Sub-scale Model)",
       "Giấy chấp nhận đơn hợp lệ về Sở hữu trí tuệ (Cục SHTT)"
     ],
-    commercialFeasibility: "Bắt đầu khảo sát nhu cầu thị trường chuyển giao"
+    commercialFeasibility: "Đánh giá nhu cầu thị trường và chuẩn bị chuyển giao công nghiệp"
   },
   {
     level: 6,
@@ -246,7 +246,7 @@ export function TrlMethodologyModal({
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Trích dẫn chính thức theo tài liệu <em>Technology Readiness Level Definitions</em> của NASA và Thông tư 17/2019/TT-BKHCN
+                Trích dẫn chính thức theo tài liệu <em>Technology Readiness Level Definitions</em> của NASA và tiêu chuẩn quốc tế ISO 16290:2013
               </p>
             </div>
           </div>
@@ -262,24 +262,24 @@ export function TrlMethodologyModal({
 
         {/* Content Body (Scrollable) */}
         <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 text-sm">
-          {/* Căn cứ pháp lý & chuẩn quốc tế NASA */}
+          {/* Căn cứ chuẩn quốc tế NASA & ISO */}
           <div className="rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/70 dark:bg-blue-950/30 p-4 space-y-2">
             <h3 className="font-extrabold text-blue-950 dark:text-blue-300 flex items-center gap-2 text-xs uppercase tracking-wider">
               <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-              Căn cứ Pháp lý & Khung Tiêu Chuẩn Quốc Tế NASA TRL
+              Khung Tiêu Chuẩn Kỹ Thuật Công Nghiệp Quốc Tế (NASA TRL &amp; ISO 16290)
             </h3>
             <ul className="text-xs text-blue-900 dark:text-blue-200/90 space-y-1.5 list-disc list-inside">
               <li>
                 <strong>NASA TRL (1974 / 1989):</strong> Khung đo lường 9 cấp độ do Stan Sadin khởi xướng và John Mankins chuẩn hóa năm 1989 cho Cơ quan Hàng không Vũ trụ Hoa Kỳ. Định nghĩa đầy đủ cho cả <strong>Phần cứng</strong> và <strong>Phần mềm</strong> kèm tiêu chí hoàn thành cấp độ (Exit Criteria).
               </li>
               <li>
-                <strong>ISO 16290:2013:</strong> Tiêu chuẩn quốc tế về định nghĩa cấp độ sẵn sàng công nghệ (TRL) và tiêu chí đánh giá trong hệ thống hàng không vũ trụ và công nghiệp chế tạo.
+                <strong>ISO 16290:2013:</strong> Tiêu chuẩn quốc tế về định nghĩa cấp độ sẵn sàng công nghệ (TRL) và tiêu chí đánh giá trong hệ thống công nghiệp chế tạo và công nghệ cao.
               </li>
               <li>
-                <strong>Thông tư 17/2019/TT-BKHCN:</strong> Hướng dẫn đánh giá trình độ và năng lực công nghệ của doanh nghiệp do Bộ Khoa học và Công nghệ Việt Nam ban hành.
+                <strong>ISO 9001 &amp; IATF 16949:</strong> Hệ tiêu chuẩn quản lý chất lượng dây chuyền sản xuất công nghiệp và phê duyệt chi tiết sản xuất hàng loạt (PPAP) trong chuỗi cung ứng FDI.
               </li>
               <li>
-                <strong>ITRI Đài Loan:</strong> Khung phân loại và chuyển giao sáng chế của Viện Nghiên cứu Kỹ thuật Công nghiệp Đài Loan (PO-DEC-20261008-04).
+                <strong>Hội đồng Thẩm định Kỹ thuật BACLINK:</strong> Quy chuẩn đối soát hồ sơ minh chứng kỹ thuật, bản vẽ chế tạo và năng lực vận hành thực tế của nhà máy hội viên tại Bắc Ninh.
               </li>
             </ul>
           </div>
@@ -337,7 +337,7 @@ export function TrlMethodologyModal({
                 TẦNG 2: THẨM ĐỊNH CHUYÊN SÂU (VERIFIED_BY_GOV)
               </div>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                Sở KH&CN, Cục Sở hữu trí tuệ hoặc Hội đồng thẩm định độc lập đối soát hồ sơ gốc (Bằng Sáng chế, Test Report, Hợp đồng thực tế). Sản phẩm đạt chuẩn nhận huy hiệu vàng <strong>"Đã thẩm định nhà nước"</strong> kèm định danh cơ quan duyệt.
+                Hội đồng thẩm định Kỹ thuật BACLINK hoặc đối tác kiểm định độc lập đối soát hồ sơ gốc (Bằng Sáng chế, Test Report, Hợp đồng thực tế). Sản phẩm đạt chuẩn nhận huy hiệu vàng <strong>"Đã thẩm định chuẩn hóa"</strong> kèm định danh cơ quan duyệt.
               </p>
             </div>
           </div>
@@ -526,7 +526,7 @@ export function TrlMethodologyModal({
                     </div>
                   </div>
 
-                  {/* Danh mục hồ sơ minh chứng sàn NacenTech */}
+                  {/* Danh mục hồ sơ minh chứng sàn BACLINK */}
                   <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
                     <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
                       <FileCheck2 className="w-3.5 h-3.5 text-amber-600" />
@@ -538,7 +538,7 @@ export function TrlMethodologyModal({
                       ))}
                     </ul>
                     <div className="mt-2 text-[11px] text-slate-500 italic">
-                      Khả năng thương mại & chuyển giao: {item.commercialFeasibility}
+                      Khả năng thương mại &amp; chuyển giao: {item.commercialFeasibility}
                     </div>
                   </div>
                 </div>
@@ -550,7 +550,7 @@ export function TrlMethodologyModal({
         {/* Footer */}
         <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
           <div className="text-xs text-slate-500">
-            BACLINK · Bản dịch chuẩn NASA TRL 1–9 · Nền tảng Chuỗi Cung Ứng & Đổi Mới Sáng Tạo Bắc Ninh
+            BACLINK · Chuẩn quốc tế NASA TRL 1–9 &amp; ISO 16290 · Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
           </div>
           <button
             type="button"

@@ -8,14 +8,16 @@ import React from "react";
 export default function GlobalLoading() {
   return (
     <div className="w-full min-h-[60vh] flex flex-col items-center justify-center py-16 px-4">
-      {/* Khối hiệu ứng trung tâm với Logo NacenTech */}
+      {/* Khối hiệu ứng trung tâm với Logo BACLINK */}
       <div className="relative flex items-center justify-center mb-6">
         {/* Vòng quay nhẹ nhàng phong cách radar */}
         <div className="absolute w-20 h-20 rounded-full border-2 border-brand-200 dark:border-slate-800 border-t-nacen-green-500 animate-spin" />
-        <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center p-2.5">
-          <div className="size-9 rounded-lg bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-lg flex items-center justify-center shadow-inner">
-            B
-          </div>
+        <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md flex items-center justify-center p-1.5 overflow-hidden">
+          <img
+            src="/baclink-logo-256.png"
+            alt="BACLINK Logo"
+            className="w-full h-full object-cover rounded-full"
+          />
         </div>
       </div>
 

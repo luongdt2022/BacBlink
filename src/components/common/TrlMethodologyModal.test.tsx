@@ -13,12 +13,13 @@ describe('TrlMethodologyModal Component', () => {
     expect(screen.queryByText(/Phương Pháp Luận Cấp Độ Sẵn Sàng Công Nghệ/i)).not.toBeInTheDocument();
   });
 
-  it('renders correctly with NASA and TT17 legal standards when isOpen is true', () => {
+  it('renders correctly with NASA TRL and ISO 16290 industrial standards without TT17 references', () => {
     render(<TrlMethodologyModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByText(/Phương Pháp Luận Cấp Độ Sẵn Sàng Công Nghệ \(TRL 1–9\)/i)).toBeInTheDocument();
     expect(screen.getByText(/NASA TRL \(1974 \/ 1989\)/i)).toBeInTheDocument();
     expect(screen.getAllByText(/ISO 16290:2013/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Thông tư 17\/2019\/TT-BKHCN/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/ISO 9001 & IATF 16949/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Thông tư 17/i)).not.toBeInTheDocument();
     expect(screen.getByText(/TẦNG 1: TỰ KÊ KHAI/i)).toBeInTheDocument();
     expect(screen.getByText(/TẦNG 2: THẨM ĐỊNH CHUYÊN SÂU/i)).toBeInTheDocument();
   });

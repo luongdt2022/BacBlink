@@ -83,7 +83,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("renders 3 tabs and Tab 1 pending invitations with SLA countdown", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -108,8 +108,8 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
     expect(screen.getByText("Còn 18 giờ để phản hồi")).toBeInTheDocument();
 
     // Dept assigned badge
-    expect(screen.getByText(/Sở KH&CN Hà Nội Chỉ Định Kết Nối 1-1/i)).toBeInTheDocument();
-    expect(screen.getByText(/Quỹ ĐMST Hà Nội chi trả/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Ban Cố vấn Kỹ thuật BACLINK Chỉ Định Kết Nối 1-1/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Quỹ Phát triển Công nghiệp BACLINK chi trả/i).length).toBeGreaterThan(0);
 
     // TNI Score
     expect(screen.getByText("86.4 điểm")).toBeInTheDocument();
@@ -118,7 +118,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("switches to Tab 2 (Lịch Hẹn Sắp Tới) and displays meeting info and join condition", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -144,7 +144,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("switches to Tab 3 (Đã Hoàn Thành) and displays MoA and disbursement status", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -163,7 +163,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("opens modal and accepts invitation, moving it to Tab 2", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -198,7 +198,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("opens reject modal and validates minimum 10 characters requirement", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -240,14 +240,14 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("displays amber warning banner when role is EXPERT (pending review)", async () => {
     authClient.setSession("token-expert", {
       id: "u-exp-pending",
-      email: "candidate@nacentech.vn",
+      email: "candidate@baclink.org.vn",
       fullName: "TS. Ứng Viên Chuyên Gia",
       role: "EXPERT",
     });
 
     render(<ExpertConsultationsPage />);
 
-    expect(screen.getByText(/Tài Khoản Đang Chờ Phê Duyệt Cố Vấn BACLINK/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hồ Sơ Đang Chờ Ban Quản Trị BACLINK Phê Duyệt/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Hồ sơ Cố vấn Kỹ thuật của bạn đang trong tiến trình thẩm định tại Hiệp hội BACLINK/i)
     ).toBeInTheDocument();
@@ -257,7 +257,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
     const alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
     authClient.setSession("token-expert", {
       id: "u-exp-pending",
-      email: "candidate@nacentech.vn",
+      email: "candidate@baclink.org.vn",
       fullName: "TS. Ứng Viên Chuyên Gia",
       role: "EXPERT",
     });
@@ -284,7 +284,7 @@ describe("ExpertConsultationsPage (T132 & T135 & T164)", () => {
   it("allows expert to complete consultation on scheduled tab", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });

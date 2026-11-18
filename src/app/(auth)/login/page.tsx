@@ -73,13 +73,17 @@ export default function LoginPage() {
         {/* Mobile Header (Hidden on Desktop) */}
         <div className="mb-7 text-center lg:hidden">
           <div className="mb-3 flex justify-center">
-            <div className="size-12 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-2xl flex items-center justify-center shadow-lg border border-cyan-400/30">
-              B
+            <div className="size-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-lg overflow-hidden">
+              <img
+                src="/baclink-logo-256.png"
+                alt="BACLINK Logo"
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
           </div>
           <h1 className="type-section-title text-slate-900 dark:text-white">Đăng nhập BACLINK</h1>
           <p className="mx-auto mt-2 max-w-xl text-body text-slate-600 dark:text-slate-400">
-            Cổng Kết Nối Chuỗi Cung Ứng &amp; Sản Xuất Công Nghiệp Tỉnh Bắc Ninh
+            Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)
           </p>
         </div>
 
@@ -89,20 +93,34 @@ export default function LoginPage() {
           <aside className="relative hidden overflow-hidden bg-gradient-to-br from-[#081026] via-[#0D1938] to-[#162D66] px-10 py-12 text-white lg:flex lg:flex-col justify-between">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(6,182,212,0.32),transparent_38%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.18),transparent_42%)]" />
             <div className="relative">
-              <div className="size-14 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white font-black text-3xl flex items-center justify-center shadow-lg border border-cyan-400/30">
-                B
+              <div className="flex items-center gap-3">
+                <div className="size-14 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-lg shrink-0 overflow-hidden">
+                  <img
+                    src="/baclink-logo-256.png"
+                    alt="BACLINK Logo"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                <div>
+                  <span className="text-lg font-extrabold tracking-tight text-white block leading-none">
+                    BACLINK
+                  </span>
+                  <span className="text-xs font-medium text-amber-300 block mt-1">
+                    Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
+                  </span>
+                </div>
               </div>
-              <p className="mt-14 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">BACLINK Industrial Network</p>
+              <p className="mt-12 text-sm font-semibold uppercase tracking-[0.16em] text-cyan-200">BACLINK Industrial Network</p>
               <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight">Một tài khoản, kết nối cả chuỗi cung ứng Bắc Ninh.</h1>
               <p className="mt-5 max-w-sm text-lg leading-8 text-slate-100">
-                Truy cập không gian tác nghiệp hội viên, kết nối FDI Samsung/Foxconn và cố vấn kỹ thuật chuyên sâu.
+                Truy cập không gian tác nghiệp hội viên, kết nối chuỗi cung ứng FDI và nhận đồng hành từ Ban Cố vấn Kỹ thuật BACLINK.
               </p>
             </div>
             <div className="relative mt-auto space-y-4 pt-12 text-sm leading-6 text-cyan-50">
               {[
-                "Xác thực an toàn, bảo mật và minh bạch.",
-                "Bảo vệ dữ liệu doanh nghiệp và giải pháp công nghệ.",
-                "Liên thông mạng lưới 10+ khu công nghiệp trọng điểm Bắc Ninh.",
+                "Phân quyền 3 cấp tinh gọn: Quản trị Hiệp hội, Doanh nghiệp Hội viên & Công chúng.",
+                "Bảo vệ dữ liệu doanh nghiệp và hồ sơ năng lực nhà máy.",
+                "Liên thông mạng lưới 13+ khu công nghiệp trọng điểm tỉnh Bắc Ninh.",
               ].map((item) => (
                 <div className="flex items-start gap-3" key={item}>
                   <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300" />
@@ -215,14 +233,10 @@ export default function LoginPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs">
                   {[
-                    { label: "Super Admin (Toàn quốc)", email: "super.admin@demo.nacentech.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
-                    { label: "Sở KH&CN Tiền Giang (166 DN)", email: "tiengiang.admin@demo.nacentech.vn", color: "hover:bg-indigo-50 text-indigo-700 border-indigo-200" },
-                    { label: "Sở KH&CN Ninh Thuận (8 DN)", email: "ninhthuan.admin@demo.nacentech.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
-                    { label: "Sở KH&CN Hà Nội", email: "hanoi.admin@demo.nacentech.vn", color: "hover:bg-cyan-50 text-cyan-700 border-cyan-200" },
-                    { label: "Doanh Nghiệp Buyer", email: "buyer.user@demo.nacentech.vn", color: "hover:bg-amber-50 text-amber-700 border-amber-200" },
-                    { label: "Doanh Nghiệp Seller", email: "seller.user@demo.nacentech.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
-                    { label: "Doanh Nghiệp ĐMST", email: "innovation.entity@demo.nacentech.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
-                    { label: "Chuyên Gia KH&CN", email: "expert.user@demo.nacentech.vn", color: "hover:bg-teal-50 text-teal-700 border-teal-200" },
+                    { label: "Quản trị Hiệp hội (Admin)", email: "admin@baclink.org.vn", color: "hover:bg-brand-50 text-brand-700 border-brand-200" },
+                    { label: "Doanh nghiệp Hội viên (Mua & Bán)", email: "member.hanelpt@baclink.org.vn", color: "hover:bg-emerald-50 text-emerald-700 border-emerald-200" },
+                    { label: "Ban Cố vấn Kỹ thuật BACLINK", email: "khoi.nm@baclink.org.vn", color: "hover:bg-amber-50 text-amber-700 border-amber-200" },
+                    { label: "Thành viên công chúng (Public)", email: "guest@baclink.org.vn", color: "hover:bg-slate-100 text-slate-700 border-slate-300" },
                   ].map((acc) => (
                     <button
                       key={acc.email}

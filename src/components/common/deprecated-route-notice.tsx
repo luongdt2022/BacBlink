@@ -9,17 +9,28 @@ import { authClient, getRedirectPathByRole, normalizePlatformRole } from "@/lib/
 interface DeprecatedRouteNoticeProps {
   title?: string;
   description?: string;
+  fallbackPath?: string;
+  fallbackLabel?: string;
 }
 
 export function DeprecatedRouteNotice({
   title = "Phân hệ không còn áp dụng (410 Gone)",
-  description = "Theo kiến trúc phân quyền 3 cấp BACLINK, phân hệ quản trị theo Sở/Ngành và cây 34 tỉnh/thành đã được gỡ bỏ và hợp nhất về quy trình 1 cấp.",
+  description = "Theo kiến trúc tinh gọn 3 cấp của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK), chức năng này đã được hợp nhất về không gian làm việc trung tâm.",
+  fallbackPath,
+  fallbackLabel,
 }: DeprecatedRouteNoticeProps) {
   const router = useRouter();
-  const [targetPath, setTargetPath] = useState<string>("/");
-  const [targetLabel, setTargetLabel] = useState<string>("Về Trang chủ BACLINK");
+  const [targetPath, setTargetPath] = useState<string>(fallbackPath || "/");
+  const [targetLabel, setTargetLabel] = useState<string>(fallbackLabel || "Về Trang chủ BACLINK");
 
   useEffect(() => {
+    if (fallbackPath) {
+      setTargetPath(fallbackPath);
+      if (fallbackLabel) setTargetLabel(fallbackLabel);
+      router.replace?.(fallbackPath);
+      return;
+    }
+
     const user = authClient.getUser();
     const role = normalizePlatformRole(user?.role);
     const destination = user ? getRedirectPathByRole(user.role) : "/";
@@ -33,8 +44,8 @@ export function DeprecatedRouteNotice({
       setTargetLabel("Về Trang chủ BACLINK (/)");
     }
 
-    router.replace(destination);
-  }, [router]);
+    router.replace?.(destination);
+  }, [router, fallbackPath, fallbackLabel]);
 
   return (
     <div

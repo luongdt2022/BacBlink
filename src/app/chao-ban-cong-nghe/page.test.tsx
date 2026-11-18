@@ -102,16 +102,14 @@ vi.mock("@/lib/portal-client", () => ({
 
 vi.mock("@/lib/master-data-client", () => ({
   getActiveSectors: vi.fn(async () => [
-    { code: "LV01", name: "Nông nghiệp" },
-    { code: "LV05", name: "Chế biến thực phẩm – đồ uống" },
-    { code: "LV07", name: "Cơ khí – chế tạo – công nghiệp hỗ trợ" },
-    { code: "LV08", name: "Điện – điện tử – tự động hóa" },
-    { code: "LV11", name: "Nước – môi trường – chất thải" },
-    { code: "LV12", name: "Xây dựng – vật liệu – hạ tầng" },
-    { code: "LV14", name: "Logistics – vận tải – kho bãi" },
-    { code: "LV15", name: "Du lịch – khách sạn – nhà hàng" },
-    { code: "LV16", name: "CNTT – viễn thông – chuyển đổi số" },
-    { code: "LV17", name: "Khoa học – công nghệ – đổi mới sáng tạo" },
+    { code: "IND_ELEC", name: "Điện tử, Bán dẫn & Thiết bị điện" },
+    { code: "IND_MECH", name: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy" },
+    { code: "IND_AUTO", name: "Tự động hóa, Robot & Smart Factory" },
+    { code: "IND_PLAS", name: "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp" },
+    { code: "IND_MAT", name: "Vật liệu mới & Công nghiệp hỗ trợ" },
+    { code: "IND_IT", name: "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP" },
+    { code: "IND_GREEN", name: "Công nghiệp xanh, Năng lượng sạch & ESG" },
+    { code: "IND_LOG", name: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng" },
   ]),
 }));
 
@@ -156,7 +154,7 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
       await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh")
     ).toBeInTheDocument();
     expect(screen.getByText("Hồ Sơ Niêm Yết")).toBeInTheDocument();
-    expect(screen.getByText("Phân Loại TT17")).toBeInTheDocument();
+    expect(screen.getByText("Ngành Công Nghiệp")).toBeInTheDocument();
     expect(screen.getByText("Sáng Chế Độc Quyền")).toBeInTheDocument();
   });
 
@@ -210,16 +208,16 @@ describe("ChaoBanCongNghePage - Multi-level Filter & Verification", () => {
     await screen.findByText("Sản Phẩm & Năng Lực Sản Xuất Công Nghiệp Bắc Ninh");
 
     // All sectors button with non-zero badge
-    expect(screen.getByText("Tất cả lĩnh vực")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Điện – điện tử – tự động hóa/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /CNTT – viễn thông – chuyển đổi số/i })).toBeInTheDocument();
+    expect(screen.getByText("Tất cả ngành công nghiệp")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Điện tử, Bán dẫn & Thiết bị điện/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Công nghệ thông tin, Phần mềm công nghiệp & MES\/ERP/i })).toBeInTheDocument();
   });
 
   it("filters by sector when clicked and displays active filter chips", async () => {
     render(<ChaoBanCongNghePage />);
     await screen.findByText("Nền tảng Digital Twin mô phỏng nhiệt lò nung");
 
-    const sectorBtn = screen.getByRole("button", { name: /Điện – điện tử – tự động hóa/i });
+    const sectorBtn = screen.getByRole("button", { name: /Điện tử, Bán dẫn & Thiết bị điện/i });
     fireEvent.click(sectorBtn);
 
     await waitFor(() => {

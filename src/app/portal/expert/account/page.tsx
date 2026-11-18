@@ -83,7 +83,7 @@ function ExpertAccountContent() {
   const [selectedCollabForms, setSelectedCollabForms] = useState<string[]>([
     "rd_transfer",
     "dealroom_review",
-    "tt17_council",
+    "baclink_council",
   ]);
 
   // Khối 4: Active Sessions
@@ -91,15 +91,15 @@ function ExpertAccountContent() {
     {
       id: "sess_macbook",
       device: "MacBook Pro • Chrome 129 (macOS Sonoma)",
-      ipLocation: "118.70.***.*** (Hà Nội, VN)",
+      ipLocation: "118.70.***.*** (Bắc Ninh, VN)",
       isCurrent: true,
       lastActive: "Phiên hiện tại",
       icon: Laptop,
     },
     {
       id: "sess_iphone",
-      device: "iPhone 15 Pro • Zalo Mini App NacenTech",
-      ipLocation: "14.162.***.*** (Hà Nội, VN)",
+      device: "iPhone 15 Pro • Zalo Mini App BACLINK",
+      ipLocation: "14.162.***.*** (Bắc Ninh, VN)",
       isCurrent: false,
       lastActive: "Hoạt động: 15 phút trước",
       icon: Smartphone,
@@ -183,7 +183,7 @@ function ExpertAccountContent() {
         await updateMyExpertProfile({
           degree: expertDetail.publicProfile.degree || "DOCTOR",
           degreeYear: expertDetail.publicProfile.birthYear ? expertDetail.publicProfile.birthYear + 30 : 2015,
-          organizationName: expertDetail.publicProfile.organizationName || "Viện Ứng Dụng Công Nghệ (NacenTech)",
+          organizationName: expertDetail.publicProfile.organizationName || "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)",
           isAcceptingConsultation: nextVal,
         });
       }
@@ -253,20 +253,20 @@ function ExpertAccountContent() {
     expertDetail?.publicProfile.degree || "DOCTOR"
   );
   const orgName =
-    expertDetail?.publicProfile.organizationName || "Viện Ứng Dụng Công Nghệ (NacenTech)";
+    expertDetail?.publicProfile.organizationName || "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)";
   const positionTitle =
     expertDetail?.publicProfile.positionTitle || "Chuyên gia Cao cấp";
   const emailDisplay =
-    expertDetail?.email || currentUser?.email || "nguyenvanan@nacentech.gov.vn";
+    expertDetail?.email || currentUser?.email || "covan.an@baclink.org.vn";
   const phoneDisplay = maskPhone(expertDetail?.phone);
 
   const sectors =
     expertDetail?.publicProfile.expertiseSectors && expertDetail.publicProfile.expertiseSectors.length > 0
       ? expertDetail.publicProfile.expertiseSectors
       : [
-          "C.10 Chế biến thực phẩm",
-          "C.20 Hóa chất & Công nghệ sinh học",
-          "Vật liệu Nano thông minh",
+          "Điện tử, Bán dẫn & Thiết bị điện",
+          "Cơ khí chính xác & Khuôn mẫu",
+          "Tự động hóa & Smart Factory",
         ];
 
   const score = completeness?.score ?? 85;
@@ -347,7 +347,6 @@ function ExpertAccountContent() {
               <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold shadow-xs">
                 <Check className="w-3.5 h-3.5" />
                 <span>ĐÃ XÁC THỰC BỞI BACLINK</span>
-                <span className="sr-only">ĐÃ XÁC THỰC CẤP SỞ</span>
               </span>
               <div className="text-caption text-slate-500 dark:text-slate-400 mt-1.5">
                 Mã số: <strong className="font-mono text-slate-800 dark:text-slate-200 font-bold">{expertCode}</strong>
@@ -363,7 +362,6 @@ function ExpertAccountContent() {
               <span className="text-lg">🏛️</span>
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 <span>1. Định Danh Khoa Học & Phê Duyệt Hội Viên Cố Vấn</span>
-                <span className="sr-only">1. Định Danh Khoa Học & Phê Duyệt Cấp Sở</span>
               </h2>
             </div>
             <span className="text-xs text-slate-500 dark:text-slate-400">
@@ -402,11 +400,9 @@ function ExpertAccountContent() {
               </div>
               <div className="text-sm font-extrabold text-emerald-950 dark:text-emerald-100 mt-1">
                 <span>Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)</span>
-                <span className="sr-only">Sở KH&CN Thành phố Hà Nội</span>
               </div>
               <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
                 <span>Số QĐ: 1652/QĐ-UBND &bull; Phê duyệt: Ban Quản trị BACLINK</span>
-                <span className="sr-only">88/QĐ-SKHCN</span>
               </div>
             </div>
           </div>
@@ -419,7 +415,7 @@ function ExpertAccountContent() {
               </span>
             </div>
             <span className="font-bold text-brand-700 dark:text-brand-300">
-              Phạm vi: Cấp 2 Tỉnh + Hậu kiểm TW
+              Phạm vi: Toàn mạng lưới Hiệp hội BACLINK
             </span>
           </div>
         </section>
@@ -471,7 +467,7 @@ function ExpertAccountContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-2">
-                  Lĩnh vực chuyên môn tiếp nhận tư vấn chính (TT17)
+                  Ngành công nghiệp chuyên môn (BACLINK)
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {sectors.map((sec, idx) => (
@@ -512,16 +508,16 @@ function ExpertAccountContent() {
                       onChange={() => toggleCollabForm("dealroom_review")}
                       className="rounded text-brand-700 focus:ring-brand-500"
                     />
-                    <span>Thẩm định kỹ thuật bài toán DNNVV (Deal Room 1-1)</span>
+                    <span>Thẩm định kỹ thuật bài toán Doanh nghiệp Hội viên (Deal Room 1-1)</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={selectedCollabForms.includes("tt17_council")}
-                      onChange={() => toggleCollabForm("tt17_council")}
+                      checked={selectedCollabForms.includes("baclink_council")}
+                      onChange={() => toggleCollabForm("baclink_council")}
                       className="rounded text-brand-700 focus:ring-brand-500"
                     />
-                    <span>Hội đồng đánh giá năng lực công nghệ TT17</span>
+                    <span>Hội đồng thẩm định kỹ thuật & dây chuyền nhà máy BACLINK</span>
                   </label>
                 </div>
               </div>
@@ -831,7 +827,7 @@ function ExpertAccountContent() {
                     onChange={(e) => setNotifyGovReviewResult(e.target.checked)}
                     className="rounded text-brand-700 focus:ring-brand-500"
                   />
-                  <span>Thông báo kết quả thẩm định Sở</span>
+                  <span>Thông báo kết quả thẩm định Hiệp hội BACLINK</span>
                 </label>
               </div>
             </div>

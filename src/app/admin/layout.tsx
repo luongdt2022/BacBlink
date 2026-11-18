@@ -7,8 +7,6 @@ import { RoleGuard } from "@/components/auth/role-guard";
 import { AdminWorkspaceSkeleton } from "@/components/admin/admin-workspace-skeleton";
 import {
   LayoutDashboard,
-  Award,
-  FileSpreadsheet,
   Inbox,
   Users,
   Database,
@@ -49,18 +47,6 @@ const MENU_GROUPS: MenuGroup[] = [
         icon: LayoutDashboard,
         keywords: "dashboard bi 360 tong quan he thong dieu hanh baclink live",
       },
-      {
-        href: "/admin/assessments/tt17",
-        label: "Đánh giá công nghệ TT17",
-        icon: Award,
-        keywords: "dashboard danh gia cong nghe tt17 bac ninh 26 tieu chi doanh nghiep",
-      },
-      {
-        href: "/admin/assessments/records",
-        label: "Phiếu thu thập & đánh giá DN",
-        icon: FileSpreadsheet,
-        keywords: "danh sach ban ghi phieu thu thap tt17 danh gia nhu cau xuat word in",
-      },
     ],
   },
   {
@@ -93,9 +79,9 @@ const MENU_GROUPS: MenuGroup[] = [
       },
       {
         href: "/admin/sectors",
-        label: "Lĩnh vực & Chỉ số TRL",
+        label: "Ngành Công Nghiệp & Địa Bàn",
         icon: Database,
-        keywords: "8 nganh baclink tt17 trl tieu chi danh muc linh vuc",
+        keywords: "8 nganh cong nghiep baclink dia ban kcn bac ninh trl danh muc linh vuc",
       },
       {
         href: "/admin/elearning",

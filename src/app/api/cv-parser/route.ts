@@ -16,7 +16,7 @@ const CANDIDATE_MODELS = [
   "gemini-flash-latest",
 ];
 
-const SYSTEM_PROMPT = (sectorOptions: string) => `Bạn là Trợ lý AI Thẩm định và Bóc tách Hồ sơ Khoa học Công nghệ (Lý lịch khoa học / CV) của Viện NacenTech theo biểu mẫu chuẩn Thông tư 17/2021/TT-BKHCN và 94 trường danh mục Chuyên gia.
+const SYSTEM_PROMPT = (sectorOptions: string) => `Bạn là Trợ lý AI Thẩm định và Bóc tách Hồ sơ Chuyên gia / Cố vấn Kỹ thuật của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK).
 Nhiệm vụ của bạn là đọc kỹ tệp đính kèm (hoặc văn bản CV được cung cấp) và bóc tách dữ liệu chính xác thành định dạng JSON chuẩn.
 
 Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong thẻ markdown, với cấu trúc:
@@ -28,22 +28,22 @@ Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong
   "gender": "Nam hoặc Nữ hoặc Khác",
   "academicDegree": "GS hoặc PGS hoặc TS hoặc ThS hoặc KySu hoặc Cử nhân",
   "degreeYear": 2011,
-  "primaryInstitution": "Tên Viện, Trường, Doanh nghiệp công tác chính (VD: Viện Ứng dụng Công nghệ - Bộ Khoa học và Công nghệ)",
-  "workAddress": "Địa chỉ cơ quan công tác (VD: C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội)",
-  "professionalTitle": "Chức danh nghiên cứu hoặc Chức vụ quản lý (VD: Trưởng phòng R&D, Nghiên cứu viên chính, Giảng viên cao cấp)",
+  "primaryInstitution": "Tên Doanh nghiệp, Nhà máy, Trường đại học công tác chính (VD: Công ty Cổ phần Công nghệ Thế hệ mới Hanel PT)",
+  "workAddress": "Địa chỉ cơ quan công tác (VD: KCN Tiên Sơn, Tỉnh Bắc Ninh)",
+  "professionalTitle": "Chức danh kỹ thuật hoặc Chức vụ quản lý (VD: Giám đốc sản xuất, Trưởng phòng R&D, Cố vấn IATF 16949)",
   "yearsOfExperience": 10,
-  "bioSummary": "Tóm tắt tiểu sử khoa học và năng lực thế mạnh (khoảng 2-3 câu)",
-  "primaryDomain": "Chọn mã lĩnh vực phù hợp nhất trong danh mục hiện hành: ${sectorOptions}",
-  "rawSectorKeywords": ["Quang điện tử", "Laser", "Đo lường điều khiển", "Vật liệu bán dẫn"],
+  "bioSummary": "Tóm tắt kinh nghiệm công nghiệp và năng lực thế mạnh (khoảng 2-3 câu)",
+  "primaryDomain": "Chọn mã ngành công nghiệp phù hợp nhất trong danh mục hiện hành: ${sectorOptions}",
+  "rawSectorKeywords": ["Bán dẫn", "Tự động hóa", "Cơ khí chính xác", "IATF 16949"],
   "specializedKeywords": ["Từ khóa chuyên sâu 1", "Từ khóa chuyên sâu 2"],
   "googleScholarUrl": "URL Google Scholar nếu có trong CV",
   "orcidId": "Mã ORCID (VD: 0000-0002-xxxx-xxxx) nếu có",
   "scopusAuthorId": "Mã Scopus Author ID (VD: 57201234567) nếu có",
   "publications": [
     {
-      "title": "Tên bài báo hoặc công trình khoa học",
+      "title": "Tên bài báo hoặc công trình kỹ thuật",
       "year": 2023,
-      "journalOrConference": "Tạp chí hoặc kỷ yếu hội thảo đã đăng",
+      "journalOrConference": "Tạp chí hoặc hội nghị chuyên ngành đã đăng",
       "doiOrUrl": "DOI hoặc link tra cứu nếu có"
     }
   ],
@@ -59,8 +59,8 @@ Yêu cầu xuất ra DUY NHẤT một chuỗi JSON hợp lệ không bọc trong
 
 Quy tắc bóc tách bắt buộc:
 1. 'degreeYear': Tìm năm cấp bằng tốt nghiệp hoặc năm bảo vệ luận án thành công của học vị cao nhất trong phần Đào tạo/Học vị. Ví dụ: 'Tiến sĩ năm 2011' -> degreeYear = 2011. Tuyệt đối không để trống nếu CV có ghi rõ năm tốt nghiệp.
-2. 'rawSectorKeywords': Trích xuất toàn bộ các cụm từ mô tả chuyên ngành, hướng nghiên cứu chính, công nghệ thế mạnh trong mục Chuyên môn hoặc Hoạt động KH&CN (ví dụ: 'Quang điện tử', 'laser', 'bán dẫn', 'trí tuệ nhân tạo'...).
-3. 'primaryInstitution' & 'workAddress': Phải bóc tách đầy đủ cả tên cơ quan lẫn địa chỉ hành chính (quận/huyện, tỉnh/thành phố) để phục vụ suy luận cơ quan thẩm định.
+2. 'rawSectorKeywords': Trích xuất toàn bộ các cụm từ mô tả chuyên ngành công nghiệp, kỹ thuật sản xuất, công nghệ thế mạnh (ví dụ: 'cơ khí chính xác', 'bán dẫn', 'tự động hóa', 'trí tuệ nhân tạo'...).
+3. 'primaryInstitution' & 'workAddress': Phải bóc tách đầy đủ cả tên đơn vị lẫn địa chỉ khu công nghiệp / tỉnh thành.
 4. Nếu không tìm thấy thông tin nào đó trong văn bản, hãy để trống chuỗi rỗng "" hoặc mảng rỗng [], KHÔNG tự bịa đặt dữ liệu (Zero Hallucination).`;
 
 export async function POST(req: NextRequest) {
@@ -207,14 +207,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Đối soát Lĩnh vực TT17 phân tầng (Multi-tier Anti-destructive Matching)
+    // Đối soát Ngành công nghiệp BACLINK (IND_*) phân tầng (Multi-tier Anti-destructive Matching)
     const rawKeywords = Array.isArray(parsed.rawSectorKeywords) ? parsed.rawSectorKeywords : [];
     const matched = matchSectors(parsed.primaryDomain, rawKeywords, sectors);
     parsed.primaryDomain = matched.primaryDomain;
     parsed.matchedSectorCodes = matched.matchedSectorCodes;
     parsed.rawSectorKeywords = matched.rawSectorKeywords;
 
-    // Suy luận cơ quan tiếp nhận thẩm định Cấp 2
+    // Suy luận đơn vị tiếp nhận thẩm định tập trung 1 cấp BACLINK (GLOBAL)
     parsed.suggestedReceivingUnit = inferReceivingUnit(parsed.primaryInstitution, parsed.workAddress);
 
     return NextResponse.json({

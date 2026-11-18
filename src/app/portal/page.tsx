@@ -64,12 +64,12 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
               Xin chào, {user?.fullName || "Quý Thành Viên"}!
             </h1>
             <p className="mt-2 max-w-2xl text-body leading-relaxed text-brand-100">
-              Khám phá công nghệ và kết nối giải pháp đổi mới sáng tạo.
+              Khám phá công nghệ và kết nối chuỗi cung ứng công nghiệp Bắc Ninh.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
-              href="/khao-sat-nhu-cau"
+              href="/portal/buyer/demands"
               className="inline-flex items-center gap-2 rounded-control bg-white px-4 py-2.5 text-sm font-semibold text-brand-900 shadow-sm transition hover:bg-brand-50 focus-ring min-h-11"
             >
               <Plus className="h-4 w-4 text-brand-800" />
@@ -159,7 +159,7 @@ function GeneralPortalDashboard({ user }: { user: UserContext | null }) {
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="h-4 w-4 text-brand-600 shrink-0" />
-                <span>DN Đổi mới sáng tạo</span>
+                <span>Doanh nghiệp Hội viên</span>
               </div>
             </div>
           </div>
@@ -184,13 +184,19 @@ export default function PortalDashboard() {
     const u = authClient.getUser();
     if (typeof window === "undefined") return null;
     const isEnterprise =
+      u?.role?.toUpperCase() === "ENTERPRISE" ||
       u?.role?.toUpperCase() === "BUYER" ||
       u?.role?.toUpperCase() === "SELLER" ||
       u?.role?.toUpperCase() === "INNOVATION_ENTITY";
     const cached = isEnterprise ? localStorage.getItem("nacentwin_active_role") : null;
     if (cached) return cached;
     if (u?.role?.toUpperCase() === "SELLER") return "SELLER";
-    if (u?.role?.toUpperCase() === "BUYER" || u?.role?.toUpperCase() === "INNOVATION_ENTITY") return "BUYER";
+    if (
+      u?.role?.toUpperCase() === "ENTERPRISE" ||
+      u?.role?.toUpperCase() === "BUYER" ||
+      u?.role?.toUpperCase() === "INNOVATION_ENTITY"
+    )
+      return "BUYER";
     return u?.role ?? null;
   });
 
@@ -198,6 +204,7 @@ export default function PortalDashboard() {
     const u = authClient.getUser();
     setUser(u);
     const isEnterprise =
+      u?.role?.toUpperCase() === "ENTERPRISE" ||
       u?.role?.toUpperCase() === "BUYER" ||
       u?.role?.toUpperCase() === "SELLER" ||
       u?.role?.toUpperCase() === "INNOVATION_ENTITY";
@@ -206,7 +213,11 @@ export default function PortalDashboard() {
       setActiveRole(cached);
     } else if (u?.role?.toUpperCase() === "SELLER") {
       setActiveRole("SELLER");
-    } else if (u?.role?.toUpperCase() === "BUYER" || u?.role?.toUpperCase() === "INNOVATION_ENTITY") {
+    } else if (
+      u?.role?.toUpperCase() === "ENTERPRISE" ||
+      u?.role?.toUpperCase() === "BUYER" ||
+      u?.role?.toUpperCase() === "INNOVATION_ENTITY"
+    ) {
       setActiveRole("BUYER");
     } else {
       setActiveRole(u?.role ?? null);

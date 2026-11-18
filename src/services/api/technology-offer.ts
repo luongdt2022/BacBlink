@@ -4,6 +4,7 @@ import {
   SellerKpi,
   SectorItem,
   TechTransferDraftDto,
+  BACLINK_SECTORS,
   TT17_SECTORS,
   IntellectualPropertyStatus,
 } from "@/types/technology-offer";
@@ -16,10 +17,10 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   (typeof window !== "undefined" ? "" : "http://localhost:5080");
 
-// Danh mục 18 Lĩnh vực công nghệ TT17 chuẩn hóa đồng bộ
+// Danh mục 8 Ngành công nghiệp BACLINK chuẩn hóa đồng bộ
 export const SECTORS_18_CATALOG: SectorItem[] = [
-  { code: "ALL", name: "Tất cả lĩnh vực", count: 0 },
-  ...TT17_SECTORS.map((s) => ({
+  { code: "ALL", name: "Tất cả ngành công nghiệp", count: 0 },
+  ...BACLINK_SECTORS.map((s) => ({
     code: s.code,
     name: s.name,
     count: 0,
@@ -271,47 +272,24 @@ export async function createSellerOffer(
 export interface ProvincialAuthority {
   id: string;
   name: string;
-  scopeType: "Sở Tỉnh";
+  scopeType: string;
 }
 
+export const FIXED_BACLINK_AUTHORITY = {
+  id: "VN-BN",
+  name: "Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK",
+} as const;
+
 export const PROVINCIAL_AUTHORITIES_CATALOG: ProvincialAuthority[] = [
-  // Tỉnh trọng điểm ĐMST & Vùng Đông Bắc (Ưu tiên Case Thái Nguyên - Chè Thịnh An)
-  { id: "VN-TN", name: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên", scopeType: "Sở Tỉnh" },
-  { id: "VN-HN", name: "Sở Khoa học và Công nghệ TP. Hà Nội", scopeType: "Sở Tỉnh" },
-  { id: "VN-SG", name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh", scopeType: "Sở Tỉnh" },
-  { id: "VN-DN", name: "Sở Khoa học và Công nghệ TP. Đà Nẵng", scopeType: "Sở Tỉnh" },
-  { id: "VN-HP", name: "Sở Khoa học và Công nghệ TP. Hải Phòng", scopeType: "Sở Tỉnh" },
-  { id: "VN-CT", name: "Sở Khoa học và Công nghệ TP. Cần Thơ", scopeType: "Sở Tỉnh" },
-
-  // Vùng Đồng bằng sông Hồng & Lân cận Hà Nội
-  { id: "VN-BN", name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh", scopeType: "Sở Tỉnh" },
-  { id: "VN-BG", name: "Sở Khoa học và Công nghệ tỉnh Bắc Giang", scopeType: "Sở Tỉnh" },
-  { id: "VN-VP", name: "Sở Khoa học và Công nghệ tỉnh Vĩnh Phúc", scopeType: "Sở Tỉnh" },
-  { id: "VN-QN", name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh", scopeType: "Sở Tỉnh" },
-  { id: "VN-HD", name: "Sở Khoa học và Công nghệ tỉnh Hải Dương", scopeType: "Sở Tỉnh" },
-  { id: "VN-HY", name: "Sở Khoa học và Công nghệ tỉnh Hưng Yên", scopeType: "Sở Tỉnh" },
-  { id: "VN-ND", name: "Sở Khoa học và Công nghệ tỉnh Nam Định", scopeType: "Sở Tỉnh" },
-  { id: "VN-TB", name: "Sở Khoa học và Công nghệ tỉnh Thái Bình", scopeType: "Sở Tỉnh" },
-  { id: "VN-NB", name: "Sở Khoa học và Công nghệ tỉnh Ninh Bình", scopeType: "Sở Tỉnh" },
-  { id: "VN-PT", name: "Sở Khoa học và Công nghệ tỉnh Phú Thọ", scopeType: "Sở Tỉnh" },
-
-  // Vùng Đông Nam Bộ & Nam Bộ
-  { id: "VN-BD", name: "Sở Khoa học và Công nghệ tỉnh Bình Dương", scopeType: "Sở Tỉnh" },
-  { id: "VN-DNA", name: "Sở Khoa học và Công nghệ tỉnh Đồng Nai", scopeType: "Sở Tỉnh" },
-  { id: "VN-BRVT", name: "Sở Khoa học và Công nghệ tỉnh Bà Rịa - Vũng Tàu", scopeType: "Sở Tỉnh" },
-  { id: "VN-LA", name: "Sở Khoa học và Công nghệ tỉnh Long An", scopeType: "Sở Tỉnh" },
-  { id: "VN-TG", name: "Sở Khoa học và Công nghệ tỉnh Tiền Giang", scopeType: "Sở Tỉnh" },
-
-  // Vùng Miền Trung & Tây Nguyên
-  { id: "VN-TTH", name: "Sở Khoa học và Công nghệ tỉnh Thừa Thiên Huế", scopeType: "Sở Tỉnh" },
-  { id: "VN-QNA", name: "Sở Khoa học và Công nghệ tỉnh Quảng Nam", scopeType: "Sở Tỉnh" },
-  { id: "VN-KH", name: "Sở Khoa học và Công nghệ tỉnh Khánh Hòa", scopeType: "Sở Tỉnh" },
-  { id: "VN-LD", name: "Sở Khoa học và Công nghệ tỉnh Lâm Đồng", scopeType: "Sở Tỉnh" },
-  { id: "VN-NA", name: "Sở Khoa học và Công nghệ tỉnh Nghệ An", scopeType: "Sở Tỉnh" },
-  { id: "VN-TH", name: "Sở Khoa học và Công nghệ tỉnh Thanh Hóa", scopeType: "Sở Tỉnh" },
-
-  // Danh mục đại diện các tỉnh thành khác
-  { id: "VN-34", name: "Các Sở KH&CN khác thuộc 34 tỉnh thành trọng điểm...", scopeType: "Sở Tỉnh" },
+  // Ban Thẩm định Kỹ thuật BACLINK & Các KCN Bắc Ninh (Hệ thống tập trung tỉnh Bắc Ninh)
+  { id: "VN-BN", name: "Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK", scopeType: "Hiệp hội BACLINK" },
+  { id: "KCN_VSIP_BN", name: "Địa bàn KCN VSIP Bắc Ninh (Phù Chẩn, Từ Sơn)", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_YENPHONG_BN", name: "Địa bàn KCN Yên Phong I & II (Yên Phong)", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_TIENSON_BN", name: "Địa bàn KCN Tiên Sơn (Tiên Du)", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_QUEVO_BN", name: "Địa bàn KCN Quế Võ I, II & III (Quế Võ)", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_DAIDONG_BN", name: "Địa bàn KCN Đại Đồng - Hoàn Sơn", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_THUANTHANH_BN", name: "Địa bàn KCN Thuận Thành I, II & III", scopeType: "KCN Bắc Ninh" },
+  { id: "KCN_GIALUONG_BN", name: "Địa bàn KCN Gia Bình & Lương Tài", scopeType: "KCN Bắc Ninh" },
 ];
 
 export interface AuthorityResolutionContext {
@@ -341,26 +319,26 @@ function normalizeText(text: string): string {
 }
 
 /**
- * Trích xuất từ khóa tên tỉnh/thành từ tên cơ quan Sở KH&CN
- * VD: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên" -> "Thái Nguyên"
+ * Trích xuất từ khóa địa bàn từ tên đơn vị tiếp nhận BACLINK
  */
 function extractProvinceName(authorityName: string): string {
+  if (authorityName.includes("BACLINK") || authorityName.includes("Bắc Ninh")) return "Bắc Ninh";
   return authorityName
-    .replace(/^Sở Khoa học và Công nghệ\s+(tỉnh|TP\.|thành phố)\s+/i, "")
+    .replace(/^Ban Thẩm định Kỹ thuật\s*(—|-)?\s*Hiệp hội BACLINK\s*\(?/i, "")
+    .replace(/\)$/, "")
     .trim();
 }
 
 /**
- * Phân giải Cơ quan Quản lý Sở KH&CN tiếp nhận theo thứ tự 3 cấp ưu tiên (BR-DELTA-04-01)
- * Hỗ trợ nhận context dạng AuthorityResolutionContext object hoặc (userContext, profileContext)
+ * Phân giải Đơn vị tiếp nhận thẩm định của Hiệp hội BACLINK
  */
 export function resolveDefaultAuthority(
   userOrContext?: any,
   profile?: any
 ): ResolvedAuthority {
   const fallbackResult: ResolvedAuthority = {
-    id: "VN-HN",
-    name: "Sở Khoa học và Công nghệ TP. Hà Nội",
+    id: FIXED_BACLINK_AUTHORITY.id,
+    name: FIXED_BACLINK_AUTHORITY.name,
     isAutoDetected: false,
     detectedFrom: "fallback",
   };

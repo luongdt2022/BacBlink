@@ -134,8 +134,8 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             {portalRole === "ADMIN"
-              ? "Quản trị toàn bộ kho bài giảng số trên toàn quốc, giám sát kiểm toán & xử lý bài học vi phạm"
-              : "Biên soạn, cập nhật, xuất bản và quản lý danh mục bài giảng của chuyên gia"}
+              ? "Quản trị kho học liệu công nghiệp BACLINK Bắc Ninh, giám sát chất lượng & xuất bản bài giảng cho hội viên"
+              : "Biên soạn, cập nhật, xuất bản và quản lý danh mục bài giảng kỹ thuật của cố vấn"}
           </p>
         </div>
 
@@ -239,7 +239,7 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
                     <th className="px-4 py-3">Mã học liệu</th>
                     <th className="px-4 py-3">Tiêu đề bài giảng</th>
                     <th className="px-4 py-3">Loại bài</th>
-                    <th className="px-4 py-3">Lĩnh vực</th>
+                    <th className="px-4 py-3">Ngành công nghiệp</th>
                     <th className="px-4 py-3">Thời lượng</th>
                     <th className="px-4 py-3">Giảng viên / Người đăng</th>
                     <th className="px-4 py-3">Trạng thái</th>

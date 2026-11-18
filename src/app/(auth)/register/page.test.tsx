@@ -29,7 +29,7 @@ describe("RegisterPage", () => {
             accessToken: "auto-login-jwt-token",
             user: {
               id: "user-123",
-              email: "public@test.local",
+              email: "public@baclink.org.vn",
               fullName: "Nguyễn An",
               role: "PUBLIC_USER",
               scopeType: "GLOBAL",
@@ -45,7 +45,7 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Nguyễn" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "An" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "public@test.local" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "public@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
     fireEvent.change(passwords[0], { target: { value: "Password-2026!" } });
     fireEvent.change(passwords[1], { target: { value: "Password-2026!" } });
@@ -59,7 +59,7 @@ describe("RegisterPage", () => {
     expect(registerBody).not.toHaveProperty("organization");
 
     const loginBody = JSON.parse(fetchMock.mock.calls[1][1].body);
-    expect(loginBody.email).toBe("public@test.local");
+    expect(loginBody.email).toBe("public@baclink.org.vn");
     expect(loginBody.password).toBe("Password-2026!");
 
     expect(authClient.getToken()).toBe("auto-login-jwt-token");
@@ -82,7 +82,7 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Nguyễn" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "An" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "public@test.local" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "public@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
     fireEvent.change(passwords[0], { target: { value: "Password-2026!" } });
     fireEvent.change(passwords[1], { target: { value: "Password-2026!" } });
@@ -111,14 +111,14 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Nguyễn" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "An" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "public@test.local" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "public@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
     fireEvent.change(passwords[0], { target: { value: "Password-2026!" } });
     fireEvent.change(passwords[1], { target: { value: "Password-2026!" } });
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
 
-    expect(await screen.findByText("Không thể kết nối máy chủ đăng ký. Vui lòng kiểm tra API NacenTech đang chạy rồi thử lại.")).toBeInTheDocument();
+    expect(await screen.findByText("Không thể kết nối máy chủ hệ thống. Vui lòng kiểm tra dịch vụ API BACLINK đang hoạt động rồi thử lại.")).toBeInTheDocument();
   });
 
   it("blocks submission when PDPD consent is unchecked (TC-REG-03)", async () => {
@@ -128,10 +128,10 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "binh@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
-    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
-    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[0], { target: { value: "Baclink@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "Baclink@2026" } });
     // KHÔNG TÍCH CHECKBOX PDPD
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
 
@@ -146,7 +146,7 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "binh@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
     fireEvent.change(passwords[0], { target: { value: "1234567" } });
     fireEvent.change(passwords[1], { target: { value: "1234567" } });
@@ -164,9 +164,9 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "binh@test.vn" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "binh@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
-    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[0], { target: { value: "Baclink@2026" } });
     fireEvent.change(passwords[1], { target: { value: "Different@2026" } });
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
@@ -182,10 +182,10 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "invalid-email-format" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "invalid-email-format" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
-    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
-    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[0], { target: { value: "Baclink@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "Baclink@2026" } });
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
 
@@ -203,10 +203,10 @@ describe("RegisterPage", () => {
 
     fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
     fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bình" } });
-    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "duplicate@nacentech.vn" } });
+    fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "duplicate@baclink.org.vn" } });
     const passwords = screen.getAllByPlaceholderText("••••••••");
-    fireEvent.change(passwords[0], { target: { value: "NacenTech@2026" } });
-    fireEvent.change(passwords[1], { target: { value: "NacenTech@2026" } });
+    fireEvent.change(passwords[0], { target: { value: "Baclink@2026" } });
+    fireEvent.change(passwords[1], { target: { value: "Baclink@2026" } });
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: "Đăng ký thành viên" }));
 

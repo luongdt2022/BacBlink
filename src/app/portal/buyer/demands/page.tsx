@@ -468,12 +468,6 @@ export default function BuyerDemandsPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <Link
-              href="/khao-sat-nhu-cau"
-              className="border border-brand-200 dark:border-slate-700 hover:bg-brand-50 dark:hover:bg-slate-800 text-brand-700 dark:text-cyan-400 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
-            >
-              <ClipboardCheck className="w-4 h-4" /> Khảo Sát Nhu Cầu (TNI)
-            </Link>
             <button
               type="button"
               onClick={() => setIsModalOpen(true)}
@@ -888,7 +882,7 @@ export default function BuyerDemandsPage() {
                       Yêu cầu đăng nhập Doanh nghiệp
                     </h3>
                     <p className="text-xs text-text-secondary dark:text-slate-400">
-                      Vui lòng đăng nhập tài khoản Doanh nghiệp hoặc Khảo sát để quản lý danh sách bài toán kỹ thuật.
+                      Vui lòng đăng nhập tài khoản Doanh nghiệp Hội viên để quản lý danh sách bài toán kỹ thuật.
                     </p>
                     <div className="pt-2">
                       <Link
@@ -908,7 +902,7 @@ export default function BuyerDemandsPage() {
                       Chưa có bài toán kỹ thuật nào
                     </h3>
                     <p className="text-xs text-text-secondary dark:text-slate-400">
-                      Doanh nghiệp có thể bắt đầu bằng việc kê khai phiếu khảo sát hoặc đăng nhanh bài toán mới.
+                      Doanh nghiệp có thể bắt đầu bằng việc đăng nhanh bài toán đặt hàng kỹ thuật hoặc nhu cầu mua mới.
                     </p>
                     <div className="pt-2">
                       <button

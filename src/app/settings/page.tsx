@@ -11,9 +11,9 @@ import { useToast } from "@/components/common/toast";
 import { AppButton } from "@/components/ui/design-system";
 
 const scopeLabels: Record<string, string> = {
-  GLOBAL: "Toàn quốc",
-  PROVINCE: "Tỉnh / thành phố",
-  SECTOR: "Ngành / lĩnh vực",
+  GLOBAL: "Hiệp hội BACLINK",
+  PROVINCE: "Tỉnh Bắc Ninh",
+  SECTOR: "Ngành công nghiệp",
   ORG_UNIT: "Đơn vị liên kết",
 };
 
@@ -88,8 +88,8 @@ export default function SettingsPage() {
               </Link>
               <Link href="/profile/upgrade?action=enterprise" className="focus-ring rounded-xl border border-brand-200 bg-brand-50 p-4 text-brand-800 transition hover:border-brand-500 hover:bg-brand-100 dark:border-brand-900 dark:bg-brand-950/50 dark:text-brand-100 dark:hover:bg-brand-950">
                 <Lightbulb className="h-5 w-5" />
-                <span className="mt-3 block font-semibold">Doanh nghiệp ĐMST</span>
-                <span className="mt-1 block text-label">Xác thực MST, tệp ĐKKD để xin công nhận pháp nhân ĐMST.</span>
+                <span className="mt-3 block font-semibold">Doanh nghiệp Hội viên BACLINK</span>
+                <span className="mt-1 block text-label">Xác thực MST, tệp ĐKKD để xác nhận tư cách Hội viên Hiệp hội BACLINK.</span>
                 <span className="mt-4 inline-flex items-center gap-1 text-label font-bold">Gửi thẩm định <ChevronRight className="h-4 w-4" /></span>
               </Link>
             </div>

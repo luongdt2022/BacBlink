@@ -20,16 +20,16 @@ const mockPublicProfile: expertApi.ExpertPublicDetail = {
   degree: "DOCTOR",
   birthYear: 1968,
   gender: "male",
-  organizationName: "Viện Ứng Dụng Công Nghệ (NacenTech)",
+  organizationName: "Đại học Bách Khoa Hà Nội",
   positionTitle: "Chuyên gia Cao cấp",
-  publicBio: "Chuyên gia đầu ngành về Công nghệ sinh học & Vật liệu nano.",
+  publicBio: "Chuyên gia đầu ngành về Điện tử bán dẫn & Tự động hóa công nghiệp.",
   expertiseSectors: [
-    "C.10 Chế biến thực phẩm",
-    "C.20 Hóa chất & Công nghệ sinh học",
-    "Vật liệu Nano thông minh",
+    "Điện tử, Bán dẫn & Thiết bị điện",
+    "Cơ khí chính xác & Khuôn mẫu",
+    "Tự động hóa & Smart Factory",
   ],
-  specializedKeywords: ["Nano Sinh học", "Chiết xuất dược liệu"],
-  masteredTechCodes: ["BIO-01", "NANO-02"],
+  specializedKeywords: ["Bán dẫn", "Tự động hóa dây chuyền"],
+  masteredTechCodes: ["IND-01", "AUTO-02"],
   isVerified: true,
   isAcceptingConsultation: true,
   training: [],
@@ -44,8 +44,8 @@ const mockPublicProfile: expertApi.ExpertPublicDetail = {
 const mockPrivateDetail: expertApi.ExpertPrivateDetail = {
   publicProfile: mockPublicProfile,
   phone: "0912345689",
-  email: "nguyenvanan@nacentech.gov.vn",
-  organizationAddress: "25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội",
+  email: "covan.an@baclink.org.vn",
+  organizationAddress: "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội",
   pdpdConsent: true,
   legalOath: true,
   status: "APPROVED",
@@ -84,13 +84,13 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
     render(<ExpertAccountPage />);
 
     expect(await screen.findByText(/Truy cập bị từ chối/i)).toBeInTheDocument();
-    expect(screen.queryByText(/1. Định Danh Khoa Học & Phê Duyệt Cấp Sở/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/1. Định Danh Khoa Học & Phê Duyệt Hội Viên Cố Vấn/i)).not.toBeInTheDocument();
   });
 
   it("render thành công 5 khối chức năng cho tài khoản VERIFIED_EXPERT", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -102,24 +102,25 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
     // Header & Hero banner
     expect(await screen.findByText("Tài Khoản Chuyên Gia KH&CN")).toBeInTheDocument();
     expect(screen.getByText("EXP-2026-0889")).toBeInTheDocument();
-    expect(screen.getByText("ĐÃ XÁC THỰC CẤP SỞ")).toBeInTheDocument();
+    expect(screen.getByText("ĐÃ XÁC THỰC BỞI BACLINK")).toBeInTheDocument();
 
-    // Khối 1: Định danh khoa học & Quyết định công nhận cấp Sở
-    expect(screen.getByText(/1. Định Danh Khoa Học & Phê Duyệt Cấp Sở/i)).toBeInTheDocument();
+    // Khối 1: Định danh khoa học & Quyết định công nhận BACLINK
+    expect(screen.getByText(/1. Định Danh Khoa Học & Phê Duyệt Hội Viên Cố Vấn/i)).toBeInTheDocument();
     expect(screen.getByText(/GS. TS. Nguyễn Văn An/i)).toBeInTheDocument();
-    expect(screen.getByText(/Viện Ứng Dụng Công Nghệ \(NacenTech\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sở KH&CN Thành phố Hà Nội/i)).toBeInTheDocument();
-    expect(screen.getByText(/88\/QĐ-SKHCN/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đại học Bách Khoa Hà Nội/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh \(BACLINK\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/1652\/QĐ-UBND/i)).toBeInTheDocument();
     expect(screen.getByText(/Nghị định 13\/2023\/NĐ-CP \(PDPD\)/i)).toBeInTheDocument();
 
     // Khối 2: Cài đặt tiếp nhận tư vấn Doanh nghiệp
     expect(screen.getByText(/2. Thiết Lập Sẵn Sàng Tiếp Nhận Tư Vấn Doanh Nghiệp/i)).toBeInTheDocument();
     expect(screen.getByText(/Đang Bật Tiếp Nhận/i)).toBeInTheDocument();
-    expect(screen.getByText("C.10 Chế biến thực phẩm")).toBeInTheDocument();
-    expect(screen.getByText("C.20 Hóa chất & Công nghệ sinh học")).toBeInTheDocument();
+    expect(screen.getByText("Ngành công nghiệp chuyên môn (BACLINK)")).toBeInTheDocument();
+    expect(screen.getByText("Điện tử, Bán dẫn & Thiết bị điện")).toBeInTheDocument();
+    expect(screen.getByText("Cơ khí chính xác & Khuôn mẫu")).toBeInTheDocument();
     expect(screen.getByText(/Cố vấn R&D và chuyển giao công nghệ dài hạn/i)).toBeInTheDocument();
-    expect(screen.getByText(/Thẩm định kỹ thuật bài toán DNNVV \(Deal Room 1-1\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Hội đồng đánh giá năng lực công nghệ TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Thẩm định kỹ thuật bài toán Doanh nghiệp Hội viên \(Deal Room 1-1\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hội đồng thẩm định kỹ thuật & dây chuyền nhà máy BACLINK/i)).toBeInTheDocument();
 
     // Khối 3: Thước đo hoàn thiện hồ sơ Completeness Engine
     expect(screen.getByText(/3. Điểm Số Hoàn Thiện Hồ Sơ \(Completeness Engine 5 Trụ Cột\)/i)).toBeInTheDocument();
@@ -136,14 +137,14 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
 
     // Khối 4: Bảo mật, Active Sessions & Zalo Mini App
     expect(screen.getByText(/4. Bảo Mật, Phiên Đăng Nhập & Liên Kết Zalo Mini App/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue("nguyenvanan@nacentech.gov.vn")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("covan.an@baclink.org.vn")).toBeInTheDocument();
     expect(screen.getByDisplayValue(/0912\*\*\*\*89 \(Đã bảo vệ PDPD\)/i)).toBeInTheDocument();
     expect(screen.getByText(/🔑 Đổi Mật Khẩu Tài Khoản/i)).toBeInTheDocument();
     expect(screen.getByText(/Định Danh Zalo Mini App/i)).toBeInTheDocument();
     expect(screen.getByText(/Đã liên kết Zalo cá nhân/i)).toBeInTheDocument();
     expect(screen.getByText(/Phiên Đăng Nhập Hiện Hoạt \(Active Sessions\)/i)).toBeInTheDocument();
     expect(screen.getByText(/MacBook Pro • Chrome 129/i)).toBeInTheDocument();
-    expect(screen.getByText(/iPhone 15 Pro • Zalo Mini App NacenTech/i)).toBeInTheDocument();
+    expect(screen.getByText(/iPhone 15 Pro • Zalo Mini App BACLINK/i)).toBeInTheDocument();
     expect(screen.getByText(/Đăng xuất tất cả thiết bị khác/i)).toBeInTheDocument();
 
     // Khối 5: Tùy chọn trải nghiệm & Cấu hình thông báo
@@ -160,7 +161,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("xử lý tương tác gạt toggle Sẵn sàng nhận tư vấn và gọi API updateMyExpertProfile", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -192,7 +193,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("xử lý tương tác hủy phiên đăng nhập thiết bị và đăng xuất tất cả thiết bị khác", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -201,13 +202,13 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
 
     render(<ExpertAccountPage />);
 
-    expect(await screen.findByText(/iPhone 15 Pro • Zalo Mini App NacenTech/i)).toBeInTheDocument();
+    expect(await screen.findByText(/iPhone 15 Pro • Zalo Mini App BACLINK/i)).toBeInTheDocument();
 
     // Bấm nút Hủy phiên thiết bị iPhone
     const terminateBtn = screen.getByText("Hủy phiên");
     fireEvent.click(terminateBtn);
 
-    expect(screen.queryByText(/iPhone 15 Pro • Zalo Mini App NacenTech/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/iPhone 15 Pro • Zalo Mini App BACLINK/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Đã đăng xuất phiên thiết bị thành công/i)).toBeInTheDocument();
 
     // Bấm nút Đăng xuất tất cả thiết bị khác
@@ -220,7 +221,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("xử lý lưu cài đặt trải nghiệm và hiển thị phản hồi người dùng", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -244,7 +245,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("hiển thị 'Chưa cập nhật' khi số điện thoại rỗng (PDPD không bịa số 0912****89)", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -263,7 +264,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("hiển thị nhãn phụ (Mô phỏng phiên thiết bị) tại khối Active Sessions", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -281,7 +282,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
 
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });
@@ -304,7 +305,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
   it("hiển thị UX State Error khi API thất bại và hỗ trợ nút Thử lại (Retry)", async () => {
     vi.spyOn(authClient, "getUser").mockReturnValue({
       id: "u-expert",
-      email: "nguyenvanan@nacentech.gov.vn",
+      email: "covan.an@baclink.org.vn",
       fullName: "GS. TSKH. Nguyễn Văn An",
       role: "VERIFIED_EXPERT",
     });

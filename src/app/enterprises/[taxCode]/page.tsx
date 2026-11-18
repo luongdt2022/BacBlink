@@ -322,10 +322,10 @@ export default function EnterpriseDetailPage() {
                     ? "bg-white text-teal-800 shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
-                title="Hồ sơ Doanh nghiệp Đổi mới sáng tạo (TT17 & TNI)"
+                title="Hồ sơ Doanh nghiệp Hội viên & Năng lực sản xuất"
               >
                 <FlaskConical className="w-3.5 h-3.5 text-teal-600" />
-                <span>DN ĐMST (TT17)</span>
+                <span>Doanh nghiệp Hội viên</span>
               </button>
 
               {viewMode !== "AUTO" && (
@@ -603,7 +603,7 @@ export default function EnterpriseDetailPage() {
                 </div>
 
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed">
-                  🛡️ <strong>Bảo mật thông tin:</strong> Toàn bộ luồng trao đổi được mã hóa và đối soát qua cổng giao tiếp Nacentwin, đảm bảo bảo vệ dữ liệu cá nhân (PDPD NĐ 13/2023).
+                  🛡️ <strong>Bảo mật thông tin:</strong> Toàn bộ luồng trao đổi được mã hóa và đối soát qua hệ thống kết nối bảo mật BACLINK, đảm bảo bảo vệ dữ liệu cá nhân (PDPD NĐ 13/2023).
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2">

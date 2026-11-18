@@ -31,12 +31,29 @@ import {
   UserX
 } from "lucide-react";
 import { API_BASE } from "@/lib/api-client";
-import { authClient } from "@/lib/auth-client";
+import { authClient, normalizePlatformRole } from "@/lib/auth-client";
 import { Async } from "@/components/ui/async";
 import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AdminKpiCardSkeleton } from "@/components/admin/admin-workspace-skeleton";
 import { AppButton } from "@/components/ui/design-system";
-import { resolveProvinceName, resolveRoleName, resolveSectorName } from "@/lib/label-resolver";
+
+const ROOT_ADMIN_EMAILS = new Set(["admin@baclink.org.vn", "admin@baclink.vn"]);
+
+function isProtectedRootAdmin(email?: string | null): boolean {
+  if (!email) return false;
+  return ROOT_ADMIN_EMAILS.has(email.trim().toLowerCase());
+}
+
+function resolveBaclink3TierRole(rawRole?: string | null): "ADMIN" | "ENTERPRISE" | "PUBLIC_USER" {
+  return normalizePlatformRole(rawRole);
+}
+
+function resolveBaclink3TierLabel(rawRole?: string | null): string {
+  const tier = resolveBaclink3TierRole(rawRole);
+  if (tier === "ADMIN") return "Ban Quản trị Hiệp hội";
+  if (tier === "ENTERPRISE") return "Doanh nghiệp Hội viên";
+  return "Thành viên công chúng";
+}
 
 interface UserItem {
   id: string;
@@ -170,8 +187,8 @@ export default function AdminUsersPage() {
   const filteredUsers = useMemo(() => {
     if (roleFilter === "all") return users;
     return users.filter((u) => {
-      const role = (u.platformRole || u.role || "").toUpperCase();
-      return role === roleFilter.toUpperCase();
+      const normalized = resolveBaclink3TierRole(u.platformRole || u.role);
+      return normalized === roleFilter.toUpperCase();
     });
   }, [users, roleFilter]);
 
@@ -179,40 +196,32 @@ export default function AdminUsersPage() {
   const activeCount = useMemo(() => users.filter((u) => u.isActive).length, [users]);
   const lockedCount = useMemo(() => users.filter((u) => !u.isActive).length, [users]);
   const officersCount = useMemo(
-    () =>
-      users.filter((u) => {
-        const r = (u.platformRole || u.role || "").toUpperCase();
-        return ["SUPER_ADMIN", "OPERATOR_ADMIN", "PROVINCIAL_ADMIN", "CLUSTER_ADMIN", "SECTOR_ADMIN"].includes(r);
-      }).length,
+    () => users.filter((u) => resolveBaclink3TierRole(u.platformRole || u.role) === "ADMIN").length,
     [users]
   );
 
-  // Role Badge Styling
+  // Role Badge Styling — 3-Tier BACLINK Standard
   const getRoleBadge = (roleCode?: string) => {
-    const r = (roleCode || "USER").toUpperCase();
-    switch (r) {
-      case "SUPER_ADMIN":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-800 border border-red-200">SUPER_ADMIN</span>;
-      case "OPERATOR_ADMIN":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-orange-100 text-orange-800 border border-orange-200">OPERATOR_ADMIN</span>;
-      case "PROVINCIAL_ADMIN":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800 border border-blue-200">PROVINCIAL_ADMIN</span>;
-      case "CLUSTER_ADMIN":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-100 text-cyan-800 border border-cyan-200">CLUSTER_ADMIN</span>;
-      case "SECTOR_ADMIN":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200">SECTOR_ADMIN</span>;
-      case "VERIFIED_EXPERT":
-      case "EXPERT":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-800 border border-indigo-200">VERIFIED_EXPERT</span>;
+    const tier = resolveBaclink3TierRole(roleCode);
+    switch (tier) {
+      case "ADMIN":
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-800 border border-red-200">
+            ADMIN
+          </span>
+        );
       case "ENTERPRISE":
-      case "INNOVATION_ENTITY":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">ENTERPRISE</span>;
-      case "BUYER":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-800 border border-purple-200">BUYER</span>;
-      case "SELLER":
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-100 text-teal-800 border border-teal-200">SELLER</span>;
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">
+            ENTERPRISE
+          </span>
+        );
       default:
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">{r}</span>;
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+            PUBLIC_USER
+          </span>
+        );
     }
   };
 
@@ -342,8 +351,10 @@ export default function AdminUsersPage() {
     }
 
     // BR-USER-02 Validation
-    if (lockUser.email.toLowerCase() === "admin@nacentech.gov.vn" && lockUser.isActive) {
-      setLockError("Quy tắc BR-USER-02: Không thể khóa hoặc vô hiệu hóa tài khoản Quản trị gốc");
+    if (isProtectedRootAdmin(lockUser.email) && lockUser.isActive) {
+      setLockError(
+        "Quy tắc BR-USER-02: Không thể khóa hoặc vô hiệu hóa tài khoản Quản trị gốc (admin@baclink.org.vn)"
+      );
       return;
     }
 
@@ -445,7 +456,7 @@ export default function AdminUsersPage() {
       <AdminBreadcrumbs
         items={[
           { label: "Quản Trị Hệ Thống", href: "/admin" },
-          { label: "Quản Lý Người Dùng Toàn Hệ Thống" },
+          { label: "Quản Lý Người Dùng BACLINK" },
         ]}
       />
 
@@ -454,14 +465,14 @@ export default function AdminUsersPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              Trung Tâm Quản Trị Người Dùng Toàn Quốc
+              Trung Tâm Quản Trị Người Dùng BACLINK
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
               User 360° Console
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            Giám sát, phân quyền Scoped RBAC và quản lý vòng đời tài khoản toàn diện trên 34 Tỉnh/Thành trọng điểm.
+            Giám sát, phân quyền RBAC 3 cấp (ADMIN, ENTERPRISE, PUBLIC_USER) và quản lý vòng đời tài khoản hội viên Hiệp hội BACLINK Bắc Ninh.
           </p>
         </div>
 
@@ -528,7 +539,7 @@ export default function AdminUsersPage() {
             />
             <AdminKpiCardSkeleton
               className="p-4 sm:p-4 dark:bg-white dark:border-slate-200"
-              title={<span className="text-xs font-semibold text-slate-500">Cán Bộ Quản Trị</span>}
+              title={<span className="text-xs font-semibold text-slate-500">Ban Quản Trị Hiệp Hội</span>}
               icon={
                 <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
@@ -575,13 +586,13 @@ export default function AdminUsersPage() {
 
             <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-xs">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500">Cán Bộ Quản Trị</span>
+                <span className="text-xs font-semibold text-slate-500">Ban Quản Trị Hiệp Hội</span>
                 <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
               </div>
               <div className="mt-2 text-2xl font-black text-amber-700">{officersCount}</div>
-              <p className="text-[11px] text-slate-400 mt-1">Tầng 0 & Tầng 1 Sở Tỉnh</p>
+              <p className="text-[11px] text-slate-400 mt-1">Quản trị viên tập trung (ADMIN)</p>
             </div>
           </>
         )}
@@ -601,22 +612,16 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          {/* Role Filter */}
+          {/* Role Filter — 3-Tier BACLINK Standard */}
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="form-control-sm rounded-lg font-semibold text-slate-700 bg-white w-full sm:w-auto"
           >
-            <option value="all">Tất cả 10 Vai Trò</option>
-            <option value="SUPER_ADMIN">SUPER_ADMIN (Quản trị tối cao)</option>
-            <option value="OPERATOR_ADMIN">OPERATOR_ADMIN (Vận hành sàn)</option>
-            <option value="PROVINCIAL_ADMIN">PROVINCIAL_ADMIN (Sở Tỉnh)</option>
-            <option value="CLUSTER_ADMIN">CLUSTER_ADMIN (Chuyên viên Sở)</option>
-            <option value="SECTOR_ADMIN">SECTOR_ADMIN (Trưởng ban ngành)</option>
-            <option value="VERIFIED_EXPERT">VERIFIED_EXPERT (Chuyên gia)</option>
-            <option value="ENTERPRISE">ENTERPRISE (Doanh nghiệp ĐMST)</option>
-            <option value="BUYER">BUYER (Bên Mua công nghệ)</option>
-            <option value="SELLER">SELLER (Bên Bán công nghệ)</option>
+            <option value="all">Tất cả 3 Cấp Vai Trò</option>
+            <option value="ADMIN">ADMIN (Ban Quản trị Hiệp hội)</option>
+            <option value="ENTERPRISE">ENTERPRISE (Doanh nghiệp Hội viên)</option>
+            <option value="PUBLIC_USER">PUBLIC_USER (Thành viên công chúng)</option>
           </select>
 
           {/* Status Filter */}
@@ -686,7 +691,7 @@ export default function AdminUsersPage() {
                     .join("")
                     .toUpperCase();
                   const isCurrent = u.id === currentUserId;
-                  const isRootAdmin = u.email.toLowerCase() === "admin@nacentech.gov.vn";
+                  const isRootAdmin = isProtectedRootAdmin(u.email);
 
                   return (
                     <tr key={u.id} className="hover:bg-blue-50/40 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-100 dark:border-slate-800/60 last:border-0">
@@ -732,25 +737,19 @@ export default function AdminUsersPage() {
                       <td className="py-3.5 px-4">
                         <div>{getRoleBadge(u.platformRole || u.role)}</div>
                         <div className="text-[10px] text-slate-400 mt-0.5">
-                          {resolveRoleName(u.platformRole || u.role)}
+                          {resolveBaclink3TierLabel(u.platformRole || u.role)}
                         </div>
                       </td>
 
                       {/* Scope */}
                       <td className="py-3.5 px-4">
                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                          {u.scopeType === "GLOBAL" && <Building className="w-3 h-3 text-red-500" />}
-                          {u.scopeType === "PROVINCE" && <MapPin className="w-3 h-3 text-cyan-600" />}
-                          {u.scopeType === "SECTOR" && <Tag className="w-3 h-3 text-amber-500" />}
-                          <span>{u.scopeType || "GLOBAL"}</span>
+                          <Building className="w-3 h-3 text-brand-600" />
+                          <span>GLOBAL</span>
                         </span>
-                        {u.scopeId && (
-                          <div className="text-[10px] text-slate-400 font-mono">
-                            {u.scopeType === "PROVINCE"
-                              ? `${resolveProvinceName(u.scopeId)} (${u.scopeId})`
-                              : u.scopeId}
-                          </div>
-                        )}
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          Toàn hệ thống BACLINK
+                        </div>
                       </td>
 
                       {/* Status Badges Chuẩn Hóa 3 Màu (Emerald, Amber, Rose) */}
@@ -966,9 +965,7 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex justify-between py-1.5 border-b border-slate-100">
                       <span className="text-slate-500">Phạm Vi Thẩm Quyền</span>
-                      <span className="font-bold text-slate-800">
-                        {drawerUser.scopeType || "GLOBAL"} {drawerUser.scopeId ? `(${drawerUser.scopeId})` : ""}
-                      </span>
+                      <span className="font-bold text-slate-800">GLOBAL (Toàn hệ thống BACLINK)</span>
                     </div>
                     <div className="flex justify-between py-1.5 border-b border-slate-100">
                       <span className="text-slate-500">Trạng Thái Tài Khoản</span>
@@ -992,7 +989,7 @@ export default function AdminUsersPage() {
                   {drawerProfile && (
                     <div className="space-y-4 pt-2">
                       <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
-                        Dữ Liệu Liên Kết (Techmart & ĐMST)
+                        Dữ Liệu Liên Kết Hội Viên
                       </h4>
 
                       <div className="space-y-2">
@@ -1123,7 +1120,7 @@ export default function AdminUsersPage() {
                   value={editOrg}
                   onChange={(e) => setEditOrg(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  placeholder="Sở KH&CN hoặc Tên Doanh nghiệp"
+                  placeholder="KCN hoặc Tên Doanh nghiệp"
                 />
               </div>
 
@@ -1329,7 +1326,7 @@ export default function AdminUsersPage() {
                   value={createEmail}
                   onChange={(e) => setCreateEmail(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  placeholder="canbo@sokhcn.gov.vn hoặc user@dn.vn"
+                  placeholder="hoivien@doanhnghiep.vn hoặc quanly@baclink.org.vn"
                   required
                 />
               </div>
@@ -1388,7 +1385,7 @@ export default function AdminUsersPage() {
                   value={createOrg}
                   onChange={(e) => setCreateOrg(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-blue-600 focus:outline-none"
-                  placeholder="Sở KH&CN TP.HCM"
+                  placeholder="Công ty CP / KCN VSIP Bắc Ninh"
                 />
               </div>
 

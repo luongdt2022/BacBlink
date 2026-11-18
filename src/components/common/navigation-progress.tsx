@@ -7,7 +7,7 @@ const FAIL_SAFE_TIMEOUT_MS = 15000;
 const COMPLETE_HIDE_DELAY_MS = 250;
 
 /**
- * Top Navigation Progress Bar cho toàn bộ dự án NacenTwin.
+ * Top Navigation Progress Bar cho toàn bộ cổng thông tin BACLINK.
  * Kích hoạt đồng bộ tức thì (<50ms) khi người dùng click liên kết nội bộ.
  */
 function NavigationProgressInner() {

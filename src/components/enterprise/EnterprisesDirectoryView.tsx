@@ -44,11 +44,11 @@ import { brokerageApi } from "@/services/api/brokerage";
 
 const SUBJECT_TYPES = [
   { code: "", label: "Tất cả loại hình chủ thể" },
-  { code: "ENTERPRISE", label: "Doanh nghiệp thường" },
-  { code: "INNOVATIVE_ENTERPRISE", label: "Doanh nghiệp ĐMST" },
+  { code: "ENTERPRISE", label: "Doanh nghiệp Sản xuất" },
+  { code: "INNOVATIVE_ENTERPRISE", label: "Doanh nghiệp Hội viên" },
   { code: "COOPERATIVE", label: "Hợp tác xã" },
   { code: "INSTITUTE_UNIVERSITY", label: "Viện nghiên cứu / Trường ĐH" },
-  { code: "HOUSEHOLD_BUSINESS", label: "Hộ kinh doanh cá thể" },
+  { code: "HOUSEHOLD_BUSINESS", label: "Đơn vị cung ứng phụ trợ" },
 ];
 
 const TNI_LEVELS = [
@@ -59,20 +59,11 @@ const TNI_LEVELS = [
 ];
 
 const INNOVATION_TIERS = [
-  { code: "", label: "Tất cả mức độ ĐMST" },
-  { code: "LEADING", label: "⭐️ Dẫn đầu (≥ 75 điểm)" },
-  { code: "DEVELOPING", label: "🥈 Đang phát triển (50 - 74 điểm)" },
-  { code: "POTENTIAL", label: "🥉 Tiềm năng (< 50 điểm)" },
-  { code: "UNRATED", label: "⚪ Chưa đánh giá" },
-];
-
-const TT17_LEVELS = [
-  { code: "", label: "Tất cả trình độ công nghệ" },
-  { code: "TIEN_TIEN", label: "🚀 Tiên tiến (≥ 75đ & T_ĐB ≥ 0.65)" },
-  { code: "TRUNG_BINH_TIEN_TIEN", label: "⚡ Trung bình tiên tiến (60 - 74đ)" },
-  { code: "TRUNG_BINH", label: "⚙️ Trung bình (35 - 59đ)" },
-  { code: "LAC_HAU", label: "⚠️ Lạc hậu (< 35đ)" },
-  { code: "UNRATED", label: "⚪ Chưa đánh giá" },
+  { code: "", label: "Tất cả xếp hạng năng lực" },
+  { code: "LEADING", label: "⭐️ Hạng Vàng (≥ 75 điểm)" },
+  { code: "DEVELOPING", label: "🥈 Hạng Bạc (50 - 74 điểm)" },
+  { code: "POTENTIAL", label: "🥉 Hạng Đồng (< 50 điểm)" },
+  { code: "UNRATED", label: "⚪ Chưa xếp hạng" },
 ];
 
 
@@ -105,7 +96,7 @@ function getPaginationItems(current: number, total: number): (number | string)[]
 }
 
 /**
- * Chuẩn hóa nhãn hiển thị ĐMST, TT17 và TNI dùng chung cho cả Lưới 2 cột và Bảng xếp hạng.
+ * Chuẩn hóa nhãn hiển thị xếp hạng năng lực và TNI dùng chung cho cả Lưới 2 cột và Bảng xếp hạng.
  */
 function getEnterpriseDisplayMeta(ent: EnterpriseDirectoryItem) {
   const score = ent.innovationScore ?? 0;
@@ -113,35 +104,23 @@ function getEnterpriseDisplayMeta(ent: EnterpriseDirectoryItem) {
 
   if (ent.innovationTier === "LEADING" || score >= 75) {
     innovationBadge = {
-      label: score > 0 ? `⭐ Vàng ĐMST · ${score.toFixed(1)}đ` : "⭐ Vàng ĐMST",
+      label: score > 0 ? `⭐ Hạng Vàng · ${score.toFixed(1)}đ` : "⭐ Hạng Vàng",
       className:
         "bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800",
     };
   } else if (ent.innovationTier === "DEVELOPING" || (score >= 50 && score < 75)) {
     innovationBadge = {
-      label: score > 0 ? `🥈 Bạc ĐMST · ${score.toFixed(1)}đ` : "🥈 Bạc ĐMST",
+      label: score > 0 ? `🥈 Hạng Bạc · ${score.toFixed(1)}đ` : "🥈 Hạng Bạc",
       className:
         "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700",
     };
   } else if (ent.innovationTier === "POTENTIAL" || (score > 0 && score < 50)) {
     innovationBadge = {
-      label: score > 0 ? `🥉 Đồng ĐMST · ${score.toFixed(1)}đ` : "🥉 Đồng ĐMST",
+      label: score > 0 ? `🥉 Hạng Đồng · ${score.toFixed(1)}đ` : "🥉 Hạng Đồng",
       className:
         "bg-orange-50 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300 border-orange-300 dark:border-orange-800",
     };
   }
-
-  const syncSuffix = ent.tt17SyncCoefficient ? ` (T_ĐB: ${ent.tt17SyncCoefficient.toFixed(2)})` : "";
-  const tt17Label =
-    ent.tt17Classification === "TIEN_TIEN"
-      ? `Tiên tiến${syncSuffix}`
-      : ent.tt17Classification === "TRUNG_BINH_TIEN_TIEN"
-      ? `TB Tiên tiến${syncSuffix}`
-      : ent.tt17Classification === "TRUNG_BINH"
-      ? `Trung bình${syncSuffix}`
-      : ent.tt17Classification === "LAC_HAU"
-      ? "Lạc hậu"
-      : null;
 
   const tniLabel =
     ent.tniClassification === "VERY_HIGH"
@@ -152,13 +131,12 @@ function getEnterpriseDisplayMeta(ent: EnterpriseDirectoryItem) {
       ? "Trung bình (50-74)"
       : "Cơ bản";
 
-  return { innovationBadge, tt17Label, tniLabel };
+  return { innovationBadge, tniLabel };
 }
 
 export interface EnterprisesDirectoryProps {
   initialSortBy?: string;
   initialInnovationTier?: string;
-  initialTt17Classification?: string;
   pageTitle?: string;
   pageSubtitle?: string;
   badgeLabel?: string;
@@ -168,7 +146,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
   const {
     initialSortBy = "tni_desc",
     initialInnovationTier = "",
-    initialTt17Classification = "",
     pageTitle,
     pageSubtitle,
     badgeLabel,
@@ -211,7 +188,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
   const [subjectType, setSubjectType] = useState("");
   const [tniClassification, setTniClassification] = useState("");
   const [innovationTier, setInnovationTier] = useState(initialInnovationTier);
-  const [tt17Classification, setTt17Classification] = useState(initialTt17Classification);
   const [sortBy, setSortBy] = useState(initialSortBy);
   const [page, setPage] = useState(1);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -238,7 +214,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
       subjectType?: string;
       tniClassification?: string;
       innovationTier?: string;
-      tt17Classification?: string;
     }
   ) => {
     setLoading(true);
@@ -250,7 +225,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     const activeSubjectType = filterOverrides?.subjectType !== undefined ? filterOverrides.subjectType : subjectType;
     const activeTni = filterOverrides?.tniClassification !== undefined ? filterOverrides.tniClassification : tniClassification;
     const activeInnovationTier = filterOverrides?.innovationTier !== undefined ? filterOverrides.innovationTier : innovationTier;
-    const activeTt17 = filterOverrides?.tt17Classification !== undefined ? filterOverrides.tt17Classification : tt17Classification;
     const activeSort = sortOverride !== undefined ? sortOverride : sortBy;
 
     try {
@@ -261,7 +235,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
         subjectType: activeSubjectType || undefined,
         tniClassification: activeTni || undefined,
         innovationTier: activeInnovationTier || undefined,
-        tt17Classification: activeTt17 || undefined,
         sortBy: activeSort,
         page: pageTarget,
         pageSize: 9,
@@ -287,7 +260,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     const urlSubjectType = sp.get("subjectType") || "";
     const urlTni = sp.get("tniClassification") || "";
     const urlInnovationTier = sp.get("innovationTier") || initialInnovationTier || "";
-    const urlTt17 = sp.get("tt17Classification") || initialTt17Classification || "";
     const urlSort = sp.get("sortBy") || initialSortBy || "tni_desc";
 
     if (urlQ) setQ(urlQ);
@@ -296,7 +268,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     if (urlSubjectType) setSubjectType(urlSubjectType);
     if (urlTni) setTniClassification(urlTni);
     if (urlInnovationTier) setInnovationTier(urlInnovationTier);
-    if (urlTt17) setTt17Classification(urlTt17);
     if (urlSort) setSortBy(urlSort);
 
     loadData(1, urlSort, {
@@ -306,7 +277,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
       subjectType: urlSubjectType,
       tniClassification: urlTni,
       innovationTier: urlInnovationTier,
-      tt17Classification: urlTt17,
     });
   }, []);
 
@@ -325,7 +295,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
       if (subjectType) sp.set("subjectType", subjectType);
       if (tniClassification) sp.set("tniClassification", tniClassification);
       if (innovationTier) sp.set("innovationTier", innovationTier);
-      if (tt17Classification) sp.set("tt17Classification", tt17Classification);
       if (sortBy && sortBy !== "tni_desc") sp.set("sortBy", sortBy);
 
       const qs = sp.toString();
@@ -334,7 +303,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     }
 
     loadData(1);
-  }, [province, sectorCode, subjectType, tniClassification, innovationTier, tt17Classification, sortBy]);
+  }, [province, sectorCode, subjectType, tniClassification, innovationTier, sortBy]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -356,7 +325,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     setSubjectType("");
     setTniClassification("");
     setInnovationTier("");
-    setTt17Classification("");
     setSortBy("tni_desc");
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", window.location.pathname);
@@ -368,7 +336,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
       subjectType: "",
       tniClassification: "",
       innovationTier: "",
-      tt17Classification: ""
     });
   };
 
@@ -409,14 +376,13 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
-  const hasActiveFilters = Boolean(q || province || sectorCode || subjectType || tniClassification || innovationTier || tt17Classification);
+  const hasActiveFilters = Boolean(q || province || sectorCode || subjectType || tniClassification || innovationTier);
 
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 pb-20">
       {/* Hero Header */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <section className="relative overflow-hidden workspace-banner text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold uppercase tracking-wider mb-2.5">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
@@ -458,24 +424,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
               )}
             </form>
           </div>
-
-          {/* Right Callout: Khảo Sát ĐMST */}
-          <div className="lg:w-72 xl:w-80 shrink-0 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 space-y-2.5">
-            <div className="flex items-center gap-2 text-xs font-bold text-brand-100 uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 shrink-0 text-brand-200" />
-              <span>Chưa có Điểm ĐMST?</span>
-            </div>
-            <p className="text-xs text-white/85 leading-relaxed">
-              Hoàn thành khảo sát 43 câu (15 phút) để xếp hạng năng lực và hiển thị trên CSDL Quốc gia.
-            </p>
-            <Link
-              href="/khao-sat-dmst"
-              className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-brand-700 font-bold text-xs transition shadow-sm"
-            >
-              <span>Làm Khảo Sát Ngay (15 phút)</span>
-              <ChevronRight className="w-3.5 h-3.5 text-brand-700" />
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -512,10 +460,10 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                 />
               </div>
 
-              {/* Lọc Lĩnh Vực TT17 */}
+              {/* Lọc Ngành Sản Xuất Công Nghiệp */}
               <div>
                 <label htmlFor="filter-sector" className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Lĩnh Vực Công Nghệ TT17
+                  Ngành Sản Xuất Công Nghiệp
                 </label>
                 <select
                   id="filter-sector"
@@ -526,10 +474,10 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                 >
                   <option value="">
                     {sectorsLoading
-                      ? "Đang tải danh mục lĩnh vực..."
+                      ? "Đang tải danh mục ngành..."
                       : sectorsError
-                      ? "Lỗi tải lĩnh vực (chọn tất cả)"
-                      : "Tất cả lĩnh vực công nghệ"}
+                      ? "Lỗi tải danh mục ngành (chọn tất cả)"
+                      : "Tất cả ngành sản xuất"}
                   </option>
                   {sectors.map((s) => (
                     <option key={s.code} value={s.code}>{s.name}</option>
@@ -556,7 +504,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
               {/* Lọc Phân Tầng TNI */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Chỉ Số Nhu Cầu ĐMST (TNI)
+                  Chỉ Số Nhu Cầu Công Nghệ (TNI)
                 </label>
                 <select
                   value={tniClassification}
@@ -569,26 +517,10 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                 </select>
               </div>
 
-              {/* Lọc Trình Độ Công Nghệ TT17 */}
+              {/* Lọc Xếp Hạng Năng Lực */}
               <div>
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Trình Độ Công Nghệ (TT17)
-                </label>
-                <select
-                  value={tt17Classification}
-                  onChange={(e) => setTt17Classification(e.target.value)}
-                  className="form-control w-full text-xs h-9 py-1.5"
-                >
-                  {TT17_LEVELS.map((lvl) => (
-                    <option key={lvl.code} value={lvl.code}>{lvl.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Lọc Mức Độ ĐMST 8 Nhóm */}
-              <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  Mức Độ ĐMST (Thang 100đ)
+                  Xếp Hạng Năng Lực (Thang 100đ)
                 </label>
                 <select
                   value={innovationTier}
@@ -606,10 +538,10 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
             <div className="bg-gradient-to-br from-brand-50 to-brand-100/50 dark:from-slate-900 dark:to-slate-800 rounded-2xl border border-brand-200/80 dark:border-slate-700 p-5 space-y-3">
               <div className="flex items-center gap-2 text-brand-900 dark:text-brand-300 font-bold text-sm">
                 <TrendingUp className="w-4 h-4 text-brand-600 dark:text-brand-400" />
-                Thống Kê Doanh Nghiệp ĐMST
+                Thống Kê Doanh Nghiệp Hội Viên
               </div>
               <p className="text-xs text-brand-700 dark:text-slate-300 leading-relaxed">
-                Xem báo cáo phân tích biểu đồ chuyên sâu về phân bố địa bàn, cơ cấu ngành nghề và rào cản công nghệ.
+                Xem báo cáo phân tích biểu đồ chuyên sâu về phân bố KCN, cơ cấu ngành sản xuất và nhu cầu liên kết chuỗi cung ứng.
               </p>
               <Link
                 href="/admin/enterprises/dashboard"
@@ -643,8 +575,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     className="form-control text-xs py-1 px-2.5 h-8 font-medium bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-1 focus:ring-brand-500"
                   >
                     <option value="tni_desc">Chỉ số TNI cao nhất</option>
-                    <option value="tt17_desc">Điểm trình độ TT17 cao nhất</option>
-                    <option value="innovation_desc">Điểm ĐMST cao nhất</option>
+                    <option value="innovation_desc">Điểm năng lực cao nhất</option>
                     <option value="ip_desc">Nhiều sáng chế / SHTT nhất</option>
                     <option value="name_asc">Tên doanh nghiệp (A → Z)</option>
                     <option value="name_desc">Tên doanh nghiệp (Z → A)</option>
@@ -746,14 +677,6 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                   >
                     Xem tất cả doanh nghiệp
                   </button>
-                  {tt17Classification && (
-                    <button
-                      onClick={() => setTt17Classification("")}
-                      className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition border border-slate-300 dark:border-slate-700"
-                    >
-                      Xóa bộ lọc TT17
-                    </button>
-                  )}
                 </div>
               </div>
             )}
@@ -762,7 +685,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
             {!loading && !error && data && data.items.length > 0 && viewMode === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {data.items.map((ent) => {
-                  const { innovationBadge, tt17Label, tniLabel } = getEnterpriseDisplayMeta(ent);
+                  const { innovationBadge, tniLabel } = getEnterpriseDisplayMeta(ent);
                   const openConnect = () => {
                     setConnectModalEnt(ent);
                     setConnectResult(null);
@@ -777,7 +700,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                       className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-lg transition flex flex-col justify-between p-5 relative group"
                     >
                       <div className="space-y-3.5">
-                        {/* TẦNG 1: Định danh & 1 Huy hiệu ĐMST nổi bật */}
+                        {/* TẦNG 1: Định danh & 1 Huy hiệu Hội viên nổi bật */}
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 min-w-0 flex-1">
                             <EnterpriseAvatar
@@ -879,20 +802,22 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                         >
                           <div>
                             <div className="text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                              Trình độ TT17
+                              Điểm Năng Lực
                             </div>
                             <div className="flex items-baseline gap-1 mt-0.5">
                               <span className="text-base font-extrabold text-sky-700 dark:text-sky-400">
-                                {ent.tt17Score !== undefined && ent.tt17Score !== null
-                                  ? ent.tt17Score.toFixed(1)
+                                {ent.innovationScore !== undefined && ent.innovationScore !== null
+                                  ? ent.innovationScore.toFixed(1)
                                   : "--"}
                               </span>
                               <span className="text-xs text-slate-400">/100</span>
                             </div>
                             <div className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">
-                              {tt17Label ?? (
+                              {innovationBadge ? (
+                                <span>{innovationBadge.label.split("·")[0].trim()}</span>
+                              ) : (
                                 <span className="text-slate-400 dark:text-slate-500 font-normal">
-                                  Chưa đánh giá TT17
+                                  Hội viên tiêu chuẩn
                                 </span>
                               )}
                             </div>
@@ -982,8 +907,8 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                       <tr>
                         <th className="px-4 py-3">Doanh Nghiệp &amp; Định Danh</th>
                         <th className="px-4 py-3">Địa Bàn &amp; Ngành</th>
-                        <th className="px-4 py-3">Xếp Hạng ĐMST</th>
-                        <th className="px-4 py-3 text-right">TT17</th>
+                        <th className="px-4 py-3">Xếp Hạng Năng Lực</th>
+                        <th className="px-4 py-3 text-right">Điểm Năng Lực</th>
                         <th className="px-4 py-3 text-right">TNI</th>
                         <th className="px-4 py-3 text-right">Thao Tác</th>
                       </tr>
@@ -1023,11 +948,11 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                                   {innovationBadge.label}
                                 </span>
                               ) : (
-                                <span className="text-slate-400">Chưa đánh giá</span>
+                                <span className="text-slate-400">Hội viên tiêu chuẩn</span>
                               )}
                             </td>
                             <td className="px-4 py-3.5 text-right font-extrabold text-sky-700 dark:text-sky-400">
-                              {ent.tt17Score !== undefined && ent.tt17Score !== null ? ent.tt17Score.toFixed(1) : "--"}
+                              {ent.innovationScore !== undefined && ent.innovationScore !== null ? ent.innovationScore.toFixed(1) : "--"}
                             </td>
                             <td className="px-4 py-3.5 text-right font-extrabold text-brand-700 dark:text-brand-400">
                               {ent.tniScore !== undefined && ent.tniScore !== null ? ent.tniScore.toFixed(1) : "--"}
@@ -1144,7 +1069,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                 <div>
                   <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-base">Đã Ghi Nhận Đề Xuất Kết Nối!</h4>
                   <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-1">
-                    Yêu cầu kết nối của bạn đã được lưu vào hệ thống điều phối Nacentwin.
+                    Yêu cầu kết nối của bạn đã được lưu vào hệ thống kết nối bảo mật BACLINK.
                   </p>
                 </div>
 
@@ -1198,7 +1123,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     required
                     value={connectOrgName}
                     onChange={(e) => setConnectOrgName(e.target.value)}
-                    placeholder="VD: Viện Công Nghệ Nacentech, Công ty CP Đầu Tư..."
+                    placeholder="VD: Công ty CP Công nghiệp Bắc Ninh, Công ty CP Đầu Tư..."
                     className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
@@ -1212,7 +1137,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     required
                     value={connectContact}
                     onChange={(e) => setConnectContact(e.target.value)}
-                    placeholder="VD: contact@nacentech.vn / 0912345678"
+                    placeholder="VD: contact@baclink.org.vn / 0912345678"
                     className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>

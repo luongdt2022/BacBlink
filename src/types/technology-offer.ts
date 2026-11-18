@@ -253,7 +253,91 @@ export interface IndustryDefinition {
   defaultSpecs: Array<{ specName: string; unit?: string; placeholder?: string }>;
 }
 
+export const BACLINK_SECTORS: IndustryDefinition[] = [
+  {
+    code: "IND_ELEC",
+    name: "Điện tử, Bán dẫn & Thiết bị điện",
+    defaultSpecs: [
+      { specName: "Điện áp hoạt động định mức", unit: "V", placeholder: "Ví dụ: 220VAC / 24VDC" },
+      { specName: "Chuẩn kiểm soát tĩnh điện / Phòng sạch", unit: "", placeholder: "ESD ANSI/ESD S20.20, Class 1000" },
+      { specName: "Độ chính xác lắp ráp SMT / PCB", unit: "mm", placeholder: "Ví dụ: ± 0.025" },
+      { specName: "Chuẩn giao tiếp công nghiệp", unit: "", placeholder: "EtherCAT, RS485, Modbus TCP" }
+    ]
+  },
+  {
+    code: "IND_MECH",
+    name: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy",
+    defaultSpecs: [
+      { specName: "Dung sai gia công cơ khí chính xác", unit: "mm", placeholder: "Ví dụ: ± 0.005" },
+      { specName: "Kích thước phôi / hành trình máy tối đa", unit: "mm", placeholder: "Ví dụ: 1200 x 800 x 600" },
+      { specName: "Vật liệu gia công tiêu chuẩn", unit: "", placeholder: "SKD11, SUS304, Nhôm A6061, Hợp kim" },
+      { specName: "Tiêu chuẩn quản lý chất lượng", unit: "", placeholder: "ISO 9001:2015, IATF 16949" }
+    ]
+  },
+  {
+    code: "IND_AUTO",
+    name: "Tự động hóa, Robot & Smart Factory",
+    defaultSpecs: [
+      { specName: "Số bậc tự do / Trục điều khiển", unit: "trục", placeholder: "Ví dụ: 6 trục" },
+      { specName: "Độ lặp lại vị trí (Repeatability)", unit: "mm", placeholder: "Ví dụ: ± 0.02" },
+      { specName: "Tải trọng đầu cánh tay / băng tải", unit: "kg", placeholder: "Ví dụ: 25" },
+      { specName: "Chuẩn tích hợp PLC / SCADA / MES", unit: "", placeholder: "OPC-UA, Profinet, Ethernet/IP" }
+    ]
+  },
+  {
+    code: "IND_PLAS",
+    name: "Nhựa kỹ thuật, Bao bì & Hóa chất công nghiệp",
+    defaultSpecs: [
+      { specName: "Lực kẹp máy ép phun / Công suất đùn", unit: "tấn", placeholder: "Ví dụ: 180 - 850" },
+      { specName: "Vật liệu nhựa kỹ thuật hỗ trợ", unit: "", placeholder: "PC, ABS, PA66, POM, PBT chống cháy" },
+      { specName: "Tiêu chuẩn RoHS / REACH / UL", unit: "", placeholder: "UL94 V-0, RoHS 2.0" },
+      { specName: "Năng lực sản lượng cung ứng", unit: "tấn/tháng", placeholder: "Ví dụ: 150" }
+    ]
+  },
+  {
+    code: "IND_MAT",
+    name: "Vật liệu mới & Công nghiệp hỗ trợ",
+    defaultSpecs: [
+      { specName: "Cường độ bền kéo / chịu lực", unit: "MPa", placeholder: "Ví dụ: ≥ 450" },
+      { specName: "Nhiệt độ làm việc liên tục", unit: "°C", placeholder: "Ví dụ: -40 đến +220" },
+      { specName: "Độ tinh khiết / Thành phần hợp kim", unit: "%", placeholder: "Ví dụ: 99.95" },
+      { specName: "Tiêu chuẩn kiểm định kỹ thuật", unit: "", placeholder: "JIS, ASTM, DIN" }
+    ]
+  },
+  {
+    code: "IND_IT",
+    name: "Công nghệ thông tin, Phần mềm công nghiệp & MES/ERP",
+    defaultSpecs: [
+      { specName: "Giao thức kết nối IIoT hỗ trợ", unit: "", placeholder: "MQTT, OPC-UA, REST API, Modbus" },
+      { specName: "Thời gian phản hồi thời gian thực", unit: "ms", placeholder: "Ví dụ: < 50" },
+      { specName: "Số dây chuyền / thiết bị kết nối", unit: "nodes", placeholder: "Ví dụ: 5.000" },
+      { specName: "Mô hình triển khai hạ tầng", unit: "", placeholder: "On-Premise Nhà máy / Private Cloud" }
+    ]
+  },
+  {
+    code: "IND_GREEN",
+    name: "Công nghiệp xanh, Năng lượng sạch & ESG",
+    defaultSpecs: [
+      { specName: "Hiệu suất xử lý / tiết kiệm năng lượng", unit: "%", placeholder: "Ví dụ: ≥ 30" },
+      { specName: "Công suất hệ thống định mức", unit: "kWp / m³", placeholder: "Ví dụ: 1000 kWp hoặc 500 m³/ngày" },
+      { specName: "Mức giảm phát thải CO2 tương đương", unit: "tấn/năm", placeholder: "Ví dụ: 450" },
+      { specName: "Quy chuẩn môi trường & ESG", unit: "", placeholder: "ISO 14001, ISO 50001, QCVN Cột A" }
+    ]
+  },
+  {
+    code: "IND_LOG",
+    name: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng",
+    defaultSpecs: [
+      { specName: "Tốc độ luân chuyển / phân loại hàng", unit: "pallet/giờ", placeholder: "Ví dụ: 120" },
+      { specName: "Tải trọng lưu trữ kệ / xe tự hành AGV", unit: "kg", placeholder: "Ví dụ: 1500" },
+      { specName: "Độ chính xác quản lý tồn kho WMS/RFID", unit: "%", placeholder: "Ví dụ: 99.9" },
+      { specName: "Chuẩn kết nối chuỗi cung ứng", unit: "", placeholder: "EDI, Barcode GS1, RFID UHF" }
+    ]
+  }
+];
+
 export const TT17_SECTORS: IndustryDefinition[] = [
+  ...BACLINK_SECTORS,
   {
     code: "LV01",
     name: "Nông nghiệp",
@@ -346,7 +430,7 @@ export const TT17_SECTORS: IndustryDefinition[] = [
   },
   {
     code: "LV17",
-    name: "Khoa học – công nghệ – đổi mới sáng tạo",
+    name: "Công nghệ tổng hợp & Kỹ thuật công nghiệp",
     defaultSpecs: [
       { specName: "Cấp độ hoàn thiện công nghệ (TRL)", unit: "TRL", placeholder: "Ví dụ: TRL 6 - 9" },
       { specName: "Tình trạng xác lập quyền SHTT", unit: "", placeholder: "Bằng sáng chế / GPHI" },

@@ -126,7 +126,7 @@ function ExpertConsultationsContent() {
         canJoinMeeting: false,
         meetingCountdownText: "Sẽ mở trước giờ họp 15 phút",
         preReadMaterials: acceptingTicket.preReadMaterials || [
-          { name: "Phieu_khao_sat_nhu_cau_TNI.pdf", size: "1.2 MB", url: "#" },
+          { name: "Ban_ve_yeu_cau_ky_thuat_CNC.pdf", size: "1.2 MB", url: "#" },
         ],
       };
 
@@ -215,7 +215,7 @@ function ExpertConsultationsContent() {
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-body text-amber-900 dark:text-amber-200 space-y-1">
             <h4 className="font-bold text-label">
-              Tài Khoản Đang Chờ Phê Duyệt Cố Vấn BACLINK
+              Hồ Sơ Đang Chờ Ban Quản Trị BACLINK Phê Duyệt
             </h4>
             <p className="text-caption">
               Hồ sơ Cố vấn Kỹ thuật của bạn đang trong tiến trình thẩm định tại Hiệp hội BACLINK. Bạn có thể xem danh sách lời mời tư vấn nhưng các chức năng ký biên bản nghiệm thu (MoA) và nhận ủy thác tư vấn tạm thời bị khóa cho đến khi được cấp chứng nhận chính thức.
@@ -424,7 +424,7 @@ function ExpertConsultationsContent() {
                                 {ticket.advisoryFeeVnd?.toLocaleString("vi-VN")} VNĐ
                               </span>
                               <span className="text-caption text-emerald-700 dark:text-emerald-400 font-bold block">
-                                ({ticket.feePayer || "Quỹ ĐMST chi trả"})
+                                ({ticket.feePayer || "Quỹ Phát triển Công nghiệp BACLINK chi trả"})
                               </span>
                             </>
                           ) : (
@@ -657,7 +657,7 @@ function ExpertConsultationsContent() {
                         ) : ticket.disbursementStatus === "AUDITING" ? (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-caption font-bold border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300">
                             <Clock className="w-3.5 h-3.5" />
-                            <span>ĐANG ĐỐI SOÁT HỒ SƠ QUỸ ĐMST</span>
+                            <span>ĐANG ĐỐI SOÁT HỒ SƠ THÙ LAO BACLINK</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-caption font-bold border border-slate-200 dark:bg-slate-800 dark:text-slate-300">
@@ -874,7 +874,7 @@ function ExpertConsultationsContent() {
             </div>
 
             <p className="text-caption text-slate-600 dark:text-slate-400">
-              Theo Quy chế Hệ sinh thái NacenTech, Chuyên gia từ chối lời mời cần nêu rõ lý do để hệ sinh thái điều phối chuyên gia khác phù hợp hơn:
+              Theo Quy chế Hoạt động Hiệp hội BACLINK, Cố vấn Kỹ thuật từ chối lời mời cần nêu rõ lý do để hệ thống điều phối cố vấn khác phù hợp hơn:
             </p>
 
             <form onSubmit={handleConfirmReject} className="space-y-3.5">
@@ -903,7 +903,7 @@ function ExpertConsultationsContent() {
                   htmlFor="rejection-note-input"
                   className="block text-caption font-bold text-slate-700 dark:text-slate-300 mb-1"
                 >
-                  Chi tiết lý do từ chối (bắt buộc $\ge 10$ ký tự) *
+                  Chi tiết lý do từ chối (bắt buộc &ge; 10 ký tự) *
                 </label>
                 <textarea
                   id="rejection-note-input"

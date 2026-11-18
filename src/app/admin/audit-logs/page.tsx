@@ -20,13 +20,42 @@ import { AdminBreadcrumbs } from "@/components/admin/admin-breadcrumbs";
 import { AppButton } from "@/components/ui/design-system";
 import { Async } from "@/components/ui/async";
 import { API_BASE } from "@/lib/api-client";
-import { authClient } from "@/lib/auth-client";
+import { authClient, normalizePlatformRole } from "@/lib/auth-client";
 import {
   resolveProvinceName,
-  resolveRoleName,
   resolveActionBadge,
   resolveRequestTypeLabel,
 } from "@/lib/label-resolver";
+
+function formatAuditRoleLabel(role?: string | null): string {
+  const tier = normalizePlatformRole(role);
+  if (tier === "ADMIN") return "Ban Quản trị Hiệp hội";
+  if (tier === "ENTERPRISE") return "Doanh nghiệp Hội viên";
+  return "Thành viên công chúng";
+}
+
+function formatAuditActionBadge(action?: string | null): { label: string; badgeClass: string } {
+  const act = (action || "").trim().toUpperCase();
+  if (act === "OVERRIDE_APPROVE" || act === "OVERRIDE") {
+    return {
+      label: "Phê Duyệt Đặc Cách",
+      badgeClass:
+        "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-extrabold",
+    };
+  }
+  return resolveActionBadge(action);
+}
+
+function formatAuditTargetType(type?: string | null): string {
+  return resolveRequestTypeLabel(type)
+    .replace(/Doanh Nghiệp ĐMST/gi, "Doanh Nghiệp Hội Viên")
+    .replace(/ĐMST/gi, "Hội Viên");
+}
+
+function formatAuditLocation(code?: string | null): string {
+  if (!code) return "Bắc Ninh";
+  return resolveProvinceName(code).replace(/^(Sở Khoa học và Công nghệ|Sở KH&CN)\s*/i, "").trim();
+}
 
 export interface AuditLogRecord {
   id: string;
@@ -161,9 +190,9 @@ export default function AdminAuditLogsPage() {
       sanitizeCsvCell(l.id),
       sanitizeCsvCell(new Date(l.createdAt).toLocaleString("vi-VN")),
       sanitizeCsvCell(l.actorName),
-      sanitizeCsvCell(resolveRoleName(l.actorRole)),
-      sanitizeCsvCell(resolveProvinceName(l.provinceCode)),
-      sanitizeCsvCell(resolveActionBadge(l.action).label),
+      sanitizeCsvCell(formatAuditRoleLabel(l.actorRole)),
+      sanitizeCsvCell(formatAuditLocation(l.provinceCode)),
+      sanitizeCsvCell(formatAuditActionBadge(l.action).label),
       sanitizeCsvCell(l.targetTitle),
       sanitizeCsvCell(l.reason),
       sanitizeCsvCell(l.ipAddress),
@@ -174,7 +203,7 @@ export default function AdminAuditLogsPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `nacentwin_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `baclink_audit_logs_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -206,10 +235,10 @@ export default function AdminAuditLogsPage() {
             <span>Giám Sát & Vận Hành Bất Biến</span>
           </div>
           <h1 className="font-bold text-slate-900 dark:text-white tracking-tight text-2xl">
-            Nhật Ký Kiểm Toán Toàn Quốc (Audit Logs)
+            Nhật Ký Kiểm Toán Hệ Thống BACLINK (Audit Logs)
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Lưu vết bất biến &ge; 365 ngày theo tiêu chuẩn An toàn thông tin Cấp 3 (Nghị định 85/2016/NĐ-CP).
+            Lưu vết bất biến &ge; 365 ngày theo tiêu chuẩn An toàn thông tin Cấp 3 (Nghị định 85/2016/NĐ-CP) tại Hiệp hội BACLINK Bắc Ninh.
           </p>
         </div>
 
@@ -246,7 +275,7 @@ export default function AdminAuditLogsPage() {
                 setSearchQuery(e.target.value);
                 setPage(1);
               }}
-              placeholder="Tìm theo tên cán bộ, hồ sơ, lý do giải trình, IP..."
+              placeholder="Tìm theo tên quản trị viên, hồ sơ, lý do giải trình, IP..."
               className="form-control-sm w-full pl-9 pr-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
@@ -263,7 +292,7 @@ export default function AdminAuditLogsPage() {
             >
               <option value="ALL">Tất cả hành vi</option>
               <option value="APPROVED">Phê Duyệt</option>
-              <option value="OVERRIDE_APPROVE">Can Thiệp Tầng 0</option>
+              <option value="OVERRIDE_APPROVE">Phê Duyệt Đặc Cách</option>
               <option value="CHANGES_REQUESTED">Yêu Cầu Bổ Sung</option>
               <option value="REJECTED">Từ Chối</option>
               <option value="REVOKE">Thu Hồi Quyền</option>
@@ -333,7 +362,7 @@ export default function AdminAuditLogsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {paginatedLogs.map((item) => {
-                  const badge = resolveActionBadge(item.action);
+                  const badge = formatAuditActionBadge(item.action);
                   const formattedDate = new Date(item.createdAt).toLocaleString("vi-VN", {
                     hour: "2-digit",
                     minute: "2-digit",
@@ -359,14 +388,14 @@ export default function AdminAuditLogsPage() {
                           {item.actorName}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          {resolveRoleName(item.actorRole)}
+                          {formatAuditRoleLabel(item.actorRole)}
                         </div>
                       </td>
 
                       {/* Địa bàn */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span className="font-medium text-slate-800 dark:text-slate-200">
-                          {resolveProvinceName(item.provinceCode)}
+                          {formatAuditLocation(item.provinceCode)}
                         </span>
                       </td>
 
@@ -385,7 +414,7 @@ export default function AdminAuditLogsPage() {
                           {item.targetTitle}
                         </div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">
-                          {resolveRequestTypeLabel(item.targetType)}
+                          {formatAuditTargetType(item.targetType)}
                         </div>
                       </td>
 
@@ -476,21 +505,21 @@ export default function AdminAuditLogsPage() {
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-slate-500">Cán bộ thực thi:</span>
+                <span className="text-slate-500">Quản trị viên thực thi:</span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  {selectedLog.actorName} ({resolveRoleName(selectedLog.actorRole)})
+                  {selectedLog.actorName} ({formatAuditRoleLabel(selectedLog.actorRole)})
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
-                <span className="text-slate-500">Địa bàn thẩm quyền:</span>
+                <span className="text-slate-500">Địa bàn / KCN:</span>
                 <span className="font-bold text-brand-700 dark:text-brand-300">
-                  {resolveProvinceName(selectedLog.provinceCode)}
+                  {formatAuditLocation(selectedLog.provinceCode)}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-slate-500">Hành vi tác động:</span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  {resolveActionBadge(selectedLog.action).label}
+                  {formatAuditActionBadge(selectedLog.action).label}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-100 dark:border-slate-800">

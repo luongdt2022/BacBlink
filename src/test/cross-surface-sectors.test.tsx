@@ -42,8 +42,8 @@ describe("CR-2026-005 dynamic cross-surface sectors", () => {
     render(<HomePage />);
     expect(screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i })).toBeInTheDocument();
     expect(screen.getByText("Công nghệ chào bán")).toBeInTheDocument();
-    expect(screen.getByText("Nhu cầu công nghệ & ĐMST")).toBeInTheDocument();
-    expect(screen.getByText("Doanh nghiệp ĐMST")).toBeInTheDocument();
+    expect(screen.getByText("Nhu cầu Mua & Đặt hàng")).toBeInTheDocument();
+    expect(screen.getByText("Doanh nghiệp Hội viên")).toBeInTheDocument();
   });
 
   it("global UI sweep contains no obsolete SEC taxonomy codes", () => {

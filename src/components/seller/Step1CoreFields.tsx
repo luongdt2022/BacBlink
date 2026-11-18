@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Settings2, Package, Cpu } from "lucide-react";
-import { OfferType, TT17_SECTORS } from "@/types/technology-offer";
+import { OfferType, BACLINK_SECTORS, TT17_SECTORS } from "@/types/technology-offer";
 import { SearchableCombobox } from "@/components/ui/searchable-combobox";
 
 interface Step1CoreFieldsProps {
@@ -38,7 +38,12 @@ export function Step1CoreFields({
   errors,
   filledCount,
 }: Step1CoreFieldsProps) {
-  const sectorOptions = TT17_SECTORS.map((s) => ({
+  const baseSectors = [...BACLINK_SECTORS];
+  if (sectorCode && !baseSectors.some((s) => s.code === sectorCode)) {
+    const legacyMatch = TT17_SECTORS.find((s) => s.code === sectorCode);
+    if (legacyMatch) baseSectors.push(legacyMatch);
+  }
+  const sectorOptions = baseSectors.map((s) => ({
     value: s.code,
     label: s.name,
   }));
@@ -170,10 +175,10 @@ export function Step1CoreFields({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-xs font-extrabold text-slate-700">
-            Ngành công nghiệp (10 Lĩnh Vực TT17) <span className="text-rose-600">*</span>
+            Ngành công nghiệp (BACLINK) <span className="text-rose-600">*</span>
           </label>
           <SearchableCombobox
-            ariaLabel="Ngành công nghiệp (10 Lĩnh Vực TT17)"
+            ariaLabel="Ngành công nghiệp (BACLINK)"
             placeholder="Tìm và chọn ngành..."
             searchPlaceholder="Tìm ngành công nghiệp..."
             options={sectorOptions}

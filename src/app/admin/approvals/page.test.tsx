@@ -28,16 +28,16 @@ const queue = [
   ["SHOP", "Công ty Cổ phần Công nghệ Sinh học Vinabiom"],
   ["DEMAND", "Tập đoàn Công nghệ Cơ điện Thái Bình Dương"],
   ["ACCOUNT", "Công ty Cổ phần Công nghệ Mới Greentech"],
-  ["INSTITUTION", "Trung tâm Đổi mới Sáng tạo Quốc gia - Hòa Lạc"],
+  ["INSTITUTION", "Công ty TNHH Sản xuất Linh kiện VSIP Bắc Ninh"],
 ].map(([requestType, name], i) => ({
   id: String(i + 1),
   requestType,
   scopeType: i === 0 ? "PROVINCE" : "SECTOR",
-  scopeId: i === 0 ? "HN" : "LV91",
-  provinceName: i === 0 ? "Sở KH&CN TP. Hà Nội" : "Sở KH&CN TP. Hải Phòng",
+  scopeId: i === 0 ? "KCN_VSIP_BN" : "IND_ELEC",
+  provinceName: i === 0 ? "KCN VSIP Bắc Ninh" : "KCN Yên Phong Bắc Ninh",
   payloadJson: JSON.stringify({
     fullName: name,
-    expertiseSectors: ["LV91"],
+    expertiseSectors: ["IND_ELEC"],
     tax_code: i === 1 ? "0108992134" : undefined,
     charter_capital: i === 1 ? "50 Tỷ VNĐ" : undefined,
   }),
@@ -111,8 +111,8 @@ describe("AdminApprovalsPage (TASK-07)", () => {
     render(<AdminApprovalsPage />);
     await screen.findByText("Đặng Tiến Lượng");
 
-    // Tab "Chuyên gia KH&CN"
-    const expertTab = screen.getByText("Chuyên gia KH&CN");
+    // Tab "Cố vấn kỹ thuật" (CR-BACLINK-007)
+    const expertTab = screen.getByTestId("tab-expert");
     fireEvent.click(expertTab);
 
     expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
@@ -228,13 +228,13 @@ describe("AdminApprovalsPage (TASK-07)", () => {
 
     // Click "Cơ sở" tab and verify filtering
     fireEvent.click(facilityTab);
-    expect(screen.getByText("Trung tâm Đổi mới Sáng tạo Quốc gia - Hòa Lạc")).toBeInTheDocument();
+    expect(screen.getByText("Công ty TNHH Sản xuất Linh kiện VSIP Bắc Ninh")).toBeInTheDocument();
     expect(screen.queryByText("Đặng Tiến Lượng")).not.toBeInTheDocument();
 
     // Click "Tài khoản" tab and verify filtering
     fireEvent.click(accountTab);
     expect(screen.getByText("Công ty Cổ phần Công nghệ Mới Greentech")).toBeInTheDocument();
-    expect(screen.queryByText("Trung tâm Đổi mới Sáng tạo Quốc gia - Hòa Lạc")).not.toBeInTheDocument();
+    expect(screen.queryByText("Công ty TNHH Sản xuất Linh kiện VSIP Bắc Ninh")).not.toBeInTheDocument();
 
     // Click "Shop" tab and verify filtering
     fireEvent.click(shopTab);
@@ -318,22 +318,22 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       render(<AdminApprovalsPage />);
       await screen.findByText("Đặng Tiến Lượng");
 
-      // Verify human-readable request type labels in table badges (V7 administrative labels)
-      expect(screen.getAllByText("Chuyên Gia KH&CN").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText("Chào Bán Công Nghệ")).toBeInTheDocument();
-      expect(screen.getByText("Nhu Cầu Công Nghệ")).toBeInTheDocument();
+      // Verify human-readable request type labels in table badges (CR-BACLINK-007)
+      expect(screen.getAllByText("Ban Cố Vấn Kỹ Thuật").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText("Chào Bán Sản Phẩm / Công Nghệ")).toBeInTheDocument();
+      expect(screen.getByText("Nhu Cầu Mua & Đặt Hàng")).toBeInTheDocument();
 
-      // Verify human-readable province names
-      expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText("Sở KH&CN TP. Hải Phòng").length).toBeGreaterThanOrEqual(1);
+      // Verify human-readable province / KCN names
+      expect(screen.getAllByText("KCN VSIP Bắc Ninh").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("KCN Yên Phong Bắc Ninh").length).toBeGreaterThanOrEqual(1);
 
       // Select row to inspect detail drawer
       fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
 
       // Verify detail drawer header uses resolved type name
-      expect(screen.getByText(/Thẩm định Chuyên Gia KH&CN/i)).toBeInTheDocument();
+      expect(screen.getByText(/Thẩm định Ban Cố Vấn Kỹ Thuật/i)).toBeInTheDocument();
       // Verify detail drawer displays human-readable province
-      expect(screen.getAllByText("Sở KH&CN TP. Hà Nội").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("KCN VSIP Bắc Ninh").length).toBeGreaterThanOrEqual(1);
     });
 
     it("blocks whitespace-only rejection reason and displays valid trimmed counter (T075 & BR-ADM-VAL-WHITESPACE)", async () => {
@@ -398,18 +398,21 @@ describe("AdminApprovalsPage (TASK-07)", () => {
       expect(thamDinhBtns.length).toBeGreaterThanOrEqual(1);
     });
 
-    it("renders enterprise review block with tax code and legal representative for enterprise records", async () => {
-      render(<AdminApprovalsPage />);
+    it("renders enterprise review block with tax code and legal representative for enterprise records without ĐMST/TT17/Sở remnants", async () => {
+      const { container } = render(<AdminApprovalsPage />);
       await screen.findByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom");
 
       // Click on enterprise record to inspect drawer
       fireEvent.click(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom"));
 
       // Verify enterprise review block
-      expect(screen.getByText(/Hồ Sơ Doanh Nghiệp ĐMST & Tính Pháp Lý/i)).toBeInTheDocument();
+      expect(screen.getByText(/Hồ Sơ Doanh Nghiệp Hội Viên & Tính Pháp Lý/i)).toBeInTheDocument();
       expect(screen.getByText("0108992134")).toBeInTheDocument();
       expect(screen.getByText("Vốn điều lệ:")).toBeInTheDocument();
       expect(screen.getByText("Hồ sơ Hội viên BACLINK:")).toBeInTheDocument();
+
+      const fullText = container.textContent || "";
+      expect(fullText).not.toMatch(/ĐMST|TT17|Sở KH&CN|Địa phương phụ trách|Tầng 0|34 tỉnh|63 tỉnh/i);
     });
   });
 });

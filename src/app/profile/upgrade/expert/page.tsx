@@ -46,31 +46,31 @@ interface Patent {
 const SAMPLE_CV_TEXT = `CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
 Độc lập - Tự do - Hạnh phúc
 
-LÝ LỊCH KHOA HỌC CỦA CHUYÊN GIA KH&CN
-(Kèm theo Thông tư số 17/2021/TT-BKHCN)
+LÝ LỊCH KHOA HỌC CỦA CỐ VẤN KỸ THUẬT & CHUYÊN GIA KH&CN
+(Hồ sơ đăng ký mạng lưới Ban Cố vấn Kỹ thuật Hiệp hội BACLINK)
 
 I. THÔNG TIN CHUNG
 1. Họ và tên: Nguyễn Văn Đức
-2. Email liên hệ: duc.nv@nacentech.vn
+2. Email liên hệ: duc.nv@baclink.org.vn
 3. Số điện thoại: 0912888999
 4. Năm sinh: 1980
 5. Giới tính: Nam
 6. Học hàm, học vị: Tiến sĩ (TS)
    Năm đạt học vị: 2015
 5. Chức danh nghiên cứu / Chức vụ hiện tại: Trưởng phòng R&D, Nghiên cứu viên cao cấp
-6. Cơ quan công tác chính: Viện Ứng dụng Công nghệ NacenTech
-7. Địa chỉ cơ quan: 25 Lê Thánh Tông, Hoàn Kiếm, Hà Nội
+6. Cơ quan công tác chính: Trung tâm R&D & Tư vấn Kỹ thuật Công nghiệp Bắc Ninh
+7. Địa chỉ cơ quan: KCN VSIP Bắc Ninh, TP. Từ Sơn, Bắc Ninh
 8. Số năm kinh nghiệm nghiên cứu, chuyển giao: 16 năm
 9. Định danh khoa học:
-   - Google Scholar: https://scholar.google.com/citations?user=nacentech_duc
+   - Google Scholar: https://scholar.google.com/citations?user=baclink_duc
    - ORCID: 0000-0002-1823-9214
    - Scopus ID: 57219842100
 
 II. NĂNG LỰC CHUYÊN MÔN VÀ HOẠT ĐỘNG KH&CN
-1. Lĩnh vực chuyên môn chính: Khoa học – công nghệ – đổi mới sáng tạo (LV17)
+1. Ngành công nghiệp chuyên môn chính: Điện tử, Bán dẫn & Thiết bị điện (IND_ELEC)
 2. Từ khóa chuyên sâu: Trí tuệ nhân tạo, Vật liệu bán dẫn, Quang điện tử, IoT công nghiệp
 3. Tóm tắt tiểu sử và năng lực thế mạnh:
-   Chuyên gia cao cấp có 16 năm kinh nghiệm trong lĩnh vực quang điện tử và vật liệu bán dẫn. Đã chủ trì và tham gia nhiều đề tài cấp Quốc gia, chuyển giao hơn 10 giải pháp công nghệ cho các doanh nghiệp sản xuất trong và ngoài nước.
+   Chuyên gia cao cấp có 16 năm kinh nghiệm trong lĩnh vực quang điện tử và vật liệu bán dẫn. Đã chủ trì và tham gia nhiều dự án chuyển giao hơn 10 giải pháp dây chuyền tự động hóa cho các nhà máy sản xuất tại KCN Bắc Ninh.
 
 III. CÔNG BỐ KHOA HỌC TIÊU BIỂU VÀ SÁNG CHẾ
 1. Công bố khoa học tiêu biểu:
@@ -177,8 +177,8 @@ function ExpertUpgradeForm() {
   const [academicDegree, setAcademicDegree] = useState("TS");
   const [primaryInstitution, setPrimaryInstitution] = useState("");
   const [workAddress, setWorkAddress] = useState("");
-  const [receivingUnit, setReceivingUnit] = useState("GLOBAL");
-  const [receivingScopeType, setReceivingScopeType] = useState("GLOBAL");
+  const [receivingUnit, setReceivingUnit] = useState("BN");
+  const [receivingScopeType, setReceivingScopeType] = useState("PROVINCE");
   const [professionalTitle, setProfessionalTitle] = useState("");
   const [googleScholarUrl, setGoogleScholarUrl] = useState("");
   const [orcidId, setOrcidId] = useState("");
@@ -518,7 +518,7 @@ function ExpertUpgradeForm() {
       }
 
       setScanProgress(60);
-      setScanStatusMessage("Google Gemini AI đang bóc tách 94 trường theo chuẩn Thông tư 17/2021...");
+      setScanStatusMessage("Google Gemini AI đang bóc tách 94 trường theo chuẩn Ban Cố vấn Kỹ thuật BACLINK...");
 
       const response = await fetch("/api/cv-parser", {
         method: "POST",
@@ -606,10 +606,12 @@ function ExpertUpgradeForm() {
         setWorkAddress(d.workAddress);
         newlyFilled.add("workAddress");
       }
-      // 6b. Cơ quan tiếp nhận thẩm định Cấp 2 gợi ý (BR-EXP-CV-013)
+      // 6b. Đơn vị tiếp nhận thẩm định BACLINK gợi ý (BR-EXP-CV-013)
       if (d.suggestedReceivingUnit?.code) {
-        setReceivingUnit(d.suggestedReceivingUnit.code);
-        setReceivingScopeType(d.suggestedReceivingUnit.type);
+        const validUnits = ["BN", "KCN_VSIP_BN", "KCN_YENPHONG_BN", "KCN_TIENSON_BN", "KCN_QUEVO_BN", "KCN_DAIDONG_BN"];
+        const resolvedCode = validUnits.includes(d.suggestedReceivingUnit.code) ? d.suggestedReceivingUnit.code : "BN";
+        setReceivingUnit(resolvedCode);
+        setReceivingScopeType("PROVINCE");
         newlyFilled.add("receivingUnit");
       }
       // 7. Chức vụ chuyên môn
@@ -716,7 +718,7 @@ function ExpertUpgradeForm() {
     setErrorMessage("");
 
     const payload = {
-      fullName: fullName.trim() || "Chuyên gia NacenTech",
+      fullName: fullName.trim() || "Cố vấn Kỹ thuật BACLINK",
       phone: phone.trim() || null,
       email: email.trim() || null,
       birthYear: Number(birthYear),
@@ -787,11 +789,11 @@ function ExpertUpgradeForm() {
             <div className="space-y-2">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-700/30 text-brand-100 text-label font-semibold backdrop-blur-sm border border-brand-500/30">
                 <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-                <span>Quy chuẩn TASK-05 & Nghị định 13/2023/NĐ-CP</span>
+                <span>Ban Cố Vấn Kỹ Thuật BACLINK & Nghị định 13/2023/NĐ-CP</span>
               </div>
               <h1 className="font-bold tracking-tight type-page-title">Hồ Sơ Nâng Hạng Chuyên Gia KH&CN</h1>
               <p className="text-brand-100 text-body max-w-xl leading-relaxed">
-                Đăng ký trở thành Chuyên gia thẩm định, Tư vấn công nghệ và Nhà sáng chế thuộc Mạng lưới Đổi mới sáng tạo NacenTech.
+                Đăng ký trở thành Cố vấn thẩm định kỹ thuật, Tư vấn tự động hóa nhà máy và Nhà sáng chế thuộc Ban Cố vấn Kỹ thuật Hiệp hội BACLINK.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -879,7 +881,7 @@ function ExpertUpgradeForm() {
                     <span>Lý do từ chối từ Hội đồng Thẩm định:</span>
                   </div>
                   <p className="text-sm leading-relaxed pl-6 font-medium">
-                    {existingProfile?.reviewerNote || existingProfile?.reviewNote || "Hồ sơ chưa đáp ứng đầy đủ tiêu chí thẩm định theo quy chuẩn Bộ KH&CN."}
+                    {existingProfile?.reviewerNote || existingProfile?.reviewNote || "Hồ sơ chưa đáp ứng đầy đủ tiêu chí thẩm định theo tiêu chuẩn Ban Cố vấn Kỹ thuật Hiệp hội BACLINK."}
                   </p>
                 </div>
 
@@ -925,12 +927,12 @@ function ExpertUpgradeForm() {
                 </div>
                 <h2 className="font-bold text-slate-900 text-card-title dark:text-slate-100">Hồ Sơ Đã Được Gửi Thành Công!</h2>
                 <p className="text-slate-600 max-w-lg mx-auto text-body leading-relaxed dark:text-slate-300">
-                  Hồ sơ nâng hạng Chuyên gia KH&CN của <strong>{existingProfile?.fullName || fullName}</strong> đã được chuyển sang Hàng đợi Thẩm định (Approval Queue) thuộc Phân hệ Quản trị <strong>TASK-07</strong>.
+                  Hồ sơ nâng hạng Chuyên gia KH&CN của <strong>{existingProfile?.fullName || fullName}</strong> đã được chuyển sang Hàng đợi Thẩm định thuộc <strong>Ban Quản trị Hiệp hội BACLINK</strong>.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-label text-slate-600 dark:text-slate-300">
-                  <span className="font-semibold text-brand-700 dark:text-brand-300">Cơ quan tiếp nhận thẩm định (Cấp 2):</span>
+                  <span className="font-semibold text-brand-700 dark:text-brand-300">Đơn vị tiếp nhận thẩm định:</span>
                   <span className="px-2.5 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950 text-brand-700 dark:text-brand-300 font-bold border border-brand-200 dark:border-brand-900">
-                    {receivingUnit === "GLOBAL" ? "NacenTech Trung Ương (Toàn quốc)" : `Sở KH&CN (${receivingUnit})`}
+                    Ban Cố vấn &amp; Thẩm định Kỹ thuật BACLINK (Bắc Ninh)
                   </span>
                 </div>
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-label font-semibold dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-900">
@@ -1010,7 +1012,7 @@ function ExpertUpgradeForm() {
                         <h4 className="font-bold text-brand-950 text-card-title dark:text-brand-100 flex items-center gap-2">
                           <span>AI Trích Xuất Dữ Liệu Hồ Sơ Tự Động (AI CV Scan)</span>
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-200/60 text-brand-900 dark:bg-brand-900 dark:text-brand-200">
-                            Chuẩn Bộ KH&CN
+                            Chuẩn Ban Cố vấn Kỹ thuật BACLINK
                           </span>
                         </h4>
                         <p className="text-body text-brand-800 dark:text-brand-300">
@@ -1243,7 +1245,7 @@ function ExpertUpgradeForm() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="chuyengia@nacentech.vn"
+                      placeholder="chuyengia@baclink.org.vn"
                       className={`mt-1 block w-full px-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 ${
                         aiFilledFields.has("email") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300 dark:border-slate-700"
                       }`}
@@ -1346,13 +1348,13 @@ function ExpertUpgradeForm() {
                         required
                         value={primaryInstitution}
                         onChange={(e) => setPrimaryInstitution(e.target.value)}
-                        placeholder="Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)"
+                        placeholder="Đại học Bách Khoa Hà Nội / Trung tâm R&D Bắc Ninh"
                         className={`block w-full pl-9 pr-3 py-2.5 border rounded-control text-slate-900 text-body focus:ring-2 focus:ring-innovation-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 ${aiFilledFields.has("primaryInstitution") ? "border-emerald-400 bg-emerald-50/20 dark:border-emerald-600 dark:bg-emerald-950/20" : "border-slate-300"}`}
                       />
                     </div>
                   </div>
 
-                  {/* Phân cấp Cấp 2: Chọn Cơ quan / Sở KH&CN tiếp nhận thẩm định (Basic Design v2.6 & FR-ADM-007) */}
+                  {/* Phân cấp thẩm định: Ban Cố vấn & Thẩm định BACLINK Bắc Ninh */}
                   <div className={`p-4 rounded-surface border transition-colors ${
                     aiFilledFields.has("receivingUnit")
                       ? "bg-emerald-50/30 border-emerald-300 dark:bg-emerald-950/20 dark:border-emerald-800"
@@ -1361,67 +1363,32 @@ function ExpertUpgradeForm() {
                     <label className="block text-label font-bold text-slate-800 dark:text-slate-100 mb-1 flex items-center justify-between">
                       <span className="flex items-center gap-1.5 flex-wrap">
                         <ShieldCheck className="h-4 w-4 text-brand-700 dark:text-brand-300" />
-                        <span>Cơ quan / Sở KH&CN tiếp nhận thẩm định hồ sơ *</span>
+                        <span>Đơn vị tiếp nhận thẩm định hồ sơ chuyên gia *</span>
                         {renderAiBadge("receivingUnit")}
                       </span>
                       <span className="text-caption text-brand-700 dark:text-brand-300 font-semibold bg-brand-100 dark:bg-brand-950 px-2 py-0.5 rounded-full">
-                        Phân cấp Cấp 2
+                        BACLINK 1 Cấp
                       </span>
                     </label>
                     <p className="text-caption text-slate-500 dark:text-slate-400 mb-2">
-                      Theo cơ chế phân cấp quản lý đa cấp, hồ sơ của bạn sẽ được chuyển thẳng về Lãnh đạo Sở KH&CN hoặc Đơn vị chủ quản đã chọn để thẩm định trực tiếp (SLA &le; 48 giờ).
+                      Hồ sơ của bạn sẽ được chuyển tới Ban Cố vấn &amp; Thẩm định Kỹ thuật Hiệp hội BACLINK để xét duyệt trực tiếp (SLA &le; 48 giờ).
                     </p>
                     <select
                       value={receivingUnit}
                       onChange={(e) => {
                         const val = e.target.value;
                         setReceivingUnit(val);
-                        setReceivingScopeType(val === "GLOBAL" ? "GLOBAL" : "PROVINCE");
+                        setReceivingScopeType("PROVINCE");
                       }}
                       className="block w-full px-3 py-2.5 border border-brand-300 rounded-control text-slate-900 text-body font-medium focus:ring-2 focus:ring-brand-500 focus:outline-none form-control dark:text-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900"
                     >
-                      <optgroup label="Cấp Trung Ương (Hội đồng Toàn quốc)">
-                        <option value="GLOBAL">NacenTech Trung Ương (Bộ KH&CN - Toàn quốc)</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Bắc (12 Tỉnh Trọng Điểm)">
-                        <option value="HN">Sở KH&CN Hà Nội</option>
-                        <option value="HP">Sở KH&CN Hải Phòng</option>
-                        <option value="QN">Sở KH&CN Quảng Ninh</option>
-                        <option value="BN">Sở KH&CN Bắc Ninh</option>
-                        <option value="HD">Sở KH&CN Hải Dương</option>
-                        <option value="TN">Sở KH&CN Thái Nguyên</option>
-                        <option value="VP">Sở KH&CN Vĩnh Phúc</option>
-                        <option value="ND">Sở KH&CN Nam Định</option>
-                        <option value="TB">Sở KH&CN Thái Bình</option>
-                        <option value="PT">Sở KH&CN Phú Thọ</option>
-                        <option value="TH">Sở KH&CN Thanh Hóa</option>
-                        <option value="NA">Sở KH&CN Nghệ An</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Trung & Tây Nguyên (10 Tỉnh Trọng Điểm)">
-                        <option value="DN">Sở KH&CN Đà Nẵng</option>
-                        <option value="QNA">Sở KH&CN Quảng Nam</option>
-                        <option value="QNG">Sở KH&CN Quảng Ngãi</option>
-                        <option value="BD">Sở KH&CN Bình Định</option>
-                        <option value="PY">Sở KH&CN Phú Yên</option>
-                        <option value="KH">Sở KH&CN Khánh Hòa</option>
-                        <option value="GL">Sở KH&CN Gia Lai</option>
-                        <option value="DL">Sở KH&CN Đắk Lắk</option>
-                        <option value="KT">Sở KH&CN Kon Tum</option>
-                        <option value="LD">Sở KH&CN Lâm Đồng</option>
-                      </optgroup>
-                      <optgroup label="Sở KH&CN Miền Nam (12 Tỉnh Trọng Điểm)">
-                        <option value="HCM">Sở KH&CN TP. Hồ Chí Minh</option>
-                        <option value="BDG">Sở KH&CN Bình Dương</option>
-                        <option value="DNA">Sở KH&CN Đồng Nai</option>
-                        <option value="BRVT">Sở KH&CN Bà Rịa - Vũng Tàu</option>
-                        <option value="CT">Sở KH&CN Cần Thơ</option>
-                        <option value="AG">Sở KH&CN An Giang</option>
-                        <option value="TG">Sở KH&CN Tiền Giang</option>
-                        <option value="LA">Sở KH&CN Long An</option>
-                        <option value="DT">Sở KH&CN Đồng Tháp</option>
-                        <option value="BL">Sở KH&CN Bạc Liêu</option>
-                        <option value="CM">Sở KH&CN Cà Mau</option>
-                        <option value="KG">Sở KH&CN Kiên Giang</option>
+                      <optgroup label="Hiệp hội Doanh nghiệp Công nghiệp Hỗ trợ Bắc Ninh (BACLINK)">
+                        <option value="BN">Ban Cố vấn &amp; Thẩm định Kỹ thuật BACLINK (Bắc Ninh)</option>
+                        <option value="KCN_VSIP_BN">Ban Hỗ trợ Kỹ thuật KCN VSIP Bắc Ninh</option>
+                        <option value="KCN_YENPHONG_BN">Ban Hỗ trợ Kỹ thuật KCN Yên Phong</option>
+                        <option value="KCN_TIENSON_BN">Ban Hỗ trợ Kỹ thuật KCN Tiên Sơn</option>
+                        <option value="KCN_QUEVO_BN">Ban Hỗ trợ Kỹ thuật KCN Quế Võ</option>
+                        <option value="KCN_DAIDONG_BN">Ban Hỗ trợ Kỹ thuật KCN Đại Đồng - Hoàn Sơn</option>
                       </optgroup>
                     </select>
                   </div>
@@ -1851,7 +1818,7 @@ function ExpertUpgradeForm() {
                     <div>
                       <h4 className="font-bold text-brand-950 text-card-title dark:text-brand-200">Cam kết Trung thực & Bảo vệ Dữ liệu Cá nhân (Nghị định 13/2023/NĐ-CP)</h4>
                       <p className="text-body text-brand-800 mt-1 leading-relaxed dark:text-brand-200">
-                        Tôi xin cam đoan các thông tin khai báo trong hồ sơ khoa học trên là hoàn toàn chính xác và trung thực. Tôi chịu trách nhiệm trước pháp luật về văn bằng, chứng chỉ và quyền tác giả công bố. Tôi đồng ý để Hệ thống NacenTech số hóa và chuyển tiếp hồ sơ này cho Hội đồng Thẩm định theo quy trình phân quyền bảo mật 3 chiều.
+                        Tôi xin cam đoan các thông tin khai báo trong hồ sơ khoa học trên là hoàn toàn chính xác và trung thực. Tôi chịu trách nhiệm trước pháp luật về văn bằng, chứng chỉ và quyền tác giả công bố. Tôi đồng ý để Hệ thống Hiệp hội BACLINK số hóa và chuyển tiếp hồ sơ này cho Hội đồng Thẩm định theo quy trình bảo mật dữ liệu cá nhân.
                       </p>
                     </div>
                   </div>

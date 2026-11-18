@@ -169,7 +169,7 @@ describe("MatchingRadarPage - AI Matching, Demands Guard & Toast Integration", (
     // Primary Action CTA
     const primaryCta = screen.getByRole("link", { name: /\+ Gửi Nhu Cầu Công Nghệ Đầu Tiên/i });
     expect(primaryCta).toBeInTheDocument();
-    expect(primaryCta).toHaveAttribute("href", "/khao-sat-nhu-cau");
+    expect(primaryCta).toHaveAttribute("href", "/portal/buyer/demands");
 
     // Secondary Action CTA
     const secondaryCta = screen.getByRole("link", { name: /Khám phá Sàn Công nghệ/i });
@@ -692,8 +692,8 @@ describe("MatchingRadarPage - AI Matching, Demands Guard & Toast Integration", (
         offerCode: "OFF-202610-LV05-06",
         offerTitle: "Dây chuyền chiết xuất hoạt chất sinh học CO2",
         sellerOrganizationId: "org-s",
-        sellerOrganizationName: "Sở KH&CN Hà Nội",
-        sectorCode: "LV05",
+        sellerOrganizationName: "Công ty CP Tự động hóa Bắc Ninh",
+        sectorCode: "IND_AUTO",
         overallMatchScore: 87,
         isActive: true,
         isDegraded: true,

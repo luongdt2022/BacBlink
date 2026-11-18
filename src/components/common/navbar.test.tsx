@@ -14,7 +14,7 @@ vi.mock("next/link", () => ({
 }));
 vi.mock("./i18n-provider", () => ({
   I18nToggle: () => <span>Ngôn ngữ</span>,
-  useI18n: () => ({ t: (key: string) => ({ home: "Trang chủ", about: "Giới thiệu", technology_offers: "Công nghệ", technology_demands: "Nhu cầu", innovative_enterprises: "DN ĐMST", experts: "Chuyên gia", user_guide: "Hướng dẫn", services: "Dịch vụ", logout: "Đăng xuất", login: "Đăng nhập", register: "Đăng ký", expert_upgrade: "Nâng hạng" })[key] ?? key }),
+  useI18n: () => ({ t: (key: string) => ({ home: "Trang chủ", about: "Giới thiệu", technology_offers: "Cung ứng", technology_demands: "Nhu cầu", innovative_enterprises: "Hội viên", experts: "Cố vấn", user_guide: "Hướng dẫn", services: "Dịch vụ", logout: "Đăng xuất", login: "Đăng nhập", register: "Đăng ký", expert_upgrade: "Nâng hạng hội viên" })[key] ?? key }),
 }));
 vi.mock("./theme-toggle", () => ({ ThemeToggle: () => <span>Giao diện</span> }));
 vi.mock("./toast", () => ({ useToast: () => ({ info: vi.fn() }) }));
@@ -23,7 +23,7 @@ describe("Navbar account menu", () => {
   beforeEach(() => {
     localStorage.clear();
     push.mockReset();
-    authClient.setSession("token", { id: "person-1", email: "member@nacentech.local", fullName: "Nguyễn Minh An", role: "PUBLIC_USER" });
+    authClient.setSession("token", { id: "person-1", email: "guest@baclink.org.vn", fullName: "Nguyễn Minh An", role: "PUBLIC_USER" });
   });
 
   afterEach(cleanup);
@@ -68,14 +68,14 @@ describe("Navbar account menu", () => {
     expect(push).toHaveBeenCalledWith("/");
   });
 
-  it("renders Chuyên gia dropdown containing E-Learning and expert catalog links", () => {
+  it("renders Cố vấn dropdown containing E-Learning and expert catalog links", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const expertTrigger = within(mainNav).getByRole("link", { name: /^Chuyên gia$/i });
+    const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
     expect(expertTrigger).toHaveAttribute("href", "/experts");
 
-    // Sub-items inside Chuyên gia dropdown
+    // Sub-items inside Cố vấn dropdown
     const elearningLink = within(mainNav).getByRole("link", { name: /E-Learning & Đào tạo/i });
     expect(elearningLink).toHaveAttribute("href", "/elearning");
     expect(within(elearningLink).getByText("LMS")).toBeInTheDocument();
@@ -84,82 +84,72 @@ describe("Navbar account menu", () => {
     expect(expertCatalogLink).toHaveAttribute("href", "/experts");
 
     const expertUpgradeLink = within(mainNav).getByRole("link", { name: /^Đăng ký Chuyên gia/i });
-    expect(expertUpgradeLink).toHaveAttribute("href", "/profile/upgrade");
+    expect(expertUpgradeLink).toHaveAttribute("href", "/profile/upgrade/expert");
   });
 
-  it("renders Nhu cầu công nghệ dropdown with TNI and quick registration forms", () => {
+  it("renders Nhu cầu dropdown with marketplace link and excludes survey forms", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
     const demandTrigger = within(mainNav).getByRole("link", { name: /^Nhu cầu$/i });
     expect(demandTrigger).toHaveAttribute("href", "/nhu-cau-cong-nghe");
 
-    const tniLink = within(mainNav).getByRole("link", { name: /Khảo sát Nhu cầu Công nghệ \(TNI\)/i });
-    expect(tniLink).toHaveAttribute("href", "/khao-sat-nhu-cau");
-    expect(within(tniLink).getByText("TNI")).toBeInTheDocument();
+    const demandListLink = within(mainNav).getByRole("link", { name: /Bảng Nhu cầu Mua & Đặt hàng/i });
+    expect(demandListLink).toHaveAttribute("href", "/nhu-cau-cong-nghe");
 
-    const quickDemandLink = within(mainNav).getByRole("link", { name: /Đăng nhanh Nhu cầu Kỹ thuật/i });
-    expect(quickDemandLink).toHaveAttribute("href", "/khao-sat-doanh-nghiep");
+    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
   });
 
-  it("renders Chào bán công nghệ dropdown with marketplace, registration and supply assessment", () => {
+  it("renders Chào bán công nghệ dropdown with marketplace, registration and excludes supply survey", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const offerTrigger = within(mainNav).getByRole("link", { name: /^Công nghệ$/i });
+    const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
     expect(offerTrigger).toHaveAttribute("href", "/chao-ban-cong-nghe");
 
     const createOfferLink = within(mainNav).getByRole("link", { name: /Đăng Chào bán Công nghệ mới/i });
     expect(createOfferLink).toHaveAttribute("href", "/portal/seller/technologies/create");
 
-    const supplySurveyLink = within(mainNav).getByRole("link", { name: /Khảo sát Năng lực Cung/i });
-    expect(supplySurveyLink).toHaveAttribute("href", "/khao-sat-cong-nghe");
+    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
   });
 
-  it("renders Doanh nghiệp ĐMST dropdown with catalog, DMST 43 criteria and TT17", () => {
+  it("renders Hội viên dropdown with catalog and excludes legacy surveys", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const enterpriseTrigger = within(mainNav).getByRole("link", { name: /^DN ĐMST$/i });
+    const enterpriseTrigger = within(mainNav).getByRole("link", { name: /^Hội viên$/i });
     expect(enterpriseTrigger).toHaveAttribute("href", "/doanh-nghiep-dmst");
 
-    const dmstLink = within(mainNav).getByRole("link", { name: /Khảo sát Năng lực ĐMST/i });
-    expect(dmstLink).toHaveAttribute("href", "/khao-sat-dmst");
-
-    const tt17Link = within(mainNav).getByRole("link", { name: /Đánh giá Năng lực TT 17/i });
-    expect(tt17Link).toHaveAttribute("href", "/dieu-tra-trinh-do-nang-luc");
+    expect(within(mainNav).getByRole("link", { name: /Danh bạ Doanh nghiệp$/i })).toBeInTheDocument();
+    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
   });
 
-  it("renders Dịch vụ khác dropdown containing TT17, SHTT, valuation, enterprise and Radar links", () => {
+  it("renders Dịch vụ khác dropdown containing SHTT, valuation, FDI supply chain consulting and Radar links", () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
     const servicesTrigger = within(mainNav).getByRole("link", { name: /^Dịch vụ$/i });
     expect(servicesTrigger).toHaveAttribute("href", "/dich-vu-khac");
 
-    const tt17ServicesLink = within(mainNav).getByRole("link", { name: /Đánh giá Trình độ DN \(TT 17\)/i });
-    expect(tt17ServicesLink).toHaveAttribute("href", "/dieu-tra-trinh-do-nang-luc");
-    expect(within(tt17ServicesLink).getByText("TT 17")).toBeInTheDocument();
-
     const shttLink = within(mainNav).getByRole("link", { name: /Tư vấn & Bảo hộ SHTT/i });
     expect(shttLink).toHaveAttribute("href", "/dich-vu-khac");
 
     const valuationLink = within(mainNav).getByRole("link", { name: /Thẩm định & Định giá Công nghệ/i });
-    expect(valuationLink).toHaveAttribute("href", "/assessments/buyer");
+    expect(valuationLink).toHaveAttribute("href", "/dich-vu-khac#dinh-gia-cong-nghe");
 
-    const enterpriseKhcnLink = within(mainNav).getByRole("link", { name: /Hồ sơ Doanh nghiệp KH&CN/i });
-    expect(enterpriseKhcnLink).toHaveAttribute("href", "/dich-vu-khac#doanh-nghiep-khcn");
+    const fdiChainLink = within(mainNav).getByRole("link", { name: /Tư vấn Chuẩn hóa Chuỗi cung ứng FDI/i });
+    expect(fdiChainLink).toHaveAttribute("href", "/dich-vu-khac#chuoi-cung-ung-fdi");
 
     const radarLink = within(mainNav).getByRole("link", { name: /Radar Ghép nối Cung - Cầu/i });
     expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
     expect(within(radarLink).getByText("AI")).toBeInTheDocument();
   });
 
-  it("handles mouse hover and click toggle on Chuyên gia dropdown", async () => {
+  it("handles mouse hover and click toggle on Cố vấn dropdown", async () => {
     render(<Navbar />);
 
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const expertTrigger = within(mainNav).getByRole("link", { name: /^Chuyên gia$/i });
+    const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
 
     // Initial state: aria-expanded is false
     expect(expertTrigger).toHaveAttribute("aria-expanded", "false");

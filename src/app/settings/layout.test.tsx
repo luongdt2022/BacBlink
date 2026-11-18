@@ -32,7 +32,7 @@ vi.mock("@/lib/auth-client", () => ({
   },
   normalizePlatformRole: (role: string) => {
     const upper = (role || "").toUpperCase();
-    if (["ADMIN", "SUPER_ADMIN", "OPERATOR_ADMIN", "PROVINCIAL_ADMIN", "SECTOR_ADMIN", "CLUSTER_ADMIN"].includes(upper)) return "ADMIN";
+    if (["ADMIN", "SUPER_ADMIN", "OPERATOR_ADMIN"].includes(upper)) return "ADMIN";
     if (["ENTERPRISE", "SELLER", "BUYER", "INNOVATION_ENTITY"].includes(upper)) return "ENTERPRISE";
     return "PUBLIC_USER";
   },
@@ -90,7 +90,7 @@ describe("SettingsLayout - Retaining Left Workspace Sidebar Menu", () => {
   it("retains the left sidebar menu for EXPERT with active 'Cài đặt & Tài khoản' link", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u-exp-1",
-      email: "expert@nacentech.vn",
+      email: "expert@baclink.org.vn",
       fullName: "TS. Nguyễn Chuyên Gia",
       role: "VERIFIED_EXPERT",
     });

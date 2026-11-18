@@ -107,11 +107,11 @@ describe('PortalDashboard Component (Role-based Routing)', () => {
     // Khối 1: Hero Banner cá nhân hóa & 2 nút CTA nhanh
     expect(screen.getByText('Xin chào, Nguyễn Văn Public!')).toBeInTheDocument();
     expect(screen.getByText('Thành viên Khám phá / Bên Mua tiềm năng')).toBeInTheDocument();
-    expect(screen.getByText('Khám phá công nghệ và kết nối giải pháp đổi mới sáng tạo.')).toBeInTheDocument();
+    expect(screen.getByText('Khám phá công nghệ và kết nối chuỗi cung ứng công nghiệp Bắc Ninh.')).toBeInTheDocument();
 
     const demandBtn = screen.getByRole('link', { name: /\+ Gửi Nhu cầu Công nghệ mới/i });
     expect(demandBtn).toBeInTheDocument();
-    expect(demandBtn).toHaveAttribute('href', '/khao-sat-nhu-cau');
+    expect(demandBtn).toHaveAttribute('href', '/portal/buyer/demands');
 
     const exploreBtn = screen.getByRole('link', { name: /^Khám phá Sàn Công nghệ$/i });
     expect(exploreBtn).toBeInTheDocument();

@@ -5,7 +5,6 @@ import {
   Layers,
   Users,
   Database,
-  Award,
   Radar,
   Calendar,
   Building,
@@ -30,12 +29,11 @@ export default function GioiThieuPage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       {/* HERO BANNER SECTION */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
+      <section className="relative overflow-hidden workspace-banner text-white py-8 sm:py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold backdrop-blur-sm">
             <Landmark className="w-4 h-4 text-brand-200" />
-            <span>UBND Tỉnh Bắc Ninh • Quyết định số 1652/QĐ-UBND ngày 16/06/2025</span>
+            <span>Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh • Quyết định số 1652/QĐ-UBND ngày 16/06/2025</span>
           </div>
 
           <h1 className="type-page-title text-white">
@@ -65,21 +63,21 @@ export default function GioiThieuPage() {
         </div>
       </section>
 
-      {/* 4 TRỤ CỘT CHIẾN LƯỢC */}
+      {/* 3 TRỤ CỘT CHIẾN LƯỢC */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-bold uppercase tracking-wider text-brand-700 dark:text-teal-400">
             Trọng Tâm Hoạt Động
           </span>
           <h2 className="type-section-title text-slate-900 dark:text-white">
-            4 Trụ Cột Phát Triển BACLINK
+            3 Trụ Cột Phát Triển BACLINK
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Liên kết mạng lưới 13 Khu công nghiệp trọng điểm và nâng chuẩn năng lực hội viên đáp ứng chuỗi giá trị toàn cầu.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 dark:border-slate-800 dark:bg-slate-900">
             <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center dark:bg-brand-950 dark:text-brand-300">
               <Database className="w-5 h-5" />
@@ -87,16 +85,6 @@ export default function GioiThieuPage() {
             <h3 className="font-bold text-sm text-slate-900 dark:text-white">Danh Bạ Hội Viên KCN</h3>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Dữ liệu năng lực nhà máy, máy móc thiết bị và chứng chỉ ISO/IATF 16949 tại 13 KCN Yên Phong, Quế Võ, VSIP, Tiên Sơn...
-            </p>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 dark:border-slate-800 dark:bg-slate-900">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center dark:bg-emerald-950 dark:text-emerald-300">
-              <Award className="w-5 h-5" />
-            </div>
-            <h3 className="font-bold text-sm text-slate-900 dark:text-white">Đánh Giá Năng Lực TT17</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Khảo sát trình độ công nghệ THIOC và mức độ sẵn sàng sản xuất (TRL 1-9) phục vụ quy trình audit nhà cung ứng FDI.
             </p>
           </div>
 

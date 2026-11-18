@@ -27,14 +27,12 @@ describe("Footer Component (BACLINK Official Portal Style)", () => {
   afterEach(() => {
     cleanup();
   });
-  it("renders authoritative government hierarchy and contact info", () => {
+  it("renders authoritative owner and contact info", () => {
     render(<Footer />);
 
-    expect(screen.getByText(/Cơ quan thành lập:/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/UBND TỈNH BẮC NINH/i).length).toBeGreaterThan(0);
-
-    expect(screen.getByText(/Đơn vị vận hành:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Đơn vị chủ quản:/i)).toBeInTheDocument();
     expect(screen.getByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH \(BACLINK\)/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Cơ quan thành lập:/i)).not.toBeInTheDocument();
 
     expect(screen.getByText(/Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP. Bắc Ninh, Tỉnh Bắc Ninh/i)).toBeInTheDocument();
     expect(screen.getByText(/Điện thoại: 0222.3888.686/i)).toBeInTheDocument();
@@ -47,6 +45,6 @@ describe("Footer Component (BACLINK Official Portal Style)", () => {
     expect(screen.getByText(/© 2026 BACLINK/i)).toBeInTheDocument();
     expect(screen.getByText(/Lượt truy cập:/i)).toBeInTheDocument();
     expect(screen.getByText("2.689.450")).toBeInTheDocument();
-    expect(screen.getByText(/Thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hiệp hội thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
   });
 });

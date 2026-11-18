@@ -45,6 +45,8 @@ import {
   Ticket,
   Layers,
   Calculator,
+  Newspaper,
+  Globe,
 } from "lucide-react";
 
 interface SubNavItem {
@@ -97,7 +99,7 @@ export function Navbar() {
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [expandedMobileLinks, setExpandedMobileLinks] = useState<Record<string, boolean>>({
     "/gioi-thieu": false,
-    "/trien-lam": false,
+    "/tin-tuc": false,
     "/chao-ban-cong-nghe": false,
     "/nhu-cau-cong-nghe": true,
     "/doanh-nghiep-dmst": false,
@@ -223,35 +225,47 @@ export function Navbar() {
         {
           href: "/wireframes",
           label: "Sơ đồ Kiến trúc Chức năng",
-          description: "Sơ đồ wireframe và phân rã các luồng giao diện hệ thống",
+          description: "Sơ đồ cổng thông tin và phân rã 7 nhóm chức năng BACLINK",
           icon: Layers,
         },
         {
           href: "/matrix",
           label: "Khung Pháp lý & Chuẩn mực",
-          description: "Nghị định 13/2023, Thông tư 17/2019 và Thang đo TRL 1-9",
+          description: "Ma trận 8 ngành công nghiệp Bắc Ninh và Thang đo TRL 1-9",
           icon: ShieldCheck,
         },
       ],
     },
     {
-      href: "/trien-lam",
-      label: t("events") || "Sự kiện",
-      icon: Sparkles,
+      href: "/tin-tuc",
+      label: t("events") || "Tin tức",
+      icon: Newspaper,
       badge: "Mới",
       children: [
         {
-          href: "/trien-lam",
-          label: "Không gian Triển lãm Ảo",
-          description: "Khám phá các gian hàng công nghệ trực tuyến & Techmart Quốc gia",
-          icon: Sparkles,
+          href: "/tin-tuc",
+          label: "Tất cả Tin tức & Sự kiện",
+          description: "Cập nhật hoạt động mới nhất, hợp tác quốc tế và kết nối FDI",
+          icon: Newspaper,
           badge: "Mới",
         },
         {
-          href: "/trien-lam/dang-ky-tham-quan",
-          label: "Đăng ký Tham quan & Kết nối",
-          description: "Nhận thẻ ra vào triển lãm, đặt lịch hẹn giao thương B2B trực tiếp",
-          icon: Ticket,
+          href: "/tin-tuc?category=ban-dan",
+          label: "Bán dẫn & Công nghệ cao",
+          description: "Hợp tác vi mạch bán dẫn KAISA Hàn Quốc và cụm công nghiệp",
+          icon: Cpu,
+        },
+        {
+          href: "/tin-tuc?category=hop-tac-quoc-te",
+          label: "Hợp tác Quốc tế & FDI",
+          description: "Giao thương kết nối thị trường Châu Phi và các tập đoàn FDI",
+          icon: Globe,
+        },
+        {
+          href: "/tin-tuc?category=hoat-dong",
+          label: "Hoạt động Hiệp hội BACLINK",
+          description: "Đại hội thành lập, Ban chấp hành và liên kết các nhà máy hội viên",
+          icon: Users,
         },
       ],
     },
@@ -272,12 +286,6 @@ export function Navbar() {
           description: "Gửi hồ sơ công nghệ, giải pháp để tiếp cận doanh nghiệp & nhà đầu tư",
           icon: PlusCircle,
         },
-        {
-          href: "/khao-sat-cong-nghe",
-          label: "Khảo sát Năng lực Cung",
-          description: "Tự đánh giá mức độ sẵn sàng công nghệ theo thang đo chuẩn TRL 1-9",
-          icon: Cpu,
-        },
       ],
     },
     {
@@ -287,22 +295,9 @@ export function Navbar() {
       children: [
         {
           href: "/nhu-cau-cong-nghe",
-          label: "Bảng Nhu cầu Đổi mới",
+          label: "Bảng Nhu cầu Mua & Đặt hàng",
           description: "Tra cứu bài toán kỹ thuật, đơn đặt hàng từ các doanh nghiệp",
           icon: Target,
-        },
-        {
-          href: "/khao-sat-nhu-cau",
-          label: "Khảo sát Nhu cầu Công nghệ (TNI)",
-          description: "Form 4 bước tính chỉ số TNI & bắt mạch nhu cầu cấp thiết",
-          icon: Flame,
-          badge: "TNI",
-        },
-        {
-          href: "/khao-sat-doanh-nghiep",
-          label: "Đăng nhanh Nhu cầu Kỹ thuật",
-          description: "Phiếu đặt hàng bài toán kỹ thuật trực tiếp tới Viện trường & Chuyên gia",
-          icon: ClipboardList,
         },
       ],
     },
@@ -313,21 +308,9 @@ export function Navbar() {
       children: [
         {
           href: "/doanh-nghiep-dmst",
-          label: "Danh bạ Doanh nghiệp ĐMST",
-          description: "Bảng xếp hạng, danh bạ doanh nghiệp KH&CN và hồ sơ năng lực",
+          label: "Danh bạ Doanh nghiệp",
+          description: "Danh bạ doanh nghiệp hội viên và hồ sơ năng lực sản xuất",
           icon: Building2,
-        },
-        {
-          href: "/khao-sat-dmst",
-          label: "Khảo sát Năng lực ĐMST",
-          description: "Chấm điểm 8 nhóm năng lực, xuất Radar Chart & cấp huy hiệu",
-          icon: Sparkles,
-        },
-        {
-          href: "/dieu-tra-trinh-do-nang-luc",
-          label: "Đánh giá Năng lực TT 17",
-          description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17",
-          icon: Award,
         },
       ],
     },
@@ -339,7 +322,7 @@ export function Navbar() {
         {
           href: "/experts",
           label: "Mạng lưới Chuyên gia",
-          description: "Tra cứu danh bạ nhà khoa học, chuyên gia & cố vấn ĐMST",
+          description: "Tra cứu danh bạ cố vấn kỹ thuật & chuyên gia công nghiệp BACLINK",
           icon: Users,
         },
         {
@@ -350,9 +333,9 @@ export function Navbar() {
           badge: "LMS",
         },
         {
-          href: "/profile/upgrade",
+          href: "/profile/upgrade/expert",
           label: "Đăng ký Chuyên gia",
-          description: "Nộp hồ sơ gia nhập mạng lưới chuyên gia được thẩm định",
+          description: "Nộp hồ sơ gia nhập mạng lưới cố vấn kỹ thuật được thẩm định",
           icon: GraduationCap,
         },
       ],
@@ -364,28 +347,21 @@ export function Navbar() {
       alignRight: true,
       children: [
         {
-          href: "/dieu-tra-trinh-do-nang-luc",
-          label: "Đánh giá Trình độ DN (TT 17)",
-          description: "Tự đánh giá 26 tiêu chí định lượng 5 nhóm THIOC theo Thông tư 17/2019/TT-BKHCN",
-          icon: FileText,
-          badge: "TT 17",
-        },
-        {
           href: "/dich-vu-khac",
           label: "Tư vấn & Bảo hộ SHTT",
           description: "Định giá công nghệ, bảo hộ sáng chế & dịch vụ pháp lý SHTT",
           icon: Scale,
         },
         {
-          href: "/assessments/buyer",
+          href: "/dich-vu-khac#dinh-gia-cong-nghe",
           label: "Thẩm định & Định giá Công nghệ",
           description: "Xác định giá trị chuyển giao công nghệ, chuẩn hóa thang đo TRL 1-9",
           icon: Calculator,
         },
         {
-          href: "/dich-vu-khac#doanh-nghiep-khcn",
-          label: "Hồ sơ Doanh nghiệp KH&CN",
-          description: "Tư vấn phương án sản xuất kinh doanh từ kết quả KH&CN và ưu đãi thuế",
+          href: "/dich-vu-khac#chuoi-cung-ung-fdi",
+          label: "Tư vấn Chuẩn hóa Chuỗi cung ứng FDI",
+          description: "Tư vấn chuẩn hóa ISO 9001, IATF 16949, ESG và hồ sơ audit chuỗi cung ứng FDI",
           icon: Building2,
         },
         {
@@ -409,38 +385,6 @@ export function Navbar() {
     }
     return false;
   };
-
-  const isDedicatedSurvey =
-    pathname?.startsWith("/khao-sat-doanh-nghiep") ||
-    pathname?.startsWith("/khao-sat-cong-nghe");
-
-  if (isDedicatedSurvey) {
-    return (
-      <header className="sticky top-0 z-50 w-full border-b border-amber-400/20 bg-[#053567]/95 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/95 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-[72px] items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 shrink-0" title="Trang chủ BACLINK">
-              <div className="size-11 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-white to-amber-200 shadow-md shrink-0 overflow-hidden">
-                <img
-                  src="/baclink-logo-256.png"
-                  alt="BACLINK Logo"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-base font-extrabold tracking-tight text-white leading-none">
-                  BACLINK
-                </span>
-                <span className="mt-1 text-xs font-medium leading-tight text-white/80">
-                  Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh
-                </span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </header>
-    );
-  }
 
   return (
     <>
@@ -834,27 +778,6 @@ export function Navbar() {
                   </div>
                 )}
 
-                {/* 2. Highlighted National Survey Banner */}
-                <Link
-                  href="/khao-sat-dmst"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex min-h-11 items-center justify-between rounded-2xl border border-cyan-400/30 bg-gradient-to-r from-blue-900/60 to-cyan-900/60 p-3 text-white shadow-xs transition hover:shadow-md"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-10 place-items-center rounded-xl bg-cyan-500 text-slate-950 shadow-xs">
-                      <ClipboardCheck className="size-5" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-extrabold text-white">Khảo sát năng lực ĐMST</div>
-                      <div className="text-[11px] text-cyan-200 font-medium">
-                        Đo lường 8 nhóm năng lực theo chuẩn Quốc gia
-                      </div>
-                    </div>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-cyan-500 px-2 py-0.5 text-[10px] font-bold text-slate-950">
-                    43 câu
-                  </span>
-                </Link>
 
                 {/* 3. Main Navigation List */}
                 <div className="space-y-1">

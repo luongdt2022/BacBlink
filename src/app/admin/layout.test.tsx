@@ -75,16 +75,18 @@ describe("T070 [UI/UX] Admin Menu Navigation & Layout Refinement", () => {
     );
 
     expect(screen.getByRole("link", { name: /Tổng quan hệ thống/i })).toHaveAttribute("href", "/admin");
-    expect(screen.getByRole("link", { name: /Phiếu thu thập & đánh giá DN/i })).toHaveAttribute("href", "/admin/assessments/records");
+    expect(screen.queryByRole("link", { name: /Phiếu thu thập & đánh giá DN/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Đánh giá công nghệ TT17/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Hàng đợi phê duyệt/i })).toHaveAttribute("href", "/admin/approvals");
     expect(screen.getByRole("link", { name: /Phân quyền \(RBAC\)/i })).toHaveAttribute("href", "/admin/roles");
-    expect(screen.getByRole("link", { name: /Lĩnh vực & Chỉ số TRL/i })).toHaveAttribute("href", "/admin/sectors");
+    expect(screen.getByRole("link", { name: /Ngành Công Nghiệp & Địa Bàn/i })).toHaveAttribute("href", "/admin/sectors");
     expect(screen.getByRole("link", { name: /Nhật ký kiểm toán/i })).toHaveAttribute("href", "/admin/audit-logs");
     expect(screen.getByRole("link", { name: /Cấu hình hệ thống/i })).toHaveAttribute("href", "/admin/system-config");
 
     expect(screen.queryByRole("link", { name: /Cơ cấu 34 tỉnh/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Cảnh báo quá hạn SLA/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Phê duyệt vượt cấp/i })).not.toBeInTheDocument();
+    expect(document.querySelector('a[href*="/admin/assessments"]')).toBeNull();
     expect(document.querySelector('a[href*="/admin/org-tree"]')).toBeNull();
     expect(document.querySelector('a[href*="/gov"]')).toBeNull();
   });

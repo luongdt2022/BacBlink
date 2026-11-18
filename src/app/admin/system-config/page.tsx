@@ -41,7 +41,7 @@ const DEFAULT_CONFIG: SystemConfigSettings = {
   optimisticLockingEnabled: true,
 };
 
-const STORAGE_KEY = "nacentwin_system_config";
+const STORAGE_KEY = "baclink_system_config";
 
 export default function AdminSystemConfigPage() {
   const [config, setConfig] = useState<SystemConfigSettings>(DEFAULT_CONFIG);
@@ -94,7 +94,7 @@ export default function AdminSystemConfigPage() {
         const updatedConfig = {
           ...config,
           lastUpdated: new Date().toISOString(),
-          updatedBy: authClient.getUser()?.fullName || "Quản trị viên Tối cao",
+          updatedBy: authClient.getUser()?.fullName || "Ban Quản trị Hiệp hội BACLINK",
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedConfig));
         setConfig(updatedConfig);
@@ -135,13 +135,13 @@ export default function AdminSystemConfigPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300 text-xs font-bold mb-2 border border-pink-200 dark:border-pink-900">
             <Sliders className="w-3.5 h-3.5" />
-            <span>Cấu Hình Tham Số Tối Cao</span>
+            <span>Cấu Hình Vận Hành Hiệp Hội BACLINK</span>
           </div>
           <h1 className="font-bold text-slate-900 dark:text-white tracking-tight text-2xl">
-            Cấu Hình Tham Số & SLA Hệ Thống
+            Cấu Hình Tham Số &amp; SLA Hệ Thống
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Thiết lập ngưỡng SLA 72h làm việc, giờ hành chính và quy chuẩn thông báo cảnh báo trễ hạn.
+            Thiết lập ngưỡng SLA 72h làm việc cho quy trình phê duyệt 1 cấp, giờ hành chính và quy chuẩn thông báo cảnh báo trễ hạn.
           </p>
         </div>
 
@@ -185,12 +185,12 @@ export default function AdminSystemConfigPage() {
 
       {/* Interactive Form */}
       <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Khối 1: Tham Số SLA Thẩm Định Cấp Sở */}
+        {/* Khối 1: Tham Số SLA Phê Duyệt Hồ Sơ Hiệp Hội */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-xs">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
               <Clock className="w-5 h-5 text-rose-500" />
-              <span>Tham Số SLA Thẩm Định Cấp Sở</span>
+              <span>Tham Số SLA Phê Duyệt Hồ Sơ Hiệp Hội</span>
             </div>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
               {config.slaBaseHours}h làm việc
@@ -201,7 +201,7 @@ export default function AdminSystemConfigPage() {
             {/* SLA Base Hours */}
             <div>
               <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                Thời hạn SLA cơ sở phê duyệt hồ sơ:
+                Thời hạn SLA cơ sở phê duyệt hồ sơ 1 cấp:
               </label>
               <select
                 value={config.slaBaseHours}
@@ -209,8 +209,8 @@ export default function AdminSystemConfigPage() {
                 className="form-control-sm w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold"
               >
                 <option value={48}>48 giờ làm việc (2 ngày hành chính - Khẩn cấp)</option>
-                <option value={72}>72 giờ làm việc (3 ngày hành chính - Tiêu chuẩn NĐ 85)</option>
-                <option value={96}>96 giờ làm việc (4 ngày hành chính - Thẩm định sâu)</option>
+                <option value={72}>72 giờ làm việc (3 ngày hành chính - Tiêu chuẩn Hiệp hội BACLINK)</option>
+                <option value={96}>96 giờ làm việc (4 ngày hành chính - Thẩm định chuyên sâu)</option>
               </select>
               <p className="text-xs text-slate-500 mt-1">
                 Thời gian chỉ tính trong khung giờ hành chính (Thứ 2 đến Thứ 6).
@@ -281,7 +281,7 @@ export default function AdminSystemConfigPage() {
                       Cảnh báo qua Email tự động
                     </div>
                     <div className="text-xs text-slate-500">
-                      Gửi email thông báo cho Lãnh đạo Sở khi hồ sơ chạm mốc 80% thời hạn SLA
+                      Gửi email thông báo cho Ban Quản trị Hiệp hội BACLINK khi hồ sơ chạm mốc 80% thời hạn SLA
                     </div>
                   </div>
                 </div>
@@ -301,7 +301,7 @@ export default function AdminSystemConfigPage() {
                       Cảnh báo tin nhắn SMS / OTT
                     </div>
                     <div className="text-xs text-slate-500">
-                      Gửi tin nhắn khẩn cấp tới đầu mối khi hồ sơ trễ hạn &gt; 72h
+                      Gửi tin nhắn khẩn cấp tới đầu mối Ban Quản trị khi hồ sơ trễ hạn &gt; 72h
                     </div>
                   </div>
                 </div>
@@ -315,17 +315,17 @@ export default function AdminSystemConfigPage() {
             </div>
           </div>
 
-          {/* Chính sách Override */}
+          {/* Chính sách Giải trình & Kiểm soát Phê duyệt */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xs">
             <div className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-100 dark:border-slate-800">
               <ShieldCheck className="w-5 h-5 text-emerald-500" />
-              <span>Chính Sách Admin Override (Tầng 0)</span>
+              <span>Chính Sách Giải Trình &amp; Kiểm Soát Phê Duyệt</span>
             </div>
 
             <div className="space-y-3 text-xs">
               <div>
                 <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Độ dài tối thiểu lý do giải trình can thiệp (Ký tự):
+                  Độ dài tối thiểu lý do giải trình thẩm định (Ký tự):
                 </label>
                 <input
                   type="number"
@@ -336,7 +336,7 @@ export default function AdminSystemConfigPage() {
                   className="form-control-sm w-full rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Quy định tối thiểu 20 ký tự theo tiêu chuẩn thanh tra Nghị định 85/2016.
+                  Quy định tối thiểu 20 ký tự để lưu vết kiểm toán minh bạch tại Hiệp hội BACLINK.
                 </p>
               </div>
 

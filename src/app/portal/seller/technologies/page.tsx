@@ -183,7 +183,7 @@ export default function SellerTechnologiesPage() {
               >
                 <option value="ALL">Tất cả trạng thái</option>
                 <option value="APPROVED">Đang hiển thị</option>
-                <option value="PENDING">Chờ Sở duyệt</option>
+                <option value="PENDING">Chờ Hiệp hội duyệt</option>
                 <option value="DRAFT">Bản nháp</option>
               </select>
 
@@ -318,7 +318,9 @@ export default function SellerTechnologiesPage() {
                           </span>
                         )}
                         <span className="text-xs text-slate-500 font-medium block truncate max-w-[160px]">
-                          {item.managingAuthorityName || "Hiệp hội BACLINK"}
+                          {item.managingAuthorityName && !/Sở KH/i.test(item.managingAuthorityName)
+                            ? item.managingAuthorityName
+                            : "Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK"}
                         </span>
                       </div>
                     </td>

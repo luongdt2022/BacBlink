@@ -211,7 +211,7 @@ export const EvidenceDocumentSection: React.FC<EvidenceDocumentSectionProps> = (
                 >
                   <option value="PUBLIC">🌐 Công khai trên sàn</option>
                   <option value="AFTER_CONNECTION">🔒 Mở sau kết nối (Khuyến nghị)</option>
-                  <option value="ADMIN_ONLY">🛡️ Chỉ Sở KH&CN thẩm định</option>
+                  <option value="ADMIN_ONLY">🛡️ Chỉ Admin BACLINK thẩm định</option>
                 </select>
 
                 {/* Nút xóa */}

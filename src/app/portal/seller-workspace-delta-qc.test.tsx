@@ -57,7 +57,7 @@ vi.mock('../../../../lib/enterprise-client', () => ({
   fetchMyEnterpriseProfile: vi.fn().mockResolvedValue({
     id: 'ent-1',
     name: 'Công ty Cổ phần Công nghệ Mới',
-    subjectType: 'DN ĐMST',
+    subjectType: 'Doanh nghiệp Hội viên',
     highQualificationRatio: '',
     status: 'Draft',
   }),

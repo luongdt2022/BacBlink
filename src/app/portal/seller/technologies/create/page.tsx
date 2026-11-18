@@ -27,8 +27,7 @@ import {
 } from "lucide-react";
 import {
   createSellerOffer,
-  PROVINCIAL_AUTHORITIES_CATALOG,
-  resolveDefaultAuthority,
+  FIXED_BACLINK_AUTHORITY,
 } from "@/services/api/technology-offer";
 import { fetchMyEnterpriseProfile } from "@/lib/enterprise-client";
 import { getStoredSession } from "@/lib/auth-client";
@@ -59,7 +58,7 @@ import { IpQuadDigitizationCard } from "@/components/seller/IpQuadDigitizationCa
 import { DataRoomFileManager } from "@/components/seller/DataRoomFileManager";
 import { MediaUploadSection } from "@/components/seller/MediaUploadSection";
 
-const LOCAL_STORAGE_DRAFT_KEY = "nacentech_seller_offer_draft_v7";
+const LOCAL_STORAGE_DRAFT_KEY = "baclink_seller_offer_draft_v8";
 
 export default function TaoHoSoChaoBanPage() {
   const router = useRouter();
@@ -74,7 +73,7 @@ export default function TaoHoSoChaoBanPage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
-  const [sectorCode, setSectorCode] = useState("LV01");
+  const [sectorCode, setSectorCode] = useState("IND_ELEC");
 
   // Pricing (Inline Step 1)
   const [pricingType, setPricingType] = useState<PricingType>("CONTACT");
@@ -126,8 +125,8 @@ export default function TaoHoSoChaoBanPage() {
 
   // Step 4: SHTT, DataRoom & Pháp lý
   const [documents, setDocuments] = useState<OfferDocument[]>([]);
-  const [managingAuthorityId, setManagingAuthorityId] = useState("BACLINK");
-  const [managingAuthorityName, setManagingAuthorityName] = useState("Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)");
+  const [managingAuthorityId, setManagingAuthorityId] = useState<string>(FIXED_BACLINK_AUTHORITY.id);
+  const [managingAuthorityName, setManagingAuthorityName] = useState<string>(FIXED_BACLINK_AUTHORITY.name);
   const [isAutoDetectedAuthority, setIsAutoDetectedAuthority] = useState(false);
   const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(false);
 
@@ -190,11 +189,9 @@ export default function TaoHoSoChaoBanPage() {
     }
   }, []);
 
-  // Nạp thông tin Doanh nghiệp liên kết (TASK-02 SSOT) & Tự động nhận diện Sở KH&CN tiếp nhận (BR-DELTA-04-01)
+  // Nạp thông tin Doanh nghiệp liên kết (TASK-02 SSOT) & cố định Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK
   useEffect(() => {
     let isMounted = true;
-    const session = getStoredSession();
-    const user = session?.user;
 
     fetchMyEnterpriseProfile()
       .then((profile) => {
@@ -204,26 +201,9 @@ export default function TaoHoSoChaoBanPage() {
         if (profile.contactPerson) setContactName(profile.contactPerson);
         if (profile.contactPhone) setContactPhone(profile.contactPhone);
         if (profile.contactEmail) setContactEmail(profile.contactEmail);
-
-        // Tự động nhận diện Sở KH&CN tiếp nhận theo 3 cấp ưu tiên
-        const resolved = resolveDefaultAuthority(user, profile);
-        if (resolved) {
-          setManagingAuthorityId(resolved.id);
-          setManagingAuthorityName(resolved.name);
-          setIsAutoDetectedAuthority(resolved.isAutoDetected);
-        }
       })
       .catch((err) => {
         console.warn("Could not load enterprise profile for seller create:", err);
-        // Fallback nhận diện theo user session nếu không load được profile
-        if (user) {
-          const resolved = resolveDefaultAuthority(user, null);
-          if (resolved) {
-            setManagingAuthorityId(resolved.id);
-            setManagingAuthorityName(resolved.name);
-            setIsAutoDetectedAuthority(resolved.isAutoDetected);
-          }
-        }
       });
     return () => {
       isMounted = false;
@@ -455,10 +435,10 @@ export default function TaoHoSoChaoBanPage() {
     setSummary("Công nghệ hàn laser fiber thông minh với thuật toán AI bù sai số quỹ đạo hàn thời gian thực dưới 0.05mm.");
     setProblemSolved("Giải quyết triệt để vấn đề biến dạng nhiệt trong chế tạo vỏ xe điện và bồn áp lực công nghiệp.");
     setOfferType("DEVICE");
-    setSectorCode("LV07");
+    setSectorCode("IND_MECH");
     setHasTechTransfer(true);
     setTrlLevel(7);
-    setDeveloperOrigin("The Industrial Technology Research Institute (ITRI)");
+    setDeveloperOrigin("Hanel PT / INTECH Group");
     setIpStatus("PATENT_GRANTED");
     setIpRegistrationNumber("VN 1-0028491");
     setPricingType("RANGE");
@@ -601,7 +581,7 @@ export default function TaoHoSoChaoBanPage() {
           <section className="min-w-0 space-y-6">
             {currentStep === 1 && (
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5 space-y-5">
-                {/* Doanh nghiệp liên kết (TASK-02) & Chọn Sở KH&CN tiếp nhận (Delta v9) */}
+                {/* Doanh nghiệp liên kết & Ban Thẩm định Kỹ thuật BACLINK */}
                 <SellerIdentityCard
                   enterpriseName={enterpriseName}
                   enterpriseTaxCode={enterpriseTaxCode}
@@ -747,10 +727,10 @@ export default function TaoHoSoChaoBanPage() {
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-extrabold text-slate-900">
-                      Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17
+                      Bước 2: Thông số kỹ thuật &amp; Đặc thù ngành công nghiệp
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Lớp 2 (Kỹ thuật chung) & Lớp 3 (Đặc thù ngành) theo ma trận 1.479 quy tắc Excel Master.
+                      Lớp 2 (Kỹ thuật chung) &amp; Lớp 3 (Đặc thù 8 ngành công nghiệp mũi nhọn BACLINK).
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">

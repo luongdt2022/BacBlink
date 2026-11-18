@@ -58,7 +58,7 @@ export default function ZaloPreviewPage() {
     email: "hung.nv@hust.edu.vn",
     phone: "0912 345 678",
     organization: "Đại học Bách Khoa Hà Nội",
-    sector: "C.26",
+    sector: "IND_ELEC",
     degree: "TS",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -124,10 +124,10 @@ export default function ZaloPreviewPage() {
               <div className="bg-[#0068ff] text-white px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                    NT
+                    BL
                   </div>
                   <div className="text-xs font-bold leading-tight">
-                    Viện Ứng Dụng Công Nghệ
+                    Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)
                     <span className="block text-xs font-normal text-brand-100 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Zalo Mini App
                     </span>

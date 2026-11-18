@@ -13,14 +13,14 @@ vi.mock("next/navigation", () => ({
 describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
   afterEach(cleanup);
 
-  it("renders Step 1 with the 3 text fields before Sector & Tech Transfer, hides LV.. codes, and styles Tiếp tục button visibly", () => {
+  it("renders Step 1 with the 3 text fields before Sector & Tech Transfer, uses 8 BACLINK IND_* sectors, and styles Tiếp tục button visibly", () => {
     render(<TaoHoSoChaoBanPage />);
 
     // Verify field order in DOM: Title, Summary, ProblemSolved appear BEFORE Sector combobox
     const titleLabel = screen.getByText(/Tên sản phẩm \/ thiết bị \/ công nghệ/i);
     const summaryLabel = screen.getByText(/Mô tả ngắn giải pháp/i);
     const problemLabel = screen.getByText(/Công dụng \/ Bài toán kỹ thuật giải quyết/i);
-    const sectorLabel = screen.getByText(/Ngành công nghiệp \(10 Lĩnh Vực TT17\)/i);
+    const sectorLabel = screen.getByText(/Ngành công nghiệp \(BACLINK\)/i);
 
     expect(
       titleLabel.compareDocumentPosition(sectorLabel) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -32,22 +32,22 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
       problemLabel.compareDocumentPosition(sectorLabel) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
 
-    // Verify Sector SearchableCombobox does NOT display LV01 code on trigger
-    const sectorTrigger = screen.getByLabelText("Ngành công nghiệp (10 Lĩnh Vực TT17)");
-    expect(sectorTrigger.textContent).toContain("Nông nghiệp");
-    expect(sectorTrigger.textContent).not.toContain("LV01");
+    // Verify Sector SearchableCombobox defaults to IND_ELEC without exposing raw code
+    const sectorTrigger = screen.getByLabelText("Ngành công nghiệp (BACLINK)");
+    expect(sectorTrigger.textContent).toContain("Điện tử, Bán dẫn");
+    expect(sectorTrigger.textContent).not.toContain("IND_ELEC");
 
     // Open Sector Combobox and filter for "Cơ khí"
     fireEvent.click(sectorTrigger);
     const searchInput = screen.getByPlaceholderText(/Tìm ngành công nghiệp/i);
     fireEvent.change(searchInput, { target: { value: "Cơ khí" } });
 
-    const mechOption = screen.getByRole("option", { name: /Cơ khí/i });
-    expect(mechOption.textContent).not.toContain("LV07");
+    const mechOption = screen.getByRole("option", { name: /Cơ khí chính xác/i });
+    expect(mechOption.textContent).not.toContain("IND_MECH");
     fireEvent.click(mechOption);
 
-    expect(sectorTrigger.textContent).toContain("Cơ khí");
-    expect(sectorTrigger.textContent).not.toContain("LV07");
+    expect(sectorTrigger.textContent).toContain("Cơ khí chính xác");
+    expect(sectorTrigger.textContent).not.toContain("IND_MECH");
 
     // Verify "Tiếp tục: Thông số ngành" button is visible and uses bg-brand-700
     const nextBtn = screen.getByRole("button", { name: /Tiếp tục: Thông số ngành/i });
@@ -69,7 +69,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     );
 
     fireEvent.click(nextBtn);
-    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & Đặc thù ngành công nghiệp/i)).toBeInTheDocument();
   });
 
   it("toggles the reactive yellow TRL panel when Chuyển giao công nghệ switch is toggled", () => {
@@ -141,74 +141,30 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     const submitConfirmBtn = screen.getByRole("button", { name: /Xác nhận & Nộp hồ sơ chờ duyệt/i });
     expect(submitConfirmBtn).not.toBeDisabled();
 
-    // Verify modal contains managing authority selection dropdown
-    expect(screen.getByText(/Sở KH&CN tiếp nhận:/i)).toBeInTheDocument();
+    // Verify modal displays fixed BACLINK authority
+    expect(screen.getAllByText(/Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK/i).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("displays Sở KH&CN tiếp nhận thẩm định combobox in Step 1 and synchronizes with Step 4", () => {
+  it("displays fixed Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK in Step 1 and Step 4 without Sở KH&CN selector", () => {
     render(<TaoHoSoChaoBanPage />);
 
-    // Step 1: Check that authority dropdown is present in SellerIdentityCard
-    const authorityLabels = screen.getAllByText(/Sở KH&CN tiếp nhận thẩm định/i);
-    expect(authorityLabels.length).toBeGreaterThanOrEqual(1);
+    // Step 1: Check that fixed BACLINK authority is displayed and no Sở KH&CN text exists
+    expect(screen.getAllByText("Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Sở KH&CN/i)).toBeNull();
+    expect(screen.queryByText(/Sở Khoa học/i)).toBeNull();
 
-    // Verify option Thái Nguyên is available in select
-    const selectElements = screen.getAllByRole("combobox");
-    const authoritySelect = selectElements.find((el) => {
-      return Array.from((el as HTMLSelectElement).options).some((opt) => opt.value === "VN-TN");
-    });
-    expect(authoritySelect).toBeDefined();
+    // Step 4 also shows fixed BACLINK authority
+    const stepperTitle = screen.getByText(/Tiến trình hồ sơ/i);
+    const stepperContainer = stepperTitle.closest("div")?.parentElement!;
+    const stepButtons = stepperContainer.querySelectorAll("button");
+    fireEvent.click(stepButtons[3]);
 
-    // Change authority to VN-TN (Thái Nguyên)
-    fireEvent.change(authoritySelect!, { target: { value: "VN-TN" } });
-
-    // Fill valid Step 1 to allow Fast-Track modal
-    fillStep1Valid();
-
-    // Open Fast Track modal and verify VN-TN is selected
-    const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
-    fireEvent.click(fastTrackBtn);
-    expect(screen.getByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeInTheDocument();
-
-    const modalSelects = screen.getAllByRole("combobox");
-    const modalAuthSelect = modalSelects.find((el) => {
-      return (el as HTMLSelectElement).value === "VN-TN";
-    });
-    expect(modalAuthSelect).toBeDefined();
-  });
-
-  it("allows selecting Sở KH&CN Thái Nguyên (VN-TN) directly inside FastTrackSubmitModal and updates authority state", () => {
-    render(<TaoHoSoChaoBanPage />);
-
-    // Fill valid Step 1
-    fillStep1Valid();
-
-    // Open Fast Track modal directly
-    const fastTrackBtn = screen.getByRole("button", { name: /Gửi chờ duyệt ngay \(Fast-Track\)/i });
-    fireEvent.click(fastTrackBtn);
-    expect(screen.getByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeInTheDocument();
-
-    // Find the select inside modal
-    const modalSelects = screen.getAllByRole("combobox");
-    const modalAuthSelect = modalSelects[modalSelects.length - 1];
-    expect(modalAuthSelect).toBeInTheDocument();
-
-    // Select VN-TN (Sở Khoa học và Công nghệ tỉnh Thái Nguyên)
-    fireEvent.change(modalAuthSelect, { target: { value: "VN-TN" } });
-    expect((modalAuthSelect as HTMLSelectElement).value).toBe("VN-TN");
-
-    // Close modal
-    const closeBtn = screen.getByRole("button", { name: /Xem lại thông tin/i });
-    fireEvent.click(closeBtn);
-
-    // Verify authority on main page is updated to VN-TN
-    const pageSelects = screen.getAllByRole("combobox");
-    const pageAuthSelect = pageSelects.find((el) => (el as HTMLSelectElement).value === "VN-TN");
-    expect(pageAuthSelect).toBeDefined();
+    expect(screen.getAllByText("Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Sở KH&CN/i)).toBeNull();
   });
 
   it("allows clicking freely on any step in FormStepper without being locked, and confirms 5 UX states panel is removed", () => {
-    const { container } = render(<TaoHoSoChaoBanPage />);
+    render(<TaoHoSoChaoBanPage />);
 
     // Get stepper buttons container
     const stepperTitle = screen.getByText(/Tiến trình hồ sơ/i);
@@ -218,7 +174,7 @@ describe("TaoHoSoChaoBanPage (/portal/seller/technologies/create)", () => {
     // Click directly on Step 2 in FormStepper
     fireEvent.click(stepButtons[0]); // Step 1
     fireEvent.click(stepButtons[1]); // Step 2
-    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bước 2: Thông số kỹ thuật & Đặc thù ngành công nghiệp/i)).toBeInTheDocument();
 
     // Click directly on Step 3 in FormStepper
     fireEvent.click(stepButtons[2]); // Step 3

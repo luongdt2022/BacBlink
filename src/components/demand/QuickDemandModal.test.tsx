@@ -66,28 +66,28 @@ describe("QuickDemandModal — 10 Fields Section B & TNI", () => {
 
     // Click Sector Combobox trigger ("4. Lĩnh vực")
     const sectorTrigger = screen.getByLabelText("4. Lĩnh vực");
-    // Verify trigger does not show LV01 code on UI
-    expect(sectorTrigger.textContent).not.toContain("LV01");
-    expect(sectorTrigger.textContent).toContain("Nông nghiệp");
+    // Verify trigger does not show IND_ELEC code on UI
+    expect(sectorTrigger.textContent).not.toContain("IND_ELEC");
+    expect(sectorTrigger.textContent).toContain("Điện tử, Bán dẫn");
 
     fireEvent.click(sectorTrigger);
 
-    // Search for "CNTT" inside the combobox search input
+    // Search for "Công nghệ thông tin" inside the combobox search input
     const searchInput = screen.getByPlaceholderText(/Tìm lĩnh vực/i);
-    fireEvent.change(searchInput, { target: { value: "CNTT" } });
+    fireEvent.change(searchInput, { target: { value: "Công nghệ thông tin" } });
 
-    // Select option and verify LV16 is not shown in the option text
-    const lv16Option = screen.getByRole("option", { name: /CNTT/i });
-    expect(lv16Option.textContent).not.toContain("LV16");
-    fireEvent.click(lv16Option);
+    // Select option and verify IND_IT is not shown in the option text
+    const indItOption = screen.getByRole("option", { name: /Công nghệ thông tin/i });
+    expect(indItOption.textContent).not.toContain("IND_IT");
+    fireEvent.click(indItOption);
 
     // Open Tech Group Combobox ("5. Nhóm công nghệ")
     const techGroupTrigger = screen.getByLabelText("5. Nhóm công nghệ");
     expect(techGroupTrigger.textContent).not.toContain("CN09");
     fireEvent.click(techGroupTrigger);
 
-    // Verify recommended group header is displayed without LV16 code
-    expect(screen.getByText(/Nhóm công nghệ phù hợp với lĩnh vực đã chọn/i)).toBeInTheDocument();
+    // Verify recommended group header is displayed without raw code
+    expect(screen.getByText(/Nhóm công nghệ phù hợp với ngành đã chọn/i)).toBeInTheDocument();
 
     // Filter inside Tech Group combobox for "ERP"
     const techSearchInput = screen.getByPlaceholderText(/Tìm nhóm công nghệ/i);

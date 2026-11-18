@@ -38,21 +38,17 @@ describe('TniMethodologyModal Component', () => {
     expect(screen.getByText(/Trục O: Năng lực tiếp nhận & hấp thụ \(Adoption Readiness\) — Trọng số 15%/i)).toBeInTheDocument();
   });
 
-  it('switches to 304 Enterprises Empirical Report tab and checks statistical metrics', () => {
+  it('switches to Industrial Benchmark tab and checks SLA priority tiers without legacy 304 survey references', () => {
     render(<TniMethodologyModal isOpen={true} onClose={vi.fn()} />);
-    const empiricalTab = screen.getByRole('button', { name: /4. Thực Nghiệm 304 Doanh Nghiệp/i });
-    fireEvent.click(empiricalTab);
+    const benchmarkTab = screen.getByRole('button', { name: /4\. Chuẩn Đối Chiếu Công Nghiệp/i });
+    fireEvent.click(benchmarkTab);
 
-    expect(screen.getByText(/Báo Cáo Thực Nghiệm 304 Doanh Nghiệp Việt Nam/i)).toBeInTheDocument();
-    expect(screen.getByText(/90.0 \/ 100/i)).toBeInTheDocument(); // Max
-    expect(screen.getByText(/68.94 \/ 100/i)).toBeInTheDocument(); // Mean
-    expect(screen.getByText(/66.5 \/ 100/i)).toBeInTheDocument(); // Median
-    expect(screen.getByText(/51.5 \/ 100/i)).toBeInTheDocument(); // Min
-
-    // Distribution
-    expect(screen.getByText(/18 DN/i)).toBeInTheDocument();
-    expect(screen.getByText(/155 DN/i)).toBeInTheDocument();
-    expect(screen.getByText(/131 DN/i)).toBeInTheDocument();
+    expect(screen.getByText(/Thang Chuẩn Đối Chiếu Mức Ưu Tiên Đặt Hàng Công Nghiệp BACLINK/i)).toBeInTheDocument();
+    expect(screen.getByText(/80 – 100/i)).toBeInTheDocument();
+    expect(screen.getByText(/Trong 24 giờ/i)).toBeInTheDocument();
+    expect(screen.getByText(/Radar AI \+ Cố vấn 1-1/i)).toBeInTheDocument();
+    expect(screen.queryByText(/304 Doanh Nghiệp/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/PO-DEC/i)).not.toBeInTheDocument();
   });
 
   it('calls onClose callback when clicked close button', () => {

@@ -54,27 +54,26 @@ export default function AdminDashboard() {
   }, []);
 
   const totalUsersCount = stats ? (stats.totalEnterprises + stats.totalExperts) : 0;
-  const provincesCount = stats?.totalProvinces ?? 0;
 
   const systemMetrics = [
     {
-      title: "Tổng Doanh Nghiệp & Chuyên Gia",
+      title: "Tổng Doanh Nghiệp & Cố Vấn",
       value: totalUsersCount > 0 ? totalUsersCount.toLocaleString("vi-VN") : "0",
       sub: totalUsersCount > 0 ? "Đã đăng ký tài khoản" : "Chưa có dữ liệu",
       icon: Users,
       color: "text-brand-700 dark:text-brand-200",
     },
     {
-      title: "Sở KH&CN Kết Nối",
-      value: provincesCount > 0 ? `${provincesCount} / 34` : "0 / 34",
-      sub: provincesCount > 0 ? `${Math.round((provincesCount / 34) * 100)}% Tỉnh/Thành Trọng Điểm` : "Chưa kết nối",
+      title: "Địa Bàn KCN Bắc Ninh",
+      value: "6 / 6 KCN",
+      sub: "KCN Yên Phong, VSIP, Quế Võ, Tiên Sơn...",
       icon: Network,
-      color: "text-nacen-green-700 dark:text-nacen-green-200",
+      color: "text-emerald-700 dark:text-emerald-200",
     },
     {
-      title: "Danh Mục Lĩnh Vực TT17",
-      value: String(sectorCount ?? 0),
-      sub: sectorCount && sectorCount > 0 ? "Mã chuyên môn đang kích hoạt" : "Chưa có danh mục",
+      title: "Ngành Công Nghiệp BACLINK",
+      value: String(sectorCount ?? 8),
+      sub: sectorCount === 0 ? "Chưa có danh mục" : "Cơ khí, Bán dẫn, Tự động hóa...",
       icon: Database,
       color: "text-brand-700 dark:text-brand-200",
     },
@@ -96,7 +95,7 @@ export default function AdminDashboard() {
             Trung Tâm Điều Hành & Giám Sát Cấp Cao (Cổng Admin)
           </h1>
           <p className="text-body text-slate-500 dark:text-slate-400 mt-1">
-            Quyền hạn tối cao: Quản trị 10 Roles, Cây tổ chức 34 Sở KH&CN trọng điểm, và Nhật ký kiểm toán Nghị định 85/2016.
+            Quyền hạn tối cao: Quản trị hệ thống BACLINK Bắc Ninh (3 cấp vai trò ADMIN, ENTERPRISE, PUBLIC_USER), quản lý hội viên và nhật ký kiểm toán.
           </p>
         </div>
 
@@ -145,7 +144,7 @@ export default function AdminDashboard() {
             ) : (
               <p className="text-body text-slate-600 dark:text-slate-300 mt-0.5">
                 {pendingApprovalsCount > 0
-                  ? "Bao gồm các hồ sơ nâng hạng Chuyên gia KH&CN và Gian hàng công nghệ mới gửi cần xét duyệt."
+                  ? "Bao gồm các hồ sơ đăng ký Doanh nghiệp Hội viên, Cố vấn kỹ thuật và Sản phẩm công nghiệp mới gửi cần xét duyệt."
                   : "Tất cả hồ sơ đăng ký và chào bán công nghệ đã được xử lý xong."}
               </p>
             )}
@@ -197,10 +196,10 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      {/* 10 Roles Hierarchy Overview */}
+      {/* 3 Cấp Vai Trò & Scoped RBAC BACLINK */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface p-6 shadow-xs space-y-4">
         <h3 className="font-bold text-slate-900 dark:text-white flex items-center justify-between text-card-title">
-          <span>Cấu Trúc Phân Tầng 10 Vai Trò & 3D Scoped RBAC</span>
+          <span>Cấu Trúc Phân Tầng Vai Trò & Scoped RBAC (Hệ Thống Rút Gọn BACLINK Bắc Ninh)</span>
           <Link
             href="/admin/roles"
             className="text-label text-brand-700 hover:text-brand-900 font-semibold flex items-center gap-1 dark:text-brand-200 hover:underline transition"
@@ -210,29 +209,32 @@ export default function AdminDashboard() {
           </Link>
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-label">
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
-            <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-semibold dark:bg-brand-950 dark:text-brand-200">TẦNG 0</span>
-            <p className="font-bold text-slate-900 dark:text-white">Quản Trị Tối Cao</p>
-            <p className="break-words text-slate-500 text-caption dark:text-slate-300">SUPER_ADMIN, OPERATOR_ADMIN</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-label">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+            <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-semibold dark:bg-brand-950 dark:text-brand-200">CẤP 1 (QUẢN TRỊ TẬP TRUNG)</span>
+            <p className="font-bold text-slate-900 dark:text-white">Ban Quản Trị Hiệp Hội BACLINK</p>
+            <p className="font-mono text-xs text-brand-700 dark:text-brand-300 font-bold">ADMIN</p>
+            <p className="text-slate-500 text-caption dark:text-slate-400">
+              Phê duyệt 1 cấp tập trung cho Doanh nghiệp Hội viên, thẩm định hồ sơ năng lực và quản trị hệ thống.
+            </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
-            <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-semibold dark:bg-brand-950 dark:text-brand-200">TẦNG 1</span>
-            <p className="font-bold text-slate-900 dark:text-white">Sở Tỉnh & Ngành</p>
-            <p className="break-words text-slate-500 text-caption dark:text-slate-300">PROVINCIAL_ADMIN, SECTOR_ADMIN, CLUSTER_ADMIN</p>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+            <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-bold dark:bg-brand-950 dark:text-brand-200">CẤP 2 (HỘI VIÊN GIAO THƯƠNG)</span>
+            <p className="font-bold text-slate-900 dark:text-white">Doanh Nghiệp Hội Viên (Dual-Mode)</p>
+            <p className="font-mono text-xs text-brand-700 dark:text-brand-300 font-bold">ENTERPRISE (Dual-Mode: Bên Mua &amp; Bên Bán)</p>
+            <p className="text-slate-500 text-caption dark:text-slate-400">
+              Sở hữu đồng thời năng lực Bên Mua &amp; Bên Bán, đăng nhu cầu tìm nhà cung ứng và niêm yết năng lực sản xuất.
+            </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
-            <span className="px-2 py-0.5 rounded bg-brand-100 text-brand-700 text-caption font-bold dark:bg-brand-950 dark:text-brand-200">TẦNG 2</span>
-            <p className="font-bold text-slate-900 dark:text-white">Thị Trường & Chuyên Gia</p>
-            <p className="break-words text-slate-500 text-caption dark:text-slate-300">SELLER, BUYER, INNOVATION_ENTITY, VERIFIED_EXPERT</p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-1.5">
-            <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-caption font-semibold dark:bg-slate-800 dark:text-slate-100">TẦNG 3</span>
-            <p className="font-bold text-slate-900 dark:text-white">Đại Chúng</p>
-            <p className="break-words text-slate-500 text-caption dark:text-slate-300">PUBLIC_USER, GUEST</p>
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+            <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-700 text-caption font-semibold dark:bg-slate-800 dark:text-slate-100">CẤP 3 (ĐẠI CHÚNG)</span>
+            <p className="font-bold text-slate-900 dark:text-white">Thành Viên Công Chúng &amp; Khách</p>
+            <p className="font-mono text-xs text-slate-700 dark:text-slate-300 font-bold">PUBLIC_USER</p>
+            <p className="text-slate-500 text-caption dark:text-slate-400">
+              Cá nhân, tổ chức tra cứu danh bạ công khai, học liệu số và gửi hồ sơ đăng ký tham gia Hiệp hội BACLINK.
+            </p>
           </div>
         </div>
       </div>

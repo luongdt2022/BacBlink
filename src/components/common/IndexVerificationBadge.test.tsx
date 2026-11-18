@@ -14,7 +14,7 @@ describe('IndexVerificationBadge Component', () => {
         type="TRL"
         status="VERIFIED_BY_GOV"
         value={8}
-        authorityName="Sở KH&CN Hà Nội"
+        authorityName="Ban Thẩm định Kỹ thuật BACLINK"
         variant="compact"
       />
     );
@@ -169,7 +169,7 @@ describe('IndexVerificationBadge Component', () => {
       />
     );
 
-    expect(screen.getByText(/✓ SHTT · Đã xác thực cơ quan QLNN/i)).toBeInTheDocument();
+    expect(screen.getByText(/✓ SHTT · Đã xác thực bảo hộ/i)).toBeInTheDocument();
   });
 
   it('triggers onOpenMethodology callback when question mark button is clicked', () => {

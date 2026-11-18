@@ -18,36 +18,39 @@ export const BACLINK_SECTOR_LABELS: Record<string, string> = {
   IND_LOG: "Logistics công nghiệp, Kho vận & Chuỗi cung ứng",
 };
 
-// Từ điển 10 vai trò chuẩn 3D Scoped RBAC
+// Từ điển vai trò chuẩn hóa kiến trúc 3 cấp BACLINK
 export const ROLE_LABELS: Record<string, string> = {
-  SUPER_ADMIN: "Quản trị Tối cao (NacenTech)",
-  OPERATOR_ADMIN: "Quản trị Vận hành Sàn",
-  PROVINCIAL_ADMIN: "Lãnh đạo Sở KH&CN Tỉnh/Thành",
-  CLUSTER_ADMIN: "Chuyên viên Thẩm định Sở Tỉnh",
-  SECTOR_ADMIN: "Trưởng Ban Quản lý Ngành TT17",
-  INNOVATION_ENTITY: "Đại diện Viện, Trường, Doanh nghiệp ĐMST",
-  VERIFIED_EXPERT: "Chuyên gia Khoa học & Công nghệ",
-  SELLER: "Nhà Cung Ứng Công Nghệ",
-  BUYER: "Bên Mua / Doanh Nghiệp Đặt Hàng",
+  ADMIN: "Quản trị Hiệp hội (BACLINK)",
+  ENTERPRISE: "Doanh nghiệp Hội viên",
   PUBLIC_USER: "Thành Viên Đại Chúng",
+  SUPER_ADMIN: "Quản trị Hiệp hội (BACLINK)",
+  OPERATOR_ADMIN: "Quản trị Vận hành BACLINK",
+  PROVINCIAL_ADMIN: "Điều phối Địa bàn BACLINK",
+  CLUSTER_ADMIN: "Chuyên viên Thẩm định Kỹ thuật BACLINK",
+  SECTOR_ADMIN: "Điều phối Ngành Công nghiệp BACLINK",
+  INNOVATION_ENTITY: "Doanh nghiệp Hội viên",
+  VERIFIED_EXPERT: "Ban Cố vấn Kỹ thuật BACLINK",
+  EXPERT: "Ban Cố vấn Kỹ thuật BACLINK",
+  SELLER: "Nhà Cung Ứng Sản Phẩm / Công Nghệ",
+  BUYER: "Bên Mua / Doanh Nghiệp Đặt Hàng",
   GUEST: "Khách Vãng Lai",
 };
 
-// Từ điển loại hồ sơ kiểm duyệt theo chuẩn hành chính công V7
+// Từ điển loại hồ sơ kiểm duyệt chuẩn BACLINK
 export const REQUEST_TYPE_LABELS: Record<string, string> = {
-  EXPERT: "Chuyên Gia KH&CN",
-  SHOP: "Chào Bán Công Nghệ",
-  TECH_SUPPLY: "Chào Bán Công Nghệ",
-  DEMAND: "Nhu Cầu Công Nghệ",
-  TECH_DEMAND: "Nhu Cầu Công Nghệ",
-  ACCOUNT: "Tài Khoản Tổ Chức",
-  FACILITY: "Doanh Nghiệp ĐMST",
-  ENTERPRISE: "Doanh Nghiệp ĐMST",
-  INSTITUTION: "Viện / Trường Đại học Liên kết",
-  INNOVATION_ENTITY: "Doanh Nghiệp ĐMST",
+  EXPERT: "Ban Cố Vấn Kỹ Thuật",
+  SHOP: "Chào Bán Sản Phẩm / Công Nghệ",
+  TECH_SUPPLY: "Chào Bán Sản Phẩm / Công Nghệ",
+  DEMAND: "Nhu Cầu Mua & Đặt Hàng",
+  TECH_DEMAND: "Nhu Cầu Mua & Đặt Hàng",
+  ACCOUNT: "Tài Khoản Doanh Nghiệp Hội Viên",
+  FACILITY: "Doanh Nghiệp Hội Viên",
+  ENTERPRISE: "Doanh Nghiệp Hội Viên",
+  INSTITUTION: "Đơn Vị Liên Kết Công Nghiệp",
+  INNOVATION_ENTITY: "Doanh Nghiệp Hội Viên",
 };
 
-// Từ điển 18 lĩnh vực công nghệ theo TT17/2019/TT-BKHCN
+// Từ điển danh mục ngành công nghệ tương thích dữ liệu lịch sử
 export const DEFAULT_SECTOR_LABELS: Record<string, string> = {
   "01": "Công nghệ thông tin & Truyền thông",
   "02": "Năng lượng & Tự động hóa",
@@ -165,7 +168,7 @@ export function resolveActionBadge(action?: string | null): {
     case "OVERRIDE_APPROVE":
     case "OVERRIDE":
       return {
-        label: "Can Thiệp Tầng 0",
+        label: "Phê Duyệt Đặc Biệt",
         badgeClass: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-extrabold",
       };
     case "REJECTED":

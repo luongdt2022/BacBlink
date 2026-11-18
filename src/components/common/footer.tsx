@@ -45,11 +45,7 @@ export function Footer() {
 
             <div className="space-y-1 text-xs text-white/90 leading-normal">
               <p className="font-medium text-white/90">
-                Cơ quan thành lập: <span className="font-bold text-white">UBND TỈNH BẮC NINH</span>
-                <span className="mx-2 text-white/30 hidden sm:inline">•</span>
-                <span className="block sm:inline mt-0.5 sm:mt-0">
-                  Đơn vị vận hành: <span className="font-bold text-amber-300">HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)</span>
-                </span>
+                Đơn vị chủ quản: <span className="font-bold text-amber-300">HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)</span>
               </p>
               <div className="flex items-center gap-1.5 text-white/80">
                 <MapPin className="size-3.5 shrink-0 text-white/70" aria-hidden="true" />
@@ -68,7 +64,7 @@ export function Footer() {
             </div>
 
             <div className="text-[11px] text-white/60">
-              Thành lập theo Quyết định số 1652/QĐ-UBND ngày 16/06/2025 của Chủ tịch UBND tỉnh Bắc Ninh.
+              Hiệp hội thành lập theo Quyết định số 1652/QĐ-UBND ngày 16/06/2025 của Chủ tịch UBND tỉnh Bắc Ninh.
             </div>
           </div>
 

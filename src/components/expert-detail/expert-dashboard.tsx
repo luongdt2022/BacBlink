@@ -10,7 +10,7 @@ type Todo = { title: string; description: string; href: string };
 
 export function expertDashboardTodos(detail: ExpertPrivateDetail): Todo[] {
   const todos: Todo[] = [];
-  if (!detail.phone || !detail.email) todos.push({ title: "Bổ sung thông tin liên hệ", description: "Cập nhật số điện thoại và email công tác để NacenTech có thể liên hệ.", href: "/portal/expert/profile/edit" });
+  if (!detail.phone || !detail.email) todos.push({ title: "Bổ sung thông tin liên hệ", description: "Cập nhật số điện thoại và email công tác để Ban Thư ký & Cố vấn Kỹ thuật BACLINK có thể liên hệ.", href: "/portal/expert/profile/edit" });
   if (!detail.activeDocumentTypes.length) todos.push({ title: "Tải chứng từ xác minh", description: "Hồ sơ chưa có chứng từ đang hiệu lực để đối soát.", href: "/portal/expert/profile/edit" });
   if (!detail.publicProfile.publications.length && !detail.publicProfile.patents.length) todos.push({ title: "Rà soát công trình tiêu biểu", description: "Bổ sung công bố hoặc sáng chế để làm rõ năng lực chuyên môn.", href: "/portal/expert/profile/edit" });
   return todos;

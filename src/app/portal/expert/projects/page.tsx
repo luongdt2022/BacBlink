@@ -143,7 +143,7 @@ function ExpertProjectsContent() {
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="text-body text-amber-900 dark:text-amber-200 space-y-1">
             <h4 className="font-bold text-label">
-              Tài Khoản Đang Chờ Phê Duyệt Cấp Sở (EXPERT)
+              Hồ Sơ Đang Chờ Ban Quản Trị BACLINK Phê Duyệt
             </h4>
             <p className="text-caption">
               Bạn đang ở chế độ xem trước dự án. Các tính năng tham gia phòng đàm phán độc quyền Deal Room và ký kết Thỏa thuận Ghi nhớ MOU có giá trị pháp lý sẽ được kích hoạt ngay sau khi hồ sơ Cố vấn Kỹ thuật được Hiệp hội BACLINK phê duyệt.
@@ -184,7 +184,7 @@ function ExpertProjectsContent() {
             </p>
           </div>
 
-          {/* Expert Toolset Action: Export Report (Tuyệt đối không có nút Giám sát Sở KH&CN) */}
+          {/* Expert Toolset Action: Export Report */}
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/portal/matching/radar"
@@ -219,10 +219,10 @@ function ExpertProjectsContent() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Sector TT17 Filter */}
+            {/* Sector BACLINK Filter */}
             <div className="flex items-center gap-1.5">
               <label htmlFor="sector-filter-select" className="text-caption font-bold text-slate-500 whitespace-nowrap">
-                Lĩnh vực TT17:
+                Ngành công nghiệp chuyên môn (BACLINK):
               </label>
               <select
                 id="sector-filter-select"
@@ -230,7 +230,11 @@ function ExpertProjectsContent() {
                 onChange={(e) => setSelectedSector(e.target.value)}
                 className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-800 dark:border-slate-700 dark:text-white min-h-11"
               >
-                <option value="ALL">Tất Cả Lĩnh Vực</option>
+                <option value="ALL">Tất Cả Ngành Công Nghiệp</option>
+                <option value="IND_ELEC">IND_ELEC - Điện tử & Bán dẫn</option>
+                <option value="IND_MECH">IND_MECH - Cơ khí chính xác & Khuôn mẫu</option>
+                <option value="IND_AUTO">IND_AUTO - Tự động hóa & Robot</option>
+                <option value="IND_IT">IND_IT - CNTT & AI Công nghiệp</option>
                 <option value="01">01 - Nông nghiệp công nghệ cao</option>
                 <option value="03">03 - Cơ khí - Tự động hóa</option>
                 <option value="05">05 - Y - Dược & Thiết bị y tế</option>

@@ -147,7 +147,7 @@ export default function PublicDemandDetailPage() {
       if (user) {
         let changed = false;
         if (!sellerName) {
-          setSellerName(user.organizationName || user.fullName || "Đơn vị Đổi mới sáng tạo");
+          setSellerName(user.organizationName || user.fullName || "Doanh nghiệp Hội viên");
           changed = true;
         }
         if (!sellerEmail) {
@@ -171,7 +171,7 @@ export default function PublicDemandDetailPage() {
       toast.warning("Bạn chưa đăng nhập tài khoản.", "Chưa đăng nhập");
       return;
     }
-    setSellerName(user.organizationName || user.fullName || "Đơn vị Đổi mới sáng tạo");
+    setSellerName(user.organizationName || user.fullName || "Doanh nghiệp Hội viên");
     setSellerEmail(user.email || "");
     setSellerPhone(user.phone || user.phoneNumber || "0912345678");
     setAutoFilled(true);
@@ -341,7 +341,7 @@ export default function PublicDemandDetailPage() {
                       </span>
                       <span className="flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-brand-500" />
-                        Khu vực: <strong className="text-text-primary dark:text-slate-200">{item.province || "Toàn quốc"}</strong>
+                        Khu vực: <strong className="text-text-primary dark:text-slate-200">{item.province || "Bắc Ninh"}</strong>
                       </span>
                     </div>
                   </div>

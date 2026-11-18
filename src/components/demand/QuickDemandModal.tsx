@@ -21,11 +21,10 @@ import { authClient } from '@/lib/auth-client';
 import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
 import {
-  TECH_GROUP_OPTIONS,
   getTechGroupsBySector,
   DEMAND_TYPE_OPTIONS,
   BUDGET_RANGES_7
-} from '@/app/khao-sat-nhu-cau/types';
+} from '@/components/demand/demand-taxonomy';
 
 interface QuickDemandModalProps {
   isOpen: boolean;
@@ -64,7 +63,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
     // 3. Ngân sách
     budgetRange: BUDGET_RANGES_7[3] || '500 triệu–1 tỷ đồng',
     // 4. Lĩnh vực
-    sectorCode: 'LV01',
+    sectorCode: 'IND_ELEC',
     // 5. Nhóm công nghệ
     techGroupCode: 'CN01',
     // 6. Công đoạn sản xuất có sự cố
@@ -203,14 +202,14 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                   TẠO NHANH BÀI TOÁN KỸ THUẬT
                 </span>
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full hidden sm:inline-block">
-                  Chuẩn TT17/2019/TT-BKHCN
+                  Chuẩn Kỹ Thuật BACLINK
                 </span>
               </div>
               <h3 id="modal-title" className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-snug truncate">
                 Đăng Bài Toán Kỹ Thuật Cần Tìm Cung
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 hidden sm:block truncate">
-                Khảo sát điểm nghẽn sản xuất, tính toán chỉ số cấp thiết TNI và tự động ghép nối với bên chào bán công nghệ.
+                Mô tả yêu cầu đặt hàng gia công / kỹ thuật, tính toán chỉ số cấp thiết TNI và kết nối nhà cung ứng Bắc Ninh.
               </p>
             </div>
           </div>
@@ -242,7 +241,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                       1. Chi Tiết Bài Toán Kỹ Thuật
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      B. Khảo sát nhu cầu công nghệ / Vấn đề cần giải quyết (10 tiêu chí)
+                      Mô tả yêu cầu đặt hàng gia công, thiết bị hoặc giải pháp kỹ thuật
                     </p>
                   </div>
                 </div>
@@ -257,7 +256,7 @@ export default function QuickDemandModal({ isOpen, onClose, onSuccess }: QuickDe
                     required
                     value={formData.technologyName}
                     onChange={(e) => setFormData({ ...formData, technologyName: e.target.value })}
-                    placeholder="Ví dụ: Ứng dụng KH&CN xây dựng mô hình thâm canh cây na rải vụ..."
+                    placeholder="Ví dụ: Gia công khuôn dập liên hoàn chính xác ±0.005mm hoặc Dây chuyền kiểm tra AOI..."
                     className="form-control w-full text-xs font-medium"
                   />
                 </div>

@@ -83,7 +83,7 @@ export function IndexVerificationBadge({
       const numVal = typeof value === "number" ? value : (value !== undefined && value !== null && !isNaN(Number(value)) ? Number(value) : undefined);
       const scoreText = numVal !== undefined ? `TNI ${numVal}/100` : "TNI";
       
-      // Phân mức cấp thiết TNI theo chuẩn TT17 / Basic Design
+      // Phân mức ưu tiên đặt hàng TNI theo chuẩn Hiệp hội BACLINK
       let urgencyText = "Cấp thiết";
       if (numVal !== undefined) {
         if (numVal >= 80) urgencyText = "Rất cấp thiết";
@@ -96,7 +96,7 @@ export function IndexVerificationBadge({
       return `${scoreText} · ${urgencyText}`;
     }
     if (type === "IP") {
-      if (isVerified) return "✓ SHTT · Đã xác thực cơ quan QLNN";
+      if (isVerified) return "✓ SHTT · Đã xác thực bảo hộ";
       if (isRejected) return "SHTT · Chưa đạt điều kiện";
       if (isNotApplicable) return "SHTT · Không chuyển giao";
       return "SHTT · Tự kê khai (Chưa đối soát)";
@@ -183,7 +183,7 @@ export function IndexVerificationBadge({
             : isVerified
             ? authorityName
               ? `Đã được thẩm định bởi: ${authorityName}`
-              : "Đã được cơ quan quản lý nhà nước / Sở KH&CN thẩm định"
+              : "Đã được Ban Thẩm định BACLINK Bắc Ninh thẩm định"
             : "Thông tin do chủ thể tự kê khai, chưa qua thẩm định độc lập"
         }
       >

@@ -255,7 +255,7 @@ export default function ExpertProfileEditPage() {
                 </span>
               </div>
               <p className="text-caption text-slate-500 font-semibold uppercase tracking-wider dark:text-slate-400">
-                Mã Định Danh: {expertCode || "CG-NACEN"} · {fullName}
+                Mã Định Danh: {expertCode || "CG-BL"} · {fullName}
               </p>
             </div>
           </div>
@@ -321,7 +321,7 @@ export default function ExpertProfileEditPage() {
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:bg-slate-900 dark:border-slate-800">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-800 to-brand-600 text-white flex items-center justify-center font-black text-xl shadow-md">
-                {fullName ? fullName.slice(0, 2).toUpperCase() : "NT"}
+                {fullName ? fullName.slice(0, 2).toUpperCase() : "BL"}
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -476,21 +476,21 @@ export default function ExpertProfileEditPage() {
               </div>
             </div>
 
-            {/* SECTION 2: LĨNH VỰC & TỪ KHÓA CHUYÊN SÂU */}
+            {/* SECTION 2: NGÀNH CÔNG NGHIỆP CHUYÊN MÔN & TỪ KHÓA CHUYÊN SÂU */}
             <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-xs space-y-4 dark:bg-slate-900 dark:border-slate-800">
               <div className="border-b border-slate-100 pb-3 dark:border-slate-800">
                 <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2 dark:text-white">
                   <span className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-caption font-black dark:bg-emerald-950 dark:text-emerald-300">
                     2
                   </span>
-                  <span>Lĩnh Vực Chuyên Môn (10 LV TT17) & Từ Khóa Nghiên Cứu</span>
+                  <span>Ngành công nghiệp chuyên môn (BACLINK) & Từ Khóa Nghiên Cứu</span>
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-label">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1 dark:text-slate-200">
-                    Lĩnh Vực Trụ Cột (Theo Thông tư 17):
+                    Ngành công nghiệp chuyên môn (BACLINK):
                   </label>
                   <select
                     disabled={isPendingReview}

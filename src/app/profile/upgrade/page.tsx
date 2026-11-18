@@ -364,7 +364,7 @@ function ProfileUpgradeHubContent() {
                 <div className="flex items-start gap-2">
                   <ShoppingBag className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Chế độ Bên Mua:</strong> Đăng nhu cầu gia công, tìm nhà cung ứng FDI/Tier-1/Tier-2, theo dõi MOU & đánh giá năng lực TT17.
+                    <strong>Chế độ Bên Mua:</strong> Đăng nhu cầu gia công, tìm nhà cung ứng FDI/Tier-1/Tier-2, theo dõi MOU & kết nối chuỗi cung ứng công nghiệp Bắc Ninh.
                   </span>
                 </div>
                 <div className="flex items-start gap-2">

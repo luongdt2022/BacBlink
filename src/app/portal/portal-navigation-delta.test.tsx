@@ -74,20 +74,18 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(screen.getByText("Nhà Cung Ứng Công Nghệ")).toBeInTheDocument();
     expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
 
-    // 2. 7 Menu items in 3 sections verification
+    // 2. Menu items in sections verification
     expect(screen.getByText("Tác nghiệp Bán hàng")).toBeInTheDocument();
     expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
-    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Hội viên")).toBeInTheDocument();
     expect(screen.getByText("Tổng quan Gian hàng")).toBeInTheDocument();
     expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
     expect(screen.getByText("Khách hàng liên hệ")).toBeInTheDocument();
     expect(screen.getByText("Tìm nhu cầu mua (AI)")).toBeInTheDocument();
     expect(screen.getByText("Giao dịch & MOU")).toBeInTheDocument();
     
-    // AC-DELTA-18: TT17 presence
-    const tt17Link = screen.getByRole("link", { name: /Đánh giá Năng lực TT17/i });
-    expect(tt17Link).toBeInTheDocument();
-    expect(tt17Link).toHaveAttribute("href", "/assessments/tt17");
+    // Compact mode: TT17 is excluded
+    expect(screen.queryByRole("link", { name: /Đánh giá Năng lực TT17/i })).not.toBeInTheDocument();
 
     // AC-DELTA-17: Business profile label
     await waitFor(() => {
@@ -148,18 +146,18 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     });
   });
 
-  it("QC-TEST-04: dynamically resolves 'Hồ sơ Doanh nghiệp ĐMST' for INNOVATION_ENTITY role", async () => {
+  it("QC-TEST-04: dynamically resolves 'Hồ sơ Doanh nghiệp' for INNOVATION_ENTITY role (standardized BACLINK)", async () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u-innov",
-      email: "contact@innovate.vn",
-      fullName: "Đại diện ĐMST",
+      email: "contact@baclink.org.vn",
+      fullName: "Đại diện Hội viên",
       role: "INNOVATION_ENTITY",
     });
 
     vi.mocked(enterpriseClient.fetchMyEnterpriseProfile).mockResolvedValue({
       id: "innov-1",
-      name: "Tập đoàn Đổi mới Sáng tạo",
-      subjectType: "DN ĐMST",
+      name: "Công ty CP Công nghiệp Bắc Ninh",
+      subjectType: "Doanh nghiệp Hội viên",
     });
 
     render(
@@ -169,7 +167,7 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Hồ sơ Doanh nghiệp ĐMST")).toBeInTheDocument();
+      expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
     });
   });
 
@@ -264,7 +262,7 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     // 2. 3 Section Headers
     expect(screen.getByText("Tác nghiệp Mua sắm")).toBeInTheDocument();
     expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
-    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Hội viên")).toBeInTheDocument();
 
     // 3. Section 1 Items
     const overviewLink = screen.getByRole("link", { name: /Tổng quan Mua sắm/i });
@@ -285,14 +283,9 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
     expect(screen.getByText("Mới")).toBeInTheDocument(); // Badge new
 
-    // 5. Section 3 Items
-    const tniLink = screen.getByRole("link", { name: /Khảo sát Nhu cầu \(TNI\)/i });
-    expect(tniLink).toBeInTheDocument();
-    expect(tniLink).toHaveAttribute("href", "/khao-sat-nhu-cau");
-
-    const tt17Link = screen.getByRole("link", { name: /Đánh giá Năng lực TT17/i });
-    expect(tt17Link).toBeInTheDocument();
-    expect(tt17Link).toHaveAttribute("href", "/assessments/tt17");
+    // 5. Section 3 Items (Compact mode: TNI & TT17 are excluded)
+    expect(screen.queryByRole("link", { name: /Khảo sát Nhu cầu \(TNI\)/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Đánh giá Năng lực TT17/i })).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();

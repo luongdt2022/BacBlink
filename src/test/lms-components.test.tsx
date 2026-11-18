@@ -151,7 +151,7 @@ describe("T10-20: Frontend LMS Components Unit Tests (Vitest)", () => {
       expect(screen.getByText(/Tab A: Thông tin chung & Video/)).toBeInTheDocument();
       expect(screen.getByText(/Tab B: Câu hỏi kiểm tra/)).toBeInTheDocument();
       expect(screen.getByText(/Tab C: Học liệu bổ trợ/)).toBeInTheDocument();
-      expect(screen.getByText(/Tab D: Liên kết CSDL/)).toBeInTheDocument();
+      expect(screen.getByText(/Tab D: Liên kết Tài liệu BACLINK/)).toBeInTheDocument();
 
       // Tab A fields
       expect(screen.getByPlaceholderText(/Ví dụ: Kỹ thuật xây dựng Prompt Engineering/)).toBeInTheDocument();
@@ -182,9 +182,9 @@ describe("T10-20: Frontend LMS Components Unit Tests (Vitest)", () => {
       expect(screen.getByText(/2\. Phiếu tóm tắt slide/i)).toBeInTheDocument();
 
       // Switch to Tab D
-      const tabDBtn = screen.getByRole("button", { name: /Tab D: Liên kết CSDL/i });
+      const tabDBtn = screen.getByRole("button", { name: /Tab D: Liên kết Tài liệu BACLINK/i });
       fireEvent.click(tabDBtn);
-      expect(screen.getByText(/Liên kết Cơ sở dữ liệu NacenTech/i)).toBeInTheDocument();
+      expect(screen.getByText(/Liên kết dữ liệu BACLINK \(Tối đa 5/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Thêm liên kết/i })).toBeInTheDocument();
     });
 

@@ -10,7 +10,7 @@ export interface SectorBannerBackgroundProps {
 }
 
 /**
- * Component hiển thị họa tiết chìm (Watermark Vector Art) chuyên biệt theo 10 Nhóm ngành chuẩn NacenTech.
+ * Component hiển thị họa tiết chìm (Watermark Vector Art) chuyên biệt theo 8 Nhóm ngành công nghiệp BACLINK.
  * Nền xanh Navy gradient giữ nguyên, chỉ thay đổi logo chìm vector sắc nét tương ứng.
  */
 export function SectorBannerBackground({
@@ -23,29 +23,40 @@ export function SectorBannerBackground({
   const code = (sectorCode || "").toUpperCase().trim();
   const name = (sectorName || "").toLowerCase();
 
+  const indMap: Record<string, string> = {
+    IND_ELEC: "LV08",
+    IND_MECH: "LV07",
+    IND_AUTO: "LV08",
+    IND_PLAS: "LV05",
+    IND_MAT: "LV12",
+    IND_IT: "LV16",
+    IND_GREEN: "LV11",
+    IND_LOG: "LV14",
+  };
+
   // Xác định mã ngành nếu chỉ có tên
-  let resolvedCode = code;
+  let resolvedCode = indMap[code] || code;
   if (!resolvedCode) {
     if (name.includes("nông") || name.includes("lâm") || name.includes("thủy sản") || name.includes("trồng")) {
       resolvedCode = "LV01";
-    } else if (name.includes("thực phẩm") || name.includes("đồ uống") || name.includes("chế biến")) {
+    } else if (name.includes("nhựa") || name.includes("bao bì") || name.includes("thực phẩm") || name.includes("đồ uống") || name.includes("chế biến")) {
       resolvedCode = "LV05";
-    } else if (name.includes("cơ khí") || name.includes("chế tạo") || name.includes("kim loại")) {
+    } else if (name.includes("cơ khí") || name.includes("khuôn mẫu") || name.includes("chế tạo") || name.includes("kim loại")) {
       resolvedCode = "LV07";
-    } else if (name.includes("điện") || name.includes("bán dẫn") || name.includes("tự động")) {
+    } else if (name.includes("điện") || name.includes("bán dẫn") || name.includes("tự động") || name.includes("robot")) {
       resolvedCode = "LV08";
-    } else if (name.includes("môi trường") || name.includes("nước") || name.includes("tái chế") || name.includes("rác")) {
+    } else if (name.includes("môi trường") || name.includes("xanh") || name.includes("năng lượng") || name.includes("nước") || name.includes("tái chế")) {
       resolvedCode = "LV11";
     } else if (name.includes("xây dựng") || name.includes("hạ tầng") || name.includes("vật liệu")) {
       resolvedCode = "LV12";
-    } else if (name.includes("logistics") || name.includes("vận tải") || name.includes("kho bãi")) {
+    } else if (name.includes("logistics") || name.includes("vận tải") || name.includes("kho vận") || name.includes("kho bãi")) {
       resolvedCode = "LV14";
     } else if (name.includes("du lịch") || name.includes("khách sạn") || name.includes("thương mại")) {
       resolvedCode = "LV15";
-    } else if (name.includes("thông tin") || name.includes("phần mềm") || name.includes("viễn thông") || name.includes("cntt") || name.includes("số hóa")) {
+    } else if (name.includes("thông tin") || name.includes("phần mềm") || name.includes("viễn thông") || name.includes("cntt") || name.includes("số hóa") || name.includes("mes") || name.includes("erp")) {
       resolvedCode = "LV16";
     } else {
-      resolvedCode = "LV17"; // Mặc định: Khoa học công nghệ & Đổi mới sáng tạo
+      resolvedCode = "LV17"; // Mặc định: Công nghệ & Sản xuất công nghiệp
     }
   }
 
@@ -355,7 +366,7 @@ export function SectorBannerBackground({
         )}
 
         {/* ========================================================================= */}
-        {/* LV17: KHOA HỌC - CÔNG NGHỆ - ĐMST (MẪU GỐC) */}
+        {/* LV17: CÔNG NGHỆ TỔNG HỢP (MẪU GỐC) */}
         {/* ========================================================================= */}
         {resolvedCode === "LV17" && (
           <g stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

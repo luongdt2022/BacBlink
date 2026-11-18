@@ -21,7 +21,7 @@ export default function SectorBannerDesignPreviewPage() {
           <div>
             <h1 className="text-base font-extrabold text-white flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-cyan-400" />
-              <span>NacenTech UI/UX Showcase: Họa Tiết Watermark Background 10 Nhóm Ngành</span>
+              <span>BACLINK UI/UX Showcase: Họa Tiết Watermark 8 Ngành Công Nghiệp</span>
             </h1>
             <p className="text-xs text-slate-400">
               Giữ nguyên nền xanh Navy thương hiệu — Tùy biến logo chìm đặc thù cho từng ngành nghề

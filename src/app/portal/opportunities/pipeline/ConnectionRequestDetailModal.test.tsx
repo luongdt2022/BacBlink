@@ -55,7 +55,7 @@ const mockDetailPending: ConnectionRequestDetail = {
   contactInfo: {
     contactPersonName: 'Trần Tiến Dũng',
     phoneNumber: '09**** 432',
-    email: 's***r@demo.nacentech.vn',
+    email: 's***r@demo.baclink.org.vn',
     identityNumber: '[Được bảo vệ theo NĐ 13/2023/NĐ-CP]',
     isMasked: true,
     pdpdNotice: 'Số điện thoại và Email được bảo vệ theo Nghị định 13/2023/NĐ-CP (PDPD) cho đến khi Bên Bán chấp thuận kết nối.',
@@ -70,7 +70,7 @@ const mockDetailAccepted: ConnectionRequestDetail = {
   contactInfo: {
     contactPersonName: 'Trần Tiến Dũng',
     phoneNumber: '0987654321',
-    email: 'seller@demo.nacentech.vn',
+    email: 'seller@demo.baclink.org.vn',
     identityNumber: null,
     isMasked: false,
     pdpdNotice: 'Thông tin liên hệ đã được mở khóa do yêu cầu kết nối đã được chấp thuận.',
@@ -129,7 +129,7 @@ describe('ConnectionRequestDetailModal Component (UI-CONN-REQ-DETAIL-001)', () =
     expect(screen.getByText('1.2 - 1.5 Tỷ VNĐ')).toBeInTheDocument();
     expect(screen.getByText(/Bảo vệ dữ liệu cá nhân theo Nghị định 13\/2023\/NĐ-CP/i)).toBeInTheDocument();
     expect(screen.getByText(/09\*\*\*\* 432/i)).toBeInTheDocument();
-    expect(screen.getByText(/s\*\*\*r@demo\.nacentech\.vn/i)).toBeInTheDocument();
+    expect(screen.getByText(/s\*\*\*r@demo\.baclink\.org\.vn/i)).toBeInTheDocument();
 
     // Action buttons khi PENDING
     expect(screen.getByRole('button', { name: /Chấp Thuận & Mở Deal Room/i })).toBeInTheDocument();
@@ -209,7 +209,7 @@ describe('ConnectionRequestDetailModal Component (UI-CONN-REQ-DETAIL-001)', () =
 
     // Thông tin thật đã unmask
     expect(screen.getByText(/0987654321/i)).toBeInTheDocument();
-    expect(screen.getByText(/seller@demo\.nacentech\.vn/i)).toBeInTheDocument();
+    expect(screen.getByText(/seller@demo\.baclink\.org\.vn/i)).toBeInTheDocument();
     expect(screen.getByText(/Truy Cập Deal Room 1-1/i)).toBeInTheDocument();
   });
 });

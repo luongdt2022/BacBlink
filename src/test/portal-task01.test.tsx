@@ -153,7 +153,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       );
       expect(screen.getByRole("link", { name: /Kết nối thành công & MOU/i })).toHaveAttribute(
         "href",
-        "/trien-lam"
+        "/tin-tuc"
       );
       expect(screen.getByRole("link", { name: /Quy mô giao dịch/i })).toHaveAttribute(
         "href",
@@ -161,19 +161,11 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       );
     });
 
-    // 3. Kiểm tra 4 Card Khảo Sát & Đánh Giá Năng Lực Quốc Gia (TNI, TT17, DN ĐMST, TRL 1-9)
-    expect(screen.getByRole("link", { name: /Làm Khảo Sát TNI Ngay/i })).toHaveAttribute(
-      "href",
-      "/khao-sat-nhu-cau"
-    );
-    expect(screen.getByRole("link", { name: /Tự Đánh Giá TT17 Ngay/i })).toHaveAttribute(
-      "href",
-      "/assessments/tt17/wizard"
-    );
-    expect(screen.getByRole("link", { name: /Làm Khảo Sát ĐMST Ngay/i })).toHaveAttribute(
-      "href",
-      "/khao-sat-dmst"
-    );
+    // 3. Đảm bảo không còn các Card Khảo sát cũ (TNI, TT17, ĐMST) trên Trang chủ BACLINK
+    expect(screen.queryByRole("link", { name: /Làm Khảo Sát TNI Ngay/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Tự Đánh Giá TT17 Ngay/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Làm Khảo Sát ĐMST Ngay/i })).not.toBeInTheDocument();
+
     // 4. KIỂM THỬ TƯƠNG TÁC THỰC: Submit form tìm kiếm phải gọi router.push
     const searchInput = screen.getByPlaceholderText(/Nhập từ khóa tìm kiếm/i);
     fireEvent.change(searchInput, { target: { value: "Robot Laser" } });
@@ -184,7 +176,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
       expect.stringMatching(/\/chao-ban-cong-nghe\?q=Robot(\+|%20)Laser/)
     );
 
-    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Đổi danh mục tìm kiếm sang Nhu cầu và submit form
+    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Đổi danh mục tìm kiếm sang Nhu cầu Mua & Đặt hàng và submit form
     const categorySelect = screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i });
     fireEvent.change(categorySelect, { target: { value: "nhu-cau" } });
     fireEvent.click(searchButton);
@@ -195,19 +187,19 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
 
   it("AIAssistantWidget renders floating FAB and opens chat conversation", async () => {
     render(<AIAssistantWidget />);
-    const fab = screen.getByRole("button", { name: "Mở Trợ lý Ảo AI NacentTwin" });
+    const fab = screen.getByRole("button", { name: "Mở Trợ lý Ảo AI BACLINK" });
     expect(fab).toBeInTheDocument();
     fireEvent.click(fab);
-    expect(screen.getByText("Trợ Lý Ảo AI NacentTwin")).toBeInTheDocument();
+    expect(screen.getByText("Trợ Lý Ảo AI BACLINK")).toBeInTheDocument();
   });
 
   it("TechmartEventsPage renders event list and opens registration modal", async () => {
     const mockEvents = [
       {
         id: "77777777-7777-7777-7777-777777777701",
-        title: "Techmart Hà Nội 2026: Giải Pháp Chuyển Đổi Số",
-        description: "Hội chợ triển lãm công nghệ",
-        location: "Hà Nội",
+        title: "Diễn Đàn Kết Nối Chuỗi Cung Ứng Bắc Ninh 2026",
+        description: "Sự kiện kết nối cung ứng công nghiệp B2B",
+        location: "TP. Bắc Ninh",
         startDate: "2026-11-15T08:00:00Z",
         endDate: "2026-11-18T17:00:00Z",
         status: "UPCOMING",
@@ -226,7 +218,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     render(<TechmartEventsPage />);
 
     expect(
-      await screen.findByText("Techmart Hà Nội 2026: Giải Pháp Chuyển Đổi Số")
+      await screen.findByText("Diễn Đàn Kết Nối Chuỗi Cung Ứng Bắc Ninh 2026")
     ).toBeInTheDocument();
 
     const regButtons = screen.getAllByRole("button", { name: /Đăng Ký Tham Gia/i });
@@ -234,7 +226,7 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     fireEvent.click(regButtons[0]);
 
     expect(
-      screen.getByText("Đăng Ký Tham Gia Phiên Chào Giá Techmart")
+      screen.getByText("Đăng Ký Tham Gia Sự Kiện & Phiên Kết Nối B2B")
     ).toBeInTheDocument();
   });
 });

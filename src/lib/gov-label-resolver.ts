@@ -1,6 +1,6 @@
 /**
- * GovLabelResolver — Bộ giải nghĩa dữ liệu công vụ chuẩn hóa
- * Căn cứ: CR-BACLINK-003, TT 17/2019/TT-BKHCN, BAC_NINH_LOCATIONS & 8 ngành IND_*
+ * GovLabelResolver — Bộ giải nghĩa dữ liệu chuẩn hóa BACLINK
+ * Căn cứ: CR-BACLINK-007, BAC_NINH_LOCATIONS & 8 ngành công nghiệp IND_*
  * Nguyên tắc: 100% Human-Readable Labels (Tuyệt đối không hiển thị mã kỹ thuật thô)
  */
 
@@ -300,7 +300,7 @@ export function resolveGovRequestType(type?: string | null): {
   switch (clean) {
     case "EXPERT":
       return {
-        label: "Chuyên gia KH&CN",
+        label: "Ban Cố vấn Kỹ thuật",
         badgeClass: "bg-purple-100 text-purple-800 border-purple-300",
       };
     case "SHOP":
@@ -311,7 +311,7 @@ export function resolveGovRequestType(type?: string | null): {
       };
     case "DEMAND":
       return {
-        label: "Nhu cầu Công nghệ",
+        label: "Nhu cầu Mua & Đặt hàng",
         badgeClass: "bg-blue-100 text-blue-800 border-blue-300",
       };
     case "ACCOUNT":
@@ -322,30 +322,33 @@ export function resolveGovRequestType(type?: string | null): {
     case "INSTITUTION":
     case "ENTERPRISE":
       return {
-        label: "Doanh nghiệp ĐMST",
+        label: "Doanh nghiệp Hội viên",
         badgeClass: "bg-cyan-100 text-cyan-800 border-cyan-300",
       };
     default:
       return {
-        label: type || "Hồ sơ công vụ",
+        label: type || "Hồ sơ thẩm định",
         badgeClass: "bg-slate-100 text-slate-700 border-slate-300",
       };
   }
 }
 
 export function resolveRoleDisplayName(role?: string | null): string {
-  if (!role) return "Cán bộ công vụ";
+  if (!role) return "Thành viên BACLINK";
   const clean = role.trim().toUpperCase();
   const map: Record<string, string> = {
-    PROVINCIAL_ADMIN: "Lãnh đạo Sở (Admin)",
-    PROVINCE_LEADER: "Lãnh đạo Sở (Checker)",
-    PROVINCE_OFFICER: "Chuyên viên Thẩm tra (Maker)",
-    SECTOR_ADMIN: "Quản trị Phân ngành",
-    CLUSTER_ADMIN: "Quản trị Vùng / Cụm",
-    SUPER_ADMIN: "Quản trị Tối cao Tầng 0",
-    ADMIN: "Quản trị Hệ thống",
+    ADMIN: "Quản trị Hiệp hội BACLINK",
+    SUPER_ADMIN: "Quản trị Hiệp hội BACLINK",
+    OPERATOR_ADMIN: "Quản trị Vận hành BACLINK",
+    ENTERPRISE: "Doanh nghiệp Hội viên",
+    PUBLIC_USER: "Thành viên công chúng",
+    PROVINCIAL_ADMIN: "Điều phối Địa bàn BACLINK",
+    PROVINCE_LEADER: "Trưởng ban Thẩm định BACLINK",
+    PROVINCE_OFFICER: "Chuyên viên Thẩm tra BACLINK",
+    SECTOR_ADMIN: "Điều phối Ngành Công nghiệp",
+    CLUSTER_ADMIN: "Điều phối Khu Công nghiệp",
   };
-  return map[clean] || role || "Cán bộ công vụ";
+  return map[clean] || role || "Thành viên BACLINK";
 }
 
 /**
@@ -391,7 +394,7 @@ export function formatGovRecordCode(
   } else if (cleanType === "DEMAND") {
     prefix = "NC"; // Nhu cầu công nghệ
   } else if (cleanType === "ACCOUNT" || cleanType === "ENTERPRISE" || cleanType === "INSTITUTION") {
-    prefix = "DN"; // Doanh nghiệp ĐMST
+    prefix = "DN"; // Doanh nghiệp Hội viên
   }
 
   const code = `${prefix}-${scope}-${hash}`;

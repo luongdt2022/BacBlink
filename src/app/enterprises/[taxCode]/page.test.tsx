@@ -47,7 +47,7 @@ const mockCommercialEnterprise: enterpriseClient.EnterprisePublicDetail = {
 const mockInnovativeEnterprise: enterpriseClient.EnterprisePublicDetail = {
   ...mockCommercialEnterprise,
   id: "ent-inno-02",
-  name: "TẬP ĐOÀN CÔNG NGHỆ ĐỔI MỚI SÁNG TẠO NACENINNO",
+  name: "CÔNG TY CP CÔNG NGHIỆP CHÍNH XÁC BẮC NINH",
   subjectType: "INNOVATIVE_ENTERPRISE",
   tniScore: 82.5,
   tniClassification: "LEADING",
@@ -59,7 +59,7 @@ const mockInnovativeEnterprise: enterpriseClient.EnterprisePublicDetail = {
       title: "Hệ thống sấy thăng hoa AI vi sóng",
       description: "Nghiên cứu ứng dụng trí tuệ nhân tạo điều khiển vi sóng sấy thăng hoa",
       status: "COMPLETED",
-      partners: "Viện Hàn Lâm KH&CN",
+      partners: "Đại học Bách Khoa Hà Nội",
     },
   ],
   intellectualProperties: [
@@ -81,14 +81,14 @@ const mockInnovationRating: enterpriseClient.InnovationEvaluation = {
   totalScore: 82.5,
   classification: "LEADING",
   classificationLabel: "Dẫn đầu",
-  badgeName: "Huy hiệu Vàng ĐMST",
+  badgeName: "Huy hiệu Hạng Vàng",
   status: "APPROVED",
-  reviewedBy: "Sở KH&CN",
+  reviewedBy: "Ban Thẩm định BACLINK",
   reviewedAt: "2024-10-15T00:00:00Z",
   groupScores: [
     {
       groupCode: "G1",
-      groupName: "Năng lực lãnh đạo & chiến lược ĐMST",
+      groupName: "Năng lực quản trị sản xuất & chiến lược nhà máy",
       maxScore: 15,
       score: 13.5,
       percentage: 90,
@@ -102,7 +102,7 @@ const mockInnovationRating: enterpriseClient.InnovationEvaluation = {
     },
   ],
   radarChartData: [
-    { axis: "Chiến lược ĐMST", value: 90, maxValue: 100 },
+    { axis: "Quản trị sản xuất", value: 90, maxValue: 100 },
     { axis: "Tài chính R&D", value: 80, maxValue: 100 },
   ],
 };
@@ -317,13 +317,13 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
       expect(screen.getByRole("heading", { name: mockInnovativeEnterprise.name, level: 1 })).toBeInTheDocument();
     });
 
-    // Innovative badges & TNI score
+    // Member enterprise badges & TNI score
     expect(screen.getByText(/TNI: LEADING/i)).toBeInTheDocument();
-    expect(screen.getByText("⭐ Năng Lực ĐMST")).toBeInTheDocument();
-    expect(screen.getByText("🔬 Năng Lực R&D & ĐMST")).toBeInTheDocument();
+    expect(screen.getByText("⭐ Năng Lực Sản Xuất")).toBeInTheDocument();
+    expect(screen.getByText("🔬 Năng Lực R&D & Kỹ Thuật")).toBeInTheDocument();
 
-    // Switch to Innovation tab
-    const innoTab = screen.getByText("⭐ Năng Lực ĐMST");
+    // Switch to Production Capability tab
+    const innoTab = screen.getByText("⭐ Năng Lực Sản Xuất");
     fireEvent.click(innoTab);
 
     // Radar chart should be rendered
@@ -356,12 +356,12 @@ describe("Commercial & Innovative Enterprise Profile (TASK-02)", () => {
     // By default, Commercial profile is shown
     expect(screen.getByText("1. Sản Phẩm & Dịch Vụ Cung Cấp")).toBeInTheDocument();
 
-    // Manually switch to Innovative view mode
-    const innoBtn = screen.getByRole("button", { name: /DN ĐMST \(TT17\)/i });
+    // Manually switch to Member Enterprise view mode
+    const innoBtn = screen.getByRole("button", { name: /Doanh nghiệp Hội viên/i });
     fireEvent.click(innoBtn);
 
-    // Innovative tabs appear
-    expect(screen.getByText("⭐ Năng Lực ĐMST")).toBeInTheDocument();
+    // Member Enterprise tabs appear
+    expect(screen.getByText("⭐ Năng Lực Sản Xuất")).toBeInTheDocument();
 
     // Switch back to Commercial view mode
     const commBtn = screen.getByRole("button", { name: /DN Thương Mại/i });

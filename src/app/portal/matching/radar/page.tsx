@@ -71,11 +71,6 @@ export default function MatchingRadarPage() {
     'SUPER_ADMIN',
     'OPERATOR_ADMIN',
     'ADMIN',
-    'PROVINCIAL_ADMIN',
-    'SECTOR_ADMIN',
-    'CLUSTER_ADMIN',
-    'PROVINCE_OFFICER',
-    'PROVINCE_LEADER',
   ].includes(effectiveRole);
 
   const isBuyerOrPublic =
@@ -266,19 +261,19 @@ export default function MatchingRadarPage() {
     <div className="min-h-screen bg-surface-subtle p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Executive Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-brand-700 p-6 sm:p-8 text-white shadow-xl shadow-brand-950/10 border border-brand-800/20">
-        <SectorBannerBackground sectorCode="LV17" opacity={0.4} />
+        <SectorBannerBackground sectorCode="IND_ELEC" opacity={0.4} />
         <div className="absolute inset-0 bg-gradient-to-t from-brand-950/60 via-transparent to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-brand-100 text-xs font-bold tracking-wide">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
-              <span>AI MATCHING ENGINE 4.0 · TT 17/2019/TT-BKHCN</span>
+              <span>AI MATCHING ENGINE 4.0 · HIỆP HỘI BACLINK</span>
             </div>
             <h1 className="type-page-title text-white flex items-center gap-3">
               Radar Ghép Nối Cung–Cầu & Điểm Tương Thích
             </h1>
             <p className="text-xs sm:text-sm text-brand-100 leading-relaxed max-w-2xl">
-              Hệ thống định lượng tương thích tự động dựa trên ma trận 10 lĩnh vực trọng điểm, độ sẵn sàng TRL 1–9, chỉ số cấp thiết TNI và xác thực Sở hữu trí tuệ độc quyền.
+              Hệ thống định lượng tương thích tự động dựa trên 8 ngành công nghiệp mũi nhọn & các KCN Bắc Ninh, độ sẵn sàng TRL 1–9, chỉ số cấp thiết TNI và xác thực Sở hữu trí tuệ độc quyền.
             </p>
           </div>
 
@@ -392,7 +387,7 @@ export default function MatchingRadarPage() {
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Link
-                href="/khao-sat-nhu-cau"
+                href="/portal/buyer/demands"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-bold text-xs sm:text-sm shadow-md shadow-brand-700/20 hover:shadow-lg transition-all"
               >
                 <span>+ Gửi Nhu Cầu Công Nghệ Đầu Tiên</span>

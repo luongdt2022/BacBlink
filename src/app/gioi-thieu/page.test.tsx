@@ -19,4 +19,14 @@ describe("GioiThieuPage (Giới Thiệu BACLINK)", () => {
     expect(screen.getByText(/Khám Phá Sàn Cung Ứng/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Ban Cố Vấn Kỹ Thuật/i).length).toBeGreaterThan(0);
   });
+
+  it("renders 3 strategic pillars without TT17 capacity assessment", () => {
+    render(<GioiThieuPage />);
+
+    expect(screen.getByText(/3 Trụ Cột Phát Triển BACLINK/i)).toBeInTheDocument();
+    expect(screen.getByText("Danh Bạ Hội Viên KCN")).toBeInTheDocument();
+    expect(screen.getByText("Radar AI Ghép Nối B2B")).toBeInTheDocument();
+    expect(screen.getByText("Xúc Tiến Giao Thương & MOU")).toBeInTheDocument();
+    expect(screen.queryByText(/Đánh Giá Năng Lực TT17/i)).not.toBeInTheDocument();
+  });
 });

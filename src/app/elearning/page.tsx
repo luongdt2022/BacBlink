@@ -51,23 +51,23 @@ const CLUSTERS = [
 
 // Danh mục 5 Lộ trình học tập
 const PATHWAYS = [
-  { code: "LT1", name: "LT1: Nền tảng nhận thức", desc: "Mọi đối tượng quan tâm ĐMST & tiếp cận công nghệ" },
+  { code: "LT1", name: "LT1: Nền tảng nhận thức", desc: "Mọi đối tượng quan tâm sản xuất công nghiệp & tiếp cận công nghệ" },
   { code: "LT2", name: "LT2: Doanh nghiệp bên cầu", desc: "DN chẩn đoán nhu cầu, tìm kiếm & tiếp nhận công nghệ" },
   { code: "LT3", name: "LT3: Kỹ thuật & Quản lý Nhà máy", desc: "Tối ưu hóa dây chuyền, kiểm soát chất lượng và an toàn công nghiệp" },
-  { code: "LT4", name: "LT4: Viện trường bên cung", desc: "Nhà khoa học, viện nghiên cứu chào bán & thương mại hóa" },
-  { code: "LT5", name: "LT5: Chuyên đề chuyên sâu", desc: "Cập nhật công nghệ tiêu biểu (AI, IoT, Năng lượng, Y sinh)" },
+  { code: "LT4", name: "LT4: Đơn vị cung ứng giải pháp", desc: "Nhà máy, chuyên gia kỹ thuật chào bán & thương mại hóa công nghệ" },
+  { code: "LT5", name: "LT5: Chuyên đề chuyên sâu", desc: "Cập nhật công nghệ tiêu biểu (AI, IoT, Tự động hóa, Bán dẫn, ESG)" },
 ];
 
-// Danh mục 8 Mô-đun năng lực (Bảng 4.4 Draft 1.docx)
+// Danh mục 8 Mô-đun năng lực công nghiệp
 const MODULES = [
-  { code: "M1", name: "M1: Nền tảng công nghệ & ĐMST" },
+  { code: "M1", name: "M1: Nền tảng công nghệ & Sản xuất công nghiệp" },
   { code: "M2", name: "M2: Chẩn đoán nhu cầu & Năng lực hấp thụ" },
   { code: "M3", name: "M3: Tìm kiếm & Khai thác dữ liệu nguồn cung" },
   { code: "M4", name: "M4: TRL & Đánh giá mức độ sẵn sàng" },
   { code: "M5", name: "M5: Đánh giá, so sánh & Lựa chọn công nghệ" },
   { code: "M6", name: "M6: Kết nối chuyên gia & Nhà cung cấp" },
   { code: "M7", name: "M7: PoC, pilot, tiếp nhận & Quản trị rủi ro" },
-  { code: "M8", name: "M8: Lộ trình ĐMST & Dự án cuối khóa" },
+  { code: "M8", name: "M8: Lộ trình nâng cấp nhà máy & Dự án cuối khóa" },
 ];
 
 export default function ElearningCatalogPage() {
@@ -203,8 +203,7 @@ export default function ElearningCatalogPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* 1. HERO BANNER HỌC VIỆN ĐÀO TẠO KỸ THUẬT BACLINK */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-600/40">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
+      <section className="relative overflow-hidden workspace-banner text-white py-10 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8 border-b border-brand-600/40">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-3 max-w-3xl">
@@ -278,7 +277,7 @@ export default function ElearningCatalogPage() {
         </div>
       </section>
 
-      {/* 2. THANH LỌC 6 CỤM NĂNG LỰC ĐMST (TAB BAR) */}
+      {/* 2. THANH LỌC 6 CỤM NĂNG LỰC SẢN XUẤT CÔNG NGHIỆP (TAB BAR) */}
       <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-16 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
@@ -573,10 +572,10 @@ export default function ElearningCatalogPage() {
                       <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-brand-100 text-brand-700 font-bold text-xs flex items-center justify-center">
-                            {(item.leadInstructorName || "NC").slice(0, 2).toUpperCase()}
+                            {(item.leadInstructorName || "BL").slice(0, 2).toUpperCase()}
                           </div>
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">
-                            {item.leadInstructorName || "NacenTech"}
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[140px]">
+                            {item.leadInstructorName || "Ban Cố vấn Kỹ thuật BACLINK"}
                           </span>
                         </div>
 
@@ -633,7 +632,7 @@ export default function ElearningCatalogPage() {
                           3 Videos · {item.inVideoQuizzesCount || 6} Quiz · {item.practiceRubricsCount || 7} Rubrics
                         </td>
                         <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                          {item.leadInstructorName || "NacenTech"}
+                          {item.leadInstructorName || "Ban Cố vấn Kỹ thuật BACLINK"}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <Link

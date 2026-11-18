@@ -157,7 +157,7 @@ export function parseGovPayload(payload: any, fallbackUser?: any): GovParsedExpe
     p.organization ||
     p.CurrentWorkplace ||
     p.currentWorkplace ||
-    "Sở KH&CN";
+    "Hiệp hội BACLINK";
 
   // Parse organizationAddress
   const organizationAddress =
@@ -236,7 +236,7 @@ export function parseGovPayload(payload: any, fallbackUser?: any): GovParsedExpe
   }
 
   const rawId = p.ExpertCode || p.expertCode || p.Id || p.id;
-  const expertCode = p.ExpertCode || p.expertCode || (rawId ? `CG-NACEN-${String(rawId).replace(/-/g, '').slice(-8).toUpperCase()}` : "");
+  const expertCode = p.ExpertCode || p.expertCode || (rawId ? `CG-BL-${String(rawId).replace(/-/g, '').slice(-8).toUpperCase()}` : "");
   const phone = p.Phone || p.phone || fallbackUser?.phoneNumber || fallbackUser?.phone || "";
   const email = p.Email || p.email || fallbackUser?.email || "";
 
@@ -493,11 +493,11 @@ function GovDashboardContent() {
             let cvOrDocName = parsed.documents?.[0]?.fileName || undefined;
 
             if (rawType === "INSTITUTION") {
-              submitterName = parsedPayload.companyName || parsedPayload.CompanyName || parsed.fullName || x.user?.fullName || "Doanh Nghiệp ĐMST";
-              titleOrOrg = parsedPayload.taxCode ? `MST: ${parsedPayload.taxCode}` : (parsedPayload.companyName || "Doanh Nghiệp ĐMST");
+              submitterName = parsedPayload.companyName || parsedPayload.CompanyName || parsed.fullName || x.user?.fullName || "Doanh Nghiệp Hội Viên";
+              titleOrOrg = parsedPayload.taxCode ? `MST: ${parsedPayload.taxCode}` : (parsedPayload.companyName || "Doanh Nghiệp Hội Viên");
               cvOrDocName = parsedPayload.fileName || parsedPayload.FileName || undefined;
               summary = parsedPayload.companyName
-                ? `Hồ sơ đăng ký Doanh nghiệp ĐMST: ${parsedPayload.companyName}${parsedPayload.taxCode ? ` (MST: ${parsedPayload.taxCode})` : ""}`
+                ? `Hồ sơ đăng ký Doanh nghiệp Hội viên: ${parsedPayload.companyName}${parsedPayload.taxCode ? ` (MST: ${parsedPayload.taxCode})` : ""}`
                 : "";
               sector = parsedPayload.sector || sector;
             }
@@ -505,10 +505,10 @@ function GovDashboardContent() {
             return {
               id: x.id,
               submitterName,
-              submitterEmail: parsed.email || x.user?.email || "chuyengia@haiphong.gov.vn",
+              submitterEmail: parsed.email || x.user?.email || "advisor@baclink.org.vn",
               type: rawType as any,
               titleOrOrg,
-              scopeType: x.scopeType || "PROVINCE",
+              scopeType: x.scopeType || "GLOBAL",
               scopeId: x.scopeId || scopeId,
               provinceName: resolveProvinceName(x.scopeId) || resolveProvinceName(parsedPayload.province) || resolveProvinceName(scopeId),
               sector: sector,
@@ -525,7 +525,7 @@ function GovDashboardContent() {
         }
       }
 
-      // Nạp hồ sơ công nghệ chào bán cần thẩm định Cấp 2 của Sở KH&CN
+      // Nạp hồ sơ sản phẩm & năng lực chào bán cần thẩm định của Ban Thư ký BACLINK
       try {
         const techRes = await fetch(`/api/v1/portal/seller/technologies?status=PENDING`);
         if (techRes.ok) {
@@ -535,8 +535,8 @@ function GovDashboardContent() {
             .filter((t: any) => t.status === "PENDING")
             .map((t: any) => ({
               id: t.id,
-              submitterName: t.developerOrigin || t.enterpriseName || "Doanh nghiệp KH&CN",
-              submitterEmail: t.contactEmail || "seller@nacentwin.gov.vn",
+              submitterName: t.developerOrigin || t.enterpriseName || "Doanh nghiệp Hội viên",
+              submitterEmail: t.contactEmail || "seller@baclink.org.vn",
               type: "TECHNOLOGY_OFFER" as const,
               titleOrOrg: t.title,
               scopeType: t.scopeType || "PROVINCE",
@@ -724,12 +724,12 @@ function GovDashboardContent() {
         const authorityToUse =
           verifiedAuthorityName.trim() ||
           user?.organizationName ||
-          (currentProvinceName.startsWith("Sở") ? currentProvinceName : `Sở KH&CN ${currentProvinceName}`);
+          `Ban Thư ký Hiệp hội BACLINK (${currentProvinceName})`;
 
         await reviewOffer(
           selectedItem.id,
           reviewAction,
-          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ công nghệ hợp lệ, Sở KH&CN phê duyệt cấp cơ sở." : "Cần bổ sung hồ sơ."),
+          reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ sản phẩm hợp lệ, Ban Thư ký BACLINK phê duyệt niêm yết." : "Cần bổ sung hồ sơ."),
           reviewAction === "APPROVE"
             ? {
                 trlVerificationDecision: trlDecision,
@@ -749,7 +749,7 @@ function GovDashboardContent() {
           body: JSON.stringify({
             action: reviewAction,
             expectedVersion: selectedItem.version,
-            reviewNote: reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ hợp lệ, Lãnh đạo Sở KH&CN phê duyệt cấp cơ sở." : ""),
+            reviewNote: reviewNote.trim() || (reviewAction === "APPROVE" ? "Hồ sơ hợp lệ, Ban Thư ký BACLINK phê duyệt." : ""),
           }),
         });
 
@@ -790,7 +790,7 @@ function GovDashboardContent() {
         successMessage = isOffer
           ? `Đã phê duyệt sản phẩm "${selectedItem.titleOrOrg}"! Công nghệ đã sẵn sàng niêm yết trên Sàn.`
           : isInstitution
-          ? `Đã phê duyệt Doanh nghiệp ĐMST "${selectedItem.submitterName}" (MST: ${selectedItem.institutionPayload?.taxCode || ""}) thành công!`
+          ? `Đã phê duyệt Doanh nghiệp Hội viên "${selectedItem.submitterName}" (MST: ${selectedItem.institutionPayload?.taxCode || ""}) thành công!`
           : `Đã phê duyệt hồ sơ chuyên gia ${selectedItem.submitterName}! Cấp role VERIFIED_EXPERT thành công.`;
       } else if (reviewAction === "REQUEST_CHANGES") {
         successMessage = isOffer
@@ -842,8 +842,8 @@ function GovDashboardContent() {
           { label: "Tổng Quan & Phê Duyệt", href: "/gov" },
           { label: "Hàng Đợi Kiểm Duyệt Địa Bàn" },
         ]}
-        title="Hàng Đợi Kiểm Duyệt Địa Bàn"
-        subtitle="Thẩm định hồ sơ theo cơ chế 3D Scoped RBAC dành cho 34 Sở KH&CN tỉnh thành trọng điểm và Ban Điều Phối Lĩnh Vực TT17."
+        title="Hàng Đợi Kiểm Duyệt Hiệp Hội"
+        subtitle="Thẩm định hồ sơ hội viên, sản phẩm chào bán và cố vấn kỹ thuật theo quy trình kiểm soát của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)."
         icon={ShieldCheck}
         scopeCode={currentScopeId}
         slaText="SLA ≤ 48h"
@@ -869,18 +869,18 @@ function GovDashboardContent() {
           </div>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400">
             <span className="font-bold text-slate-900 dark:text-white">
-              Cán bộ phụ trách: {user?.fullName || "Lãnh đạo Sở KH&CN"}
+              Cán bộ phụ trách: {user?.fullName || "Ban Thư ký BACLINK"}
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span>
-              Quyền hạn: <strong>{user?.role || "PROVINCIAL_ADMIN"}</strong>
+              Quyền hạn: <strong>{user?.role || "ADMIN"}</strong>
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <span>
-              Phạm vi: <strong>Sở KH&CN {currentProvinceName}</strong>
+              Phạm vi: <strong>Hiệp hội BACLINK ({currentProvinceName})</strong>
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
-            <span>Hậu kiểm: NacenTech Trung Ương</span>
+            <span>Hậu kiểm: Ban Chấp hành Hiệp hội BACLINK</span>
           </div>
         </div>
       </div>
@@ -889,8 +889,8 @@ function GovDashboardContent() {
       <div role="tablist" aria-label="Bộ lọc hồ sơ kiểm duyệt" className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800">
         <div className="flex flex-wrap gap-1">
           {[
-            { id: "EXPERT", label: "Chuyên Gia KH&CN", count: stats.expert, icon: GraduationCap },
-            { id: "INSTITUTION", label: "Doanh Nghiệp ĐMST", count: stats.institution, icon: Building },
+            { id: "EXPERT", label: "Chuyên Gia Cố Vấn", count: stats.expert, icon: GraduationCap },
+            { id: "INSTITUTION", label: "Doanh Nghiệp Hội Viên", count: stats.institution, icon: Building },
             { id: "SHOP", label: "Shop Chào Bán", count: stats.shop, icon: Building2 },
             { id: "DEMAND", label: "Nhu Cầu Công Nghệ", count: stats.demand, icon: ShoppingBag },
             { id: "ACCOUNT", label: "Tài Khoản Pháp Nhân", count: stats.account, icon: Users },
@@ -1173,7 +1173,7 @@ function GovDashboardContent() {
                           {activeDropdown === "sector" && (
                             <div className="absolute right-0 top-full mt-1.5 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-surface shadow-xl z-30 p-2 text-xs normal-case font-normal space-y-1 animate-in fade-in zoom-in-95">
                               <div className="font-bold text-slate-900 dark:text-white pb-1 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <span>Lọc theo ngành TT17</span>
+                                <span>Lọc theo ngành công nghiệp</span>
                                 {filterSector !== "ALL" && (
                                   <button
                                     type="button"
@@ -1578,15 +1578,13 @@ function GovDashboardContent() {
                         {isOffer
                           ? `Thẩm Định Sản Phẩm Chào Bán: ${selectedItem.titleOrOrg}`
                           : isInstitution
-                          ? `Thẩm Định Doanh Nghiệp ĐMST: ${selectedItem.institutionPayload?.companyName || selectedItem.submitterName}`
+                          ? `Thẩm Định Doanh Nghiệp Hội Viên: ${selectedItem.institutionPayload?.companyName || selectedItem.submitterName}`
                           : `Thẩm Định Hồ Sơ Chuyên Gia: ${selectedItem.submitterName}`}
                       </span>
                     </h3>
                     {(() => {
                       const codeInfo = formatGovRecordCode(selectedItem.id, selectedItem.type, selectedItem.scopeId);
-                      const authorityDisplay = selectedItem.provinceName.startsWith("Sở")
-                        ? selectedItem.provinceName
-                        : `Sở KH&CN ${selectedItem.provinceName}`;
+                      const authorityDisplay = `Ban Thư ký BACLINK (${selectedItem.provinceName})`;
                       return (
                         <p className="text-caption text-slate-500 dark:text-slate-400 mt-0.5">
                           Mã hồ sơ:{" "}
@@ -1652,7 +1650,7 @@ function GovDashboardContent() {
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
                     <span>
-                      <strong>Trạng Thái: Chờ Lãnh Đạo Sở Phê Duyệt</strong> &mdash; Sản phẩm này <strong>CHƯA ĐƯỢC CÔNG KHAI</strong> trên Sàn Quốc Gia. Khách hàng bên ngoài không thể tìm kiếm hay giao dịch cho tới khi được ký duyệt.
+                      <strong>Trạng Thái: Chờ Ban Thư Ký Phê Duyệt</strong> &mdash; Sản phẩm này <strong>CHƯA ĐƯỢC CÔNG KHAI</strong> trên Sàn BACLINK. Khách hàng bên ngoài không thể tìm kiếm hay giao dịch cho tới khi được ký duyệt.
                     </span>
                   </div>
                   <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-200 text-amber-900 border border-amber-300 dark:bg-amber-900 dark:text-amber-100 uppercase tracking-wider shrink-0">
@@ -1683,7 +1681,7 @@ function GovDashboardContent() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực công nghệ (TT17):</span>
+                        <span className="text-caption text-slate-400 block">Ngành công nghiệp:</span>
                         <span className="font-medium text-slate-800 dark:text-slate-200">
                           {resolveSectorName(selectedItem.sector, sectorNames)}
                         </span>
@@ -1951,11 +1949,11 @@ function GovDashboardContent() {
                     </div>
                   </div>
                 ) : isInstitution ? (
-                  /* Layout Thẩm Định Hồ Sơ Doanh Nghiệp ĐMST */
+                  /* Layout Thẩm Định Hồ Sơ Doanh Nghiệp Hội Viên */
                   <div className="space-y-5">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-surface border border-slate-200 dark:border-slate-800">
                       <div>
-                        <span className="text-caption text-slate-400 block">Tên Doanh Nghiệp ĐMST:</span>
+                        <span className="text-caption text-slate-400 block">Tên Doanh Nghiệp Hội Viên:</span>
                         <span className="font-bold text-slate-900 dark:text-white text-body">
                           {selectedItem.institutionPayload?.companyName || selectedItem.submitterName}
                         </span>
@@ -2014,7 +2012,7 @@ function GovDashboardContent() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn (TT17):</span>
+                        <span className="text-caption text-slate-400 block">Lĩnh vực chuyên môn:</span>
                         <span className="font-medium text-slate-800 dark:text-slate-200">
                           {resolveSectorName(selectedItem.sector, sectorNames)}
                         </span>
@@ -2124,10 +2122,10 @@ function GovDashboardContent() {
                         <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs flex items-center justify-center font-bold">
                           A
                         </span>
-                        <span>{isOffer ? "Quyết Định Niêm Yết Lên Sàn Giao Dịch" : "Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN"}</span>
+                        <span>{isOffer ? "Quyết Định Niêm Yết Lên Sàn Giao Dịch" : "Quyết Định Phê Duyệt Của Ban Thư Ký BACLINK"}</span>
                       </h4>
                       <span className="text-xs text-slate-400">
-                        (Thẩm quyền Lãnh đạo Sở KH&CN)
+                        (Thẩm quyền Ban Thư ký Hiệp hội BACLINK)
                       </span>
                     </div>
 
@@ -2362,7 +2360,7 @@ function GovDashboardContent() {
                             type="text"
                             value={verifiedAuthorityName}
                             onChange={(e) => setVerifiedAuthorityName(e.target.value)}
-                            placeholder="VD: Sở Khoa học và Công nghệ TP. Hà Nội"
+                            placeholder="VD: Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)"
                             className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
                           />
                         </div>
@@ -2403,7 +2401,7 @@ function GovDashboardContent() {
                           reviewAction === "APPROVE"
                             ? isOffer
                               ? "Ghi chú phê duyệt: Sản phẩm đáp ứng tiêu chuẩn TRL và chứng minh tính pháp lý SHTT, đồng ý niêm yết lên Sàn Quốc gia..."
-                              : "Ghi chú phê duyệt: Hồ sơ đáp ứng đầy đủ tiêu chí theo Thông tư 17..."
+                              : "Ghi chú phê duyệt: Hồ sơ đáp ứng đầy đủ tiêu chuẩn chuyên môn của Hiệp hội BACLINK..."
                             : isOffer
                             ? "Nhập lý do cụ thể để doanh nghiệp bổ sung hoặc hoàn thiện hồ sơ chào bán..."
                             : "Nhập lý do cụ thể để chuyên gia nắm rõ và bổ sung (tối thiểu 10 ký tự)..."
@@ -2476,9 +2474,7 @@ function GovDashboardContent() {
         const isOffer = detailItem.type === "TECHNOLOGY_OFFER" || detailItem.type === "SHOP";
         const isInstitution = detailItem.type === "INSTITUTION";
         const codeInfo = formatGovRecordCode(detailItem.id, detailItem.type, detailItem.scopeId);
-        const authorityDisplay = detailItem.provinceName.startsWith("Sở")
-          ? detailItem.provinceName
-          : `Sở KH&CN ${detailItem.provinceName}`;
+        const authorityDisplay = `Ban Thư ký BACLINK (${detailItem.provinceName})`;
         const expert = detailItem.expertPayload;
 
         return (
@@ -2514,8 +2510,8 @@ function GovDashboardContent() {
                         {isOffer
                           ? `Chi Tiết Sản Phẩm Chào Bán: ${detailItem.titleOrOrg}`
                           : isInstitution
-                          ? `Hồ Sơ Doanh Nghiệp ĐMST: ${detailItem.institutionPayload?.companyName || detailItem.submitterName}`
-                          : `Hồ Sơ Chuyên Gia KH&CN: ${detailItem.submitterName}`}
+                          ? `Hồ Sơ Doanh Nghiệp Hội Viên: ${detailItem.institutionPayload?.companyName || detailItem.submitterName}`
+                          : `Hồ Sơ Chuyên Gia Cố Vấn: ${detailItem.submitterName}`}
                       </h3>
                       <span className="font-mono text-caption text-brand-700 dark:text-brand-300 font-bold bg-brand-50 dark:bg-brand-950/60 px-2 py-0.5 rounded border border-brand-200 dark:border-brand-800">
                         {codeInfo.code}
@@ -2589,7 +2585,7 @@ function GovDashboardContent() {
                         </span>
                       </div>
                       <div>
-                        <span className="text-caption text-slate-400 block">Lĩnh vực công nghệ (TT17):</span>
+                        <span className="text-caption text-slate-400 block">Ngành công nghiệp:</span>
                         <span className="font-medium text-slate-800 dark:text-slate-200">
                           {resolveSectorName(detailItem.sector, sectorNames)}
                         </span>
@@ -2738,13 +2734,13 @@ function GovDashboardContent() {
                     </div>
                   </div>
                 ) : isInstitution ? (
-                  /* Layout Chi Tiết Hồ Sơ Doanh Nghiệp ĐMST */
+                  /* Layout Chi Tiết Hồ Sơ Doanh Nghiệp Hội Viên */
                   <div className="space-y-6">
                     <div className="p-5 rounded-surface bg-gradient-to-r from-cyan-50/70 via-slate-50 to-white dark:from-cyan-950/40 dark:via-slate-800/40 dark:to-slate-900 border border-cyan-200/80 dark:border-cyan-900/60 flex flex-col md:flex-row gap-5 items-start">
                       <div className="w-20 h-20 rounded-2xl bg-cyan-600 text-white flex flex-col items-center justify-center font-bold text-2xl shadow-md shrink-0">
                         <Building className="w-8 h-8" />
                         <span className="text-[10px] font-normal uppercase tracking-widest text-cyan-100 mt-0.5">
-                          DN-ĐMST
+                          HỘI VIÊN
                         </span>
                       </div>
 
@@ -2754,7 +2750,7 @@ function GovDashboardContent() {
                             {detailItem.institutionPayload?.companyName || detailItem.submitterName}
                           </h2>
                           <span className="px-3 py-0.5 rounded-full bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-800 font-bold text-caption">
-                            Doanh Nghiệp ĐMST
+                            Doanh Nghiệp Hội Viên
                           </span>
                         </div>
 
@@ -2799,7 +2795,7 @@ function GovDashboardContent() {
                             <p className="font-bold text-slate-900 dark:text-white text-body">
                               {detailItem.cvOrDocName || detailItem.institutionPayload?.fileName || "Giay_Phep_DKKD.pdf"}
                             </p>
-                            <p className="text-caption text-slate-400">Giấy chứng nhận Đăng ký Doanh nghiệp / Pháp nhân ĐMST</p>
+                            <p className="text-caption text-slate-400">Giấy chứng nhận Đăng ký Doanh nghiệp / Pháp nhân Hội viên</p>
                           </div>
                         </div>
                         <span className="text-caption font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
@@ -2885,7 +2881,7 @@ function GovDashboardContent() {
                     <div className="space-y-3">
                       <h4 className="font-bold text-slate-900 dark:text-white text-sm uppercase tracking-wider flex items-center gap-2">
                         <Tag className="w-4 h-4 text-brand-600" />
-                        <span>Lĩnh Vực &amp; Chuyên Môn Khoa Học Công Nghệ (TT 17/2019/TT-BKHCN)</span>
+                        <span>Lĩnh Vực &amp; Chuyên Môn Công Nghiệp (BACLINK)</span>
                       </h4>
                       <div className="p-4 rounded-surface bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
                         <div>
@@ -2902,7 +2898,7 @@ function GovDashboardContent() {
                                 className="px-3 py-1 rounded-full bg-brand-50 text-brand-800 dark:bg-brand-950 dark:text-brand-300 border border-brand-200 dark:border-brand-800 font-semibold text-caption inline-flex items-center gap-1.5"
                               >
                                 <span className="font-mono font-bold text-brand-600 dark:text-brand-400">
-                                  {sec || "TT17"}:
+                                  {sec || "IND"}:
                                 </span>
                                 <span>{resolveSectorName(sec, sectorNames)}</span>
                               </span>

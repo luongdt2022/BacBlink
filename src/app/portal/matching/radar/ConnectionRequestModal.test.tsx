@@ -35,7 +35,7 @@ describe('ConnectionRequestModal (TASK-08 T027)', () => {
     vi.clearAllMocks();
     cleanup();
     vi.spyOn(authClient, 'getUser').mockReturnValue({
-      organizationName: 'Doanh Nghiệp ĐMST Thử Nghiệm',
+      organizationName: 'Doanh Nghiệp Hội Viên Thử Nghiệm',
     } as any);
     vi.spyOn(brokerageApi, 'createConnectionRequest').mockResolvedValue({
       id: 'req-123',
@@ -58,7 +58,7 @@ describe('ConnectionRequestModal (TASK-08 T027)', () => {
     );
 
     expect(screen.getByText(/Khởi tạo Yêu cầu Kết nối Cung–Cầu/i)).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Doanh Nghiệp ĐMST Thử Nghiệm')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Doanh Nghiệp Hội Viên Thử Nghiệm')).toBeInTheDocument();
 
     const budgetInput = screen.getByPlaceholderText(/Ví dụ: 500 triệu - 1 tỷ VNĐ/i) as HTMLInputElement;
     expect(budgetInput.value).toBe('');
@@ -77,7 +77,7 @@ describe('ConnectionRequestModal (TASK-08 T027)', () => {
       />
     );
 
-    const orgInput = screen.getByDisplayValue('Doanh Nghiệp ĐMST Thử Nghiệm');
+    const orgInput = screen.getByDisplayValue('Doanh Nghiệp Hội Viên Thử Nghiệm');
     fireEvent.change(orgInput, { target: { value: 'AB' } });
 
     const messageTextarea = screen.getByPlaceholderText(/Mô tả mục tiêu kết nối/i);
@@ -133,7 +133,7 @@ describe('ConnectionRequestModal (TASK-08 T027)', () => {
       expect(brokerageApi.createConnectionRequest).toHaveBeenCalledWith({
         demandId: 'dem-001',
         offerId: 'off-001',
-        senderOrgName: 'Doanh Nghiệp ĐMST Thử Nghiệm',
+        senderOrgName: 'Doanh Nghiệp Hội Viên Thử Nghiệm',
         senderRole: 'BUYER',
         receiverOrgName: 'Viện Khoa Học Năng Lượng',
         message: 'Chúng tôi muốn thử nghiệm công nghệ trong quý 1.',

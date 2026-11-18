@@ -41,7 +41,7 @@ describe('SellerTechnologiesPage (Scoped Inventory & Pricing Polish)', () => {
         {
           id: 'offer-2',
           offerCode: 'OFF-20261021-00023',
-          title: 'Robot hàn thông minh AI Vision NacenTwin-R1',
+          title: 'Robot hàn thông minh AI Vision INTECH-R1',
           sectorName: 'Nông nghiệp',
           offerType: 'DEVICE',
           hasTechTransfer: true,

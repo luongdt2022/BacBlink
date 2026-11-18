@@ -15,7 +15,7 @@ vi.mock("next/link", () => ({
 
 const profile: ExpertPrivateDetail = {
   phone: null, email: null, organizationAddress: null, pdpdConsent: true, legalOath: true, status: "APPROVED", activeDocumentTypes: [],
-  publicProfile: { expertCode: "CG-DEMO", fullName: "Nguyễn Minh An", academicRank: "PGS", degree: "DOCTOR", birthYear: 1980, gender: "male", organizationName: "NacenTech", positionTitle: null, publicBio: null, expertiseSectors: [], masteredTechCodes: [], isVerified: true, isAcceptingConsultation: false, training: [], employment: [], patents: [], researchProjects: [], publications: [], practicalProjects: [], awards: [] },
+  publicProfile: { expertCode: "CG-DEMO", fullName: "Nguyễn Minh An", academicRank: "PGS", degree: "DOCTOR", birthYear: 1980, gender: "male", organizationName: "Hiệp hội BACLINK", positionTitle: null, publicBio: null, expertiseSectors: [], masteredTechCodes: [], isVerified: true, isAcceptingConsultation: false, training: [], employment: [], patents: [], researchProjects: [], publications: [], practicalProjects: [], awards: [] },
 };
 
 describe("ExpertDashboard", () => {

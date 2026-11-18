@@ -6,65 +6,54 @@ import {
 } from "./technology-offer";
 import { authClient } from "@/lib/auth-client";
 
-describe("resolveDefaultAuthority & PROVINCIAL_AUTHORITIES_CATALOG (Delta v9)", () => {
-  it("includes VN-TN (Sở KH&CN tỉnh Thái Nguyên) at top of PROVINCIAL_AUTHORITIES_CATALOG", () => {
-    expect(PROVINCIAL_AUTHORITIES_CATALOG[0].id).toBe("VN-TN");
-    expect(PROVINCIAL_AUTHORITIES_CATALOG[0].name).toContain("Thái Nguyên");
-    expect(PROVINCIAL_AUTHORITIES_CATALOG.length).toBeGreaterThanOrEqual(25);
+describe("resolveDefaultAuthority & PROVINCIAL_AUTHORITIES_CATALOG (BACLINK Bắc Ninh)", () => {
+  it("includes VN-BN (Ban Thẩm định Kỹ thuật BACLINK) at top of PROVINCIAL_AUTHORITIES_CATALOG", () => {
+    expect(PROVINCIAL_AUTHORITIES_CATALOG[0].id).toBe("VN-BN");
+    expect(PROVINCIAL_AUTHORITIES_CATALOG[0].name).toContain("BACLINK");
+    expect(PROVINCIAL_AUTHORITIES_CATALOG.length).toBeGreaterThanOrEqual(6);
   });
 
-  it("Level 1: resolves from userScopeId or user.scopeId (VN-TN, TN, Thái Nguyên)", () => {
-    const r1 = resolveDefaultAuthority({ userScopeId: "VN-TN" });
-    expect(r1.id).toBe("VN-TN");
+  it("Level 1: resolves from userScopeId or user.scopeId (VN-BN, BN, Bắc Ninh, KCN_VSIP_BN)", () => {
+    const r1 = resolveDefaultAuthority({ userScopeId: "VN-BN" });
+    expect(r1.id).toBe("VN-BN");
     expect(r1.isAutoDetected).toBe(true);
     expect(r1.detectedFrom).toBe("user_scope");
 
-    const r2 = resolveDefaultAuthority({ userScopeId: "TN" });
-    expect(r2.id).toBe("VN-TN");
+    const r2 = resolveDefaultAuthority({ userScopeId: "BN" });
+    expect(r2.id).toBe("VN-BN");
 
-    const r3 = resolveDefaultAuthority({ scopeId: "VN-HP" });
-    expect(r3.id).toBe("VN-HP");
-
-    const r4 = resolveDefaultAuthority({ scopeId: "HCM" });
-    expect(r4.id).toBe("VN-SG");
+    const r3 = resolveDefaultAuthority({ scopeId: "KCN_VSIP_BN" });
+    expect(r3.id).toBe("KCN_VSIP_BN");
   });
 
   it("Level 2: resolves from profile province/provinceCity", () => {
-    const r1 = resolveDefaultAuthority(null, { province: "Thái Nguyên" });
-    expect(r1.id).toBe("VN-TN");
+    const r1 = resolveDefaultAuthority(null, { province: "Bắc Ninh" });
+    expect(r1.id).toBe("VN-BN");
     expect(r1.isAutoDetected).toBe(true);
     expect(r1.detectedFrom).toBe("profile_province");
 
-    const r2 = resolveDefaultAuthority(null, { provinceCity: "TP. Hồ Chí Minh" });
-    expect(r2.id).toBe("VN-SG");
-
-    const r3 = resolveDefaultAuthority(null, { province: "Đà Nẵng" });
-    expect(r3.id).toBe("VN-DN");
+    const r2 = resolveDefaultAuthority(null, { provinceCity: "Tỉnh Bắc Ninh" });
+    expect(r2.id).toBe("VN-BN");
   });
 
   it("Level 3: resolves from profile address/addressDetail", () => {
     const r1 = resolveDefaultAuthority(null, {
-      address: "Xóm Chùa, xã Thịnh Đức, Thành phố Thái Nguyên, Tỉnh Thái Nguyên",
+      address: "Số 10 Đường Hữu Nghị, KCN VSIP Bắc Ninh, Xã Phù Chẩn, TP. Từ Sơn, Tỉnh Bắc Ninh",
     });
-    expect(r1.id).toBe("VN-TN");
+    expect(r1.id).toBe("VN-BN");
     expect(r1.isAutoDetected).toBe(true);
     expect(r1.detectedFrom).toBe("profile_address");
-
-    const r2 = resolveDefaultAuthority(null, {
-      addressDetail: "Khu công nghệ cao Hòa Lạc, Thạch Thất, Hà Nội",
-    });
-    expect(r2.id).toBe("VN-HN");
   });
 
-  it("Level 4: falls back to VN-HN when context is empty", () => {
+  it("Level 4: falls back to VN-BN when context is empty", () => {
     const r1 = resolveDefaultAuthority();
-    expect(r1.id).toBe("VN-HN");
-    expect(r1.name).toContain("Hà Nội");
+    expect(r1.id).toBe("VN-BN");
+    expect(r1.name).toContain("BACLINK");
     expect(r1.isAutoDetected).toBe(false);
     expect(r1.detectedFrom).toBe("fallback");
 
     const r2 = resolveDefaultAuthority(null, {});
-    expect(r2.id).toBe("VN-HN");
+    expect(r2.id).toBe("VN-BN");
   });
 });
 

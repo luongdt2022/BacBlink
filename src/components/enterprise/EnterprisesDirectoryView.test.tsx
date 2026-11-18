@@ -61,15 +61,18 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
     cleanup();
   });
 
-  it("loads 10 SSOT sectors dynamically from getActiveSectors() and renders in select dropdown", async () => {
+  it("loads active sectors dynamically from getActiveSectors() and renders in select dropdown without TT17 filters", async () => {
     render(<EnterprisesDirectoryView />);
 
-    const select = await screen.findByLabelText(/Lĩnh Vực Công Nghệ TT17/i);
+    const select = await screen.findByLabelText(/Ngành Sản Xuất Công Nghiệp/i);
 
     await waitFor(() => {
       expect(select).not.toBeDisabled();
       expect(select.querySelectorAll("option").length).toBe(11);
     });
+
+    expect(screen.queryByText(/TT17/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ĐMST/i)).not.toBeInTheDocument();
 
     const optionValues = Array.from(select.querySelectorAll("option")).map((o) => o.value);
     expect(optionValues).toContain("LV01");
@@ -86,7 +89,7 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
   it("triggers fetchEnterprises with correct sectorCode when user changes sector filter", async () => {
     render(<EnterprisesDirectoryView />);
 
-    const select = await screen.findByLabelText(/Lĩnh Vực Công Nghệ TT17/i);
+    const select = await screen.findByLabelText(/Ngành Sản Xuất Công Nghiệp/i);
 
     await waitFor(() => {
       expect(select).not.toBeDisabled();
@@ -109,11 +112,11 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
     render(<EnterprisesDirectoryView />);
 
     await waitFor(() => {
-      expect(screen.getByText("Lỗi tải lĩnh vực (chọn tất cả)")).toBeInTheDocument();
+      expect(screen.getByText("Lỗi tải danh mục ngành (chọn tất cả)")).toBeInTheDocument();
     });
   });
 
-  it("renders unified ĐMST badge without duplication and switches between 2-col Grid and Ranking Table view", async () => {
+  it("renders unified capability tier badge without ĐMST/TT17 and switches between 2-col Grid and Ranking Table view", async () => {
     vi.spyOn(enterpriseClient, "fetchEnterprises").mockResolvedValue({
       ...mockDirectoryResponse,
       items: [
@@ -121,8 +124,6 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
           ...mockDirectoryResponse.items[0],
           innovationTier: "LEADING",
           innovationScore: 84.5,
-          tt17Score: 76.2,
-          tt17Classification: "TIEN_TIEN",
           hasRdUnit: true,
           inValueChain: true,
         },
@@ -131,10 +132,10 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
 
     render(<EnterprisesDirectoryView />);
 
-    // Verify card renders enterprise name, single unified ĐMST badge, and CTA link
+    // Verify card renders enterprise name, single unified capability badge, and CTA link
     expect(await screen.findByText("CÔNG TY CP CƠ ĐIỆN TÂN TIẾN")).toBeInTheDocument();
-    const dmstBadges = screen.getAllByText(/Vàng ĐMST · 84\.5đ/);
-    expect(dmstBadges).toHaveLength(1);
+    const badges = screen.getAllByText(/Hạng Vàng · 84\.5đ/);
+    expect(badges).toHaveLength(1);
     expect(screen.getByRole("link", { name: /Xem Hồ Sơ Năng Lực/i })).toHaveAttribute(
       "href",
       "/enterprises/0102030405"
@@ -145,7 +146,7 @@ describe("EnterprisesDirectoryView (T-02.77 - CR-2026-011)", () => {
     fireEvent.click(listBtn);
     expect(listBtn).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("table")).toBeInTheDocument();
-    expect(screen.getByText("76.2")).toBeInTheDocument();
+    expect(screen.getByText("84.5")).toBeInTheDocument();
     expect(screen.getByText("82.0")).toBeInTheDocument();
 
     // Switch back to Grid view ("Lưới") and test Connect modal interaction

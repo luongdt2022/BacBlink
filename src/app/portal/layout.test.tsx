@@ -70,7 +70,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     // 2. 3 Section Headers
     expect(screen.getByText("Tác nghiệp Mua sắm")).toBeInTheDocument();
     expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
-    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Hội viên")).toBeInTheDocument();
 
     // 3. Section 1 Items
     expect(screen.getByText("Tổng quan Mua sắm")).toBeInTheDocument();
@@ -85,9 +85,9 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByRole("link", { name: /Radar Ghép Nối AI/i })).toHaveAttribute("href", "/portal/matching/radar");
     expect(screen.getByText("Mới")).toBeInTheDocument(); // Badge new
 
-    // 5. Section 3 Items
-    expect(screen.getByText("Khảo sát Nhu cầu (TNI)")).toBeInTheDocument();
-    expect(screen.getByText("Đánh giá Năng lực TT17")).toBeInTheDocument();
+    // 5. Section 3 Items (Compact mode: TNI & TT17 excluded)
+    expect(screen.queryByText("Khảo sát Nhu cầu (TNI)")).not.toBeInTheDocument();
+    expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
     expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
 
     // Negative assertions
@@ -114,12 +114,12 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.getByText("Workspace Nhà Cung Ứng")).toBeInTheDocument();
     expect(screen.getByText("Tác nghiệp Bán hàng")).toBeInTheDocument();
     expect(screen.getByText("Khám phá & Ghép nối")).toBeInTheDocument();
-    expect(screen.getByText("Chẩn đoán & Hồ sơ")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Hội viên")).toBeInTheDocument();
     expect(screen.getByText("Sản phẩm & Công nghệ")).toBeInTheDocument();
     expect(screen.getByText("Khách hàng liên hệ")).toBeInTheDocument();
     expect(screen.getByText("Tìm nhu cầu mua (AI)")).toBeInTheDocument();
     expect(screen.getByText("Giao dịch & MOU")).toBeInTheDocument();
-    expect(screen.getByText("Đánh giá Năng lực TT17")).toBeInTheDocument();
+    expect(screen.queryByText("Đánh giá Năng lực TT17")).not.toBeInTheDocument();
     expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
     expect(screen.queryByText("Hồ sơ Đơn vị / Viện Trường")).not.toBeInTheDocument();
     expect(screen.queryByText("Niêm yết Công nghệ mới")).not.toBeInTheDocument();
@@ -267,11 +267,11 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(consultationsLink.className).not.toContain("bg-brand-700");
   });
 
-  it("renders Innovation Entity grouped workspace menu for INNOVATION_ENTITY role", () => {
+  it("renders Member Enterprise grouped workspace menu for INNOVATION_ENTITY role", () => {
     vi.mocked(authClient.getUser).mockReturnValue({
       id: "u4",
-      email: "innovation@dn.vn",
-      fullName: "Doanh Nghiệp ĐMST",
+      email: "member@baclink.org.vn",
+      fullName: "Doanh nghiệp Hội viên",
       role: "INNOVATION_ENTITY",
     });
 
@@ -281,13 +281,15 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
       </PortalLayout>
     );
 
-    expect(screen.getByText("Doanh Nghiệp ĐMST")).toBeInTheDocument();
-    expect(screen.getByText("Workspace Đổi Mới Sáng Tạo")).toBeInTheDocument();
+    expect(screen.getByText("Doanh nghiệp Hội viên")).toBeInTheDocument();
+    expect(screen.getByText("Workspace Doanh Nghiệp Hội Viên")).toBeInTheDocument();
+    expect(screen.getByText("Tổng quan Giao thương")).toBeInTheDocument();
     expect(screen.getByText("Hoạt động Cung – Cầu")).toBeInTheDocument();
     expect(screen.getByText("Bài toán Cần Mua")).toBeInTheDocument();
     expect(screen.getByText("Công nghệ Chào Bán")).toBeInTheDocument();
-    expect(screen.getByText("Năng lực & Hồ sơ")).toBeInTheDocument();
-    expect(screen.getByText("Tự Đánh giá TT17")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Hội viên")).toBeInTheDocument();
+    expect(screen.getByText("Hồ sơ Doanh nghiệp")).toBeInTheDocument();
+    expect(screen.queryByText("Tự Đánh giá TT17")).not.toBeInTheDocument();
   });
 
   it("renders Public User onboarding workspace menu for PUBLIC_USER role (Delta v10: 5 items & zero legal entity modules)", () => {
@@ -424,25 +426,25 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
 
     // Ctrl+click (new tab) does not replace current workspace with skeleton
-    const tt17Link = screen.getByRole("link", { name: /Đánh giá Năng lực TT17/i });
-    fireEvent.click(tt17Link, { ctrlKey: true });
+    const profileLink = screen.getByRole("link", { name: /Hồ sơ Doanh nghiệp/i });
+    fireEvent.click(profileLink, { ctrlKey: true });
     expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
 
-    // Normal click on another item (e.g. /assessments/tt17) immediately shows skeleton & highlights target
-    fireEvent.click(tt17Link);
+    // Normal click on another item (e.g. /portal/enterprise/profile) immediately shows skeleton & highlights target
+    fireEvent.click(profileLink);
     expect(screen.getByTestId("portal-route-skeleton")).toBeInTheDocument();
     expect(screen.queryByTestId("portal-child-content")).not.toBeInTheDocument();
-    expect(tt17Link.className).toContain("bg-brand-700");
+    expect(profileLink.className).toContain("bg-brand-700");
 
     // When pathname updates, pending skeleton clears
-    mockPathname = "/assessments/tt17";
+    mockPathname = "/portal/enterprise/profile";
     rerender(
       <PortalLayout>
-        <div data-testid="portal-child-content">TT17 Loaded</div>
+        <div data-testid="portal-child-content">Profile Loaded</div>
       </PortalLayout>
     );
     expect(screen.queryByTestId("portal-route-skeleton")).not.toBeInTheDocument();
-    expect(screen.getByText("TT17 Loaded")).toBeInTheDocument();
+    expect(screen.getByText("Profile Loaded")).toBeInTheDocument();
   });
 
   it("does not re-fetch fetchMyEnterpriseProfile redundantly on pathname changes", () => {

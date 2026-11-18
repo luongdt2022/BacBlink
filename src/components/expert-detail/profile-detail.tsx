@@ -107,11 +107,11 @@ function ConsultationCta({ expertCode }: { expertCode: string }) {
   return (
     <section id="consultation-cta" className="rounded-2xl bg-brand-700 border border-white/15 p-6 text-white shadow-md">
       <h2 className="font-bold text-base sm:text-lg">Đặt Lịch Kết Nối &amp; Tư Vấn Chuyên Gia R&amp;D</h2>
-      <p className="mt-1 text-xs text-slate-300">Yêu cầu tư vấn của bạn sẽ được chuyển trực tiếp tới chuyên gia và bộ phận NacenTech tiếp nhận.</p>
+      <p className="mt-1 text-xs text-slate-300">Yêu cầu tư vấn của bạn sẽ được chuyển trực tiếp tới chuyên gia và Ban Thư ký &amp; Cố vấn Kỹ thuật BACLINK tiếp nhận.</p>
       {!open ? (
         <button type="button" onClick={() => setOpen(true)} className="mt-4 bg-white hover:bg-slate-100 text-brand-700 font-bold px-6 py-3 rounded-xl shadow-sm transition active:scale-[0.98] flex items-center gap-2 text-xs sm:text-sm">
           <CalendarPlus className="h-4 w-4 text-teal-200" />
-          <span>Điền phiếu yêu cầu kết nối</span>
+          <span>Điền yêu cầu kết nối</span>
         </button>
       ) : (
         <form onSubmit={submit} className="mt-4 space-y-3 rounded-xl bg-white/10 p-4 border border-white/10">
@@ -120,7 +120,7 @@ function ConsultationCta({ expertCode }: { expertCode: string }) {
           {state === "success" && (
             <div className="rounded-xl bg-emerald-950/60 border border-emerald-400/40 p-3 space-y-2">
               <p className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 shrink-0" /> Đã gửi yêu cầu tư vấn thành công tới Viện NacenTech!
+                <CheckCircle2 className="w-4 h-4 shrink-0" /> Đã gửi yêu cầu tư vấn thành công tới Ban Thư ký &amp; Cố vấn Kỹ thuật BACLINK!
               </p>
               {ticketCode && (
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white/10 px-3 py-2">
@@ -188,7 +188,7 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md shadow-sm">
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Chuyên Gia Đã Xác Thực (NacenTech)</span>
+            <span>Chuyên Gia Đã Xác Thực (BACLINK)</span>
           </span>
           {detail.isAcceptingConsultation && (
             <span className="bg-teal-500/20 text-teal-300 border border-teal-500/40 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md">
@@ -259,7 +259,7 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
             </div>
 
             <p className="max-w-3xl text-xs sm:text-sm leading-relaxed text-slate-300 pt-1">
-              {detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên CSDL Quốc Gia NacenTwin."}
+              {detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên Cổng Giao Thương Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)."}
             </p>
 
             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -306,7 +306,7 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
         <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
           <h2 className="mb-2 font-bold text-sm text-slate-900 dark:text-white">Bảo mật liên hệ PDPD</h2>
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-            Thông tin liên hệ cá nhân của chuyên gia được bảo vệ theo Nghị định 13/2023/NĐ-CP (PDPD). Hãy gửi phiếu yêu cầu để Viện NacenTech làm đầu mối kết nối làm việc.
+            Thông tin liên hệ cá nhân của chuyên gia được bảo vệ theo Nghị định 13/2023/NĐ-CP (PDPD). Hãy gửi yêu cầu kết nối để Ban Thư ký &amp; Cố vấn Kỹ thuật BACLINK làm đầu mối điều phối làm việc.
           </p>
         </section>
       </aside>
@@ -328,7 +328,7 @@ function PublicBody({ detail }: { detail: ExpertPublicDetail }) {
             )}
           </div>
           <p className="text-body leading-relaxed text-slate-700 dark:text-slate-300">
-            {detail.consultingSummary || detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên CSDL Quốc Gia NacenTwin."}
+            {detail.consultingSummary || detail.publicBio || "Hồ sơ chuyên môn đang được chuyên gia hoàn thiện và cập nhật trên Cổng Giao Thương Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)."}
           </p>
           {((sectorLabels.length > 0) || (detail.specializedKeywords && detail.specializedKeywords.length > 0)) && (
             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -508,7 +508,7 @@ function CompletenessAlert({ detail, completeness }: { detail: ExpertPrivateDeta
             </div>
             <span className="rounded-full bg-emerald-100 text-emerald-800 text-caption font-bold px-2.5 py-1">HẠNG {completeness.grade}</span>
           </div>
-          <p className="mt-1 text-body">Hồ sơ đã hoàn thiện đầy đủ 5 trụ cột chuẩn hóa Bộ KH&CN.</p>
+          <p className="mt-1 text-body">Hồ sơ đã hoàn thiện đầy đủ tiêu chuẩn Ban Cố vấn Kỹ thuật BACLINK.</p>
         </section>
       );
     }

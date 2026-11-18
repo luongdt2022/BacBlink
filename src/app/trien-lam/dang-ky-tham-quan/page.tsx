@@ -52,7 +52,7 @@ export default function ExpoRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEventId) {
-      toast.error('Vui lòng chọn sự kiện Techmart muốn tham gia.');
+      toast.error('Vui lòng chọn sự kiện kết nối muốn tham gia.');
       return;
     }
     setIsSubmitting(true);
@@ -116,10 +116,10 @@ export default function ExpoRegistrationPage() {
 
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Link
-              href="/khao-sat-nhu-cau"
+              href="/chao-ban-cong-nghe"
               className="bg-brand-700 hover:bg-brand-800 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2"
             >
-              Đăng Ký Khảo Sát Đổi Mới Công Nghệ (TNI) <ArrowRight className="w-4 h-4" />
+              Khám Phá Sàn Công Nghệ <ArrowRight className="w-4 h-4" />
             </Link>
             <button
               onClick={() => setSuccessCode(null)}
@@ -136,9 +136,8 @@ export default function ExpoRegistrationPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
       {/* HERO BANNER SECTION (BACLINK Theme) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-3xl mx-auto space-y-2 text-center">
+      <section className="relative overflow-hidden workspace-banner text-white py-10 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div className="relative z-10 max-w-3xl mx-auto space-y-2 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
             <Ticket className="w-3.5 h-3.5 text-brand-200" />
             CỔNG ĐĂNG KÝ VÉ THAM QUAN KẾT NỐI CUNG CẦU
@@ -147,7 +146,7 @@ export default function ExpoRegistrationPage() {
             Triển Lãm Quốc Tế VIMEXPO & VIETNAM AUTOEXPO 2026
           </h1>
           <p className="text-white/80 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-            Quy tụ hơn 300+ Gian hàng Công nghiệp hỗ trợ, Cơ khí chế tạo và Doanh nghiệp Đổi mới sáng tạo.
+            Quy tụ hơn 300+ Gian hàng Công nghiệp hỗ trợ, Cơ khí chế tạo và Doanh nghiệp sản xuất công nghiệp.
             Đăng ký vé điện tử miễn phí trước ngày 10/06/2026 để nhận mã QR Check-in nhanh tại quầy VIP.
           </p>
 
@@ -178,7 +177,7 @@ export default function ExpoRegistrationPage() {
           <div className="space-y-4 text-xs">
             <div>
               <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                Sự kiện Techmart muốn tham quan *
+                Sự kiện xúc tiến công nghiệp muốn tham quan *
               </label>
               <select
                 required
@@ -307,7 +306,7 @@ export default function ExpoRegistrationPage() {
                   className="form-control w-full text-sm"
                 >
                   <option value="Tìm kiếm nhà cung cấp/đối tác">Tìm kiếm nhà cung cấp / đối tác</option>
-                  <option value="Khảo sát công nghệ mới">Khảo sát công nghệ mới</option>
+                  <option value="Tìm kiếm nhà cung ứng & công nghệ sản xuất">Tìm kiếm nhà cung ứng &amp; công nghệ sản xuất</option>
                   <option value="Tìm cơ hội hợp tác chuyển giao">Tìm cơ hội hợp tác chuyển giao</option>
                   <option value="Tham dự hội thảo chuyên đề">Tham dự hội thảo chuyên đề</option>
                 </select>

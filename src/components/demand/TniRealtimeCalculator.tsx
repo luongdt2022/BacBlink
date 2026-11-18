@@ -211,12 +211,12 @@ export default function TniRealtimeCalculator({ values, onChange, compact = fals
             className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 hover:text-rose-800 dark:hover:text-rose-300 underline"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            Giải thích công thức TNI & cơ sở khoa học (304 DN)
+            Giải thích công thức tính chỉ số cấp thiết TNI
           </button>
         </div>
       </div>
 
-      {/* Matching Policy Box & 304 DN Evidence */}
+      {/* Matching Policy Box & BACLINK Priority */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="text-xs bg-brand-50/80 dark:bg-brand-950/60 border border-brand-200/70 dark:border-brand-900 text-brand-900 dark:text-brand-200 p-3 rounded-xl flex items-start gap-2.5">
           <TrendingUp className="w-4 h-4 text-brand-700 dark:text-cyan-400 shrink-0 mt-0.5" />
@@ -232,17 +232,17 @@ export default function TniRealtimeCalculator({ values, onChange, compact = fals
           <BarChart2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <div className="flex items-center justify-between">
-              <span className="font-bold block">Thực nghiệm 304 Doanh nghiệp:</span>
+              <span className="font-bold block">Điều phối ưu tiên BACLINK:</span>
               <button
                 type="button"
                 onClick={() => setIsMethodologyOpen(true)}
                 className="text-[11px] text-emerald-800 dark:text-emerald-300 underline font-bold"
               >
-                Xem báo cáo
+                Chi tiết
               </button>
             </div>
             <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300">
-              Mean 68.94 · Median 66.5. Đã đối soát trên 304 DNNVV theo quyết định PO-DEC-20261008-03.
+              Hồ sơ có TNI cao được Ban Cố vấn Kỹ thuật BACLINK ưu tiên ghép nối trực tiếp với các nhà cung ứng trong KCN Bắc Ninh.
             </p>
           </div>
         </div>

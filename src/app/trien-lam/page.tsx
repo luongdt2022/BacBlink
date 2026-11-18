@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Calendar,
   MapPin,
@@ -34,7 +35,14 @@ import {
 } from "@/lib/portal-client";
 
 export default function TechmartEventsPage() {
+  const router = useRouter();
   const toast = useToast();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && router && typeof router.replace === "function") {
+      router.replace("/tin-tuc");
+    }
+  }, [router]);
 
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming");
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,7 +76,7 @@ export default function TechmartEventsPage() {
         setEventsState("success");
       }
     } catch (err) {
-      console.error("Lỗi nạp danh sách sự kiện Techmart:", err);
+      console.error("Lỗi nạp danh sách sự kiện BACLINK:", err);
       setEventsState("error");
     }
   }, [activeTab]);
@@ -147,19 +155,18 @@ export default function TechmartEventsPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col">
       {/* HERO BANNER */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0" />
-        <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <section className="relative overflow-hidden workspace-banner text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
               <Sparkles className="size-3.5 text-brand-200" />
-              <span>Lịch Sự Kiện &amp; Phiên Chào Giá Công Nghệ Techmart Quốc Gia</span>
+              <span>Lịch Sự Kiện &amp; Phiên Kết Nối Công Nghiệp BACLINK</span>
             </div>
             <h1 className="type-page-title text-white">
-              Sàn Trưng Bày &amp; Các Phiên Chào Giá Công Nghệ Trực Tuyến
+              Sự Kiện &amp; Diễn Đàn Kết Nối Cung Cầu Công Nghiệp Bắc Ninh
             </h1>
             <p className="text-white/85 type-body">
-              Nơi hội tụ các sự kiện Techmart, Techfest, Diễn đàn chuyển giao công nghệ và các phiên kết nối 1-1 giữa Viện, Trường, Doanh nghiệp ĐMST với cộng đồng người mua.
+              Nơi hội tụ các sự kiện xúc tiến thương mại, diễn đàn hợp tác quốc tế FDI và các phiên kết nối 1-1 giữa doanh nghiệp sản xuất, viện trường và chuyên gia kỹ thuật.
             </p>
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
@@ -184,15 +191,15 @@ export default function TechmartEventsPage() {
           <div className="grid grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 shrink-0">
             <div className="text-center px-3">
               <div className="text-2xl font-black text-teal-300">15</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Triển Lãm TT17</div>
+              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Sự Kiện &amp; Phiên B2B</div>
             </div>
             <div className="text-center px-3 border-x border-white/20">
               <div className="text-2xl font-black text-emerald-300">84</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Công Nghệ Tham Gia</div>
+              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Doanh Nghiệp Kết Nối</div>
             </div>
             <div className="text-center px-3">
               <div className="text-2xl font-black text-amber-300">320+</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Doanh Nghiệp Đăng Ký</div>
+              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Đại Biểu Đăng Ký</div>
             </div>
           </div>
         </div>
@@ -247,8 +254,8 @@ export default function TechmartEventsPage() {
             />
             <span>
               {activeTab === "upcoming"
-                ? `Các Phiên Chào Giá & Triển Lãm Đang Mở Đăng Ký (${filteredEvents.length} Sự Kiện)`
-                : `Các Sự Kiện Techmart Đã Khép Lại (${filteredEvents.length} Sự Kiện)`}
+                ? `Các Sự Kiện & Phiên Kết Nối B2B Đang Mở Đăng Ký (${filteredEvents.length} Sự Kiện)`
+                : `Các Sự Kiện Kết Nối B2B Đã Khép Lại (${filteredEvents.length} Sự Kiện)`}
             </span>
           </h2>
 
@@ -308,7 +315,7 @@ export default function TechmartEventsPage() {
               </p>
             </div>
           }
-          errorMessage="Không thể kết nối đến máy chủ lấy dữ liệu sự kiện Techmart."
+          errorMessage="Không thể kết nối đến máy chủ lấy dữ liệu sự kiện kết nối B2B."
           onRetry={() => setLoadVersion((v) => v + 1)}
         >
           {activeTab === "upcoming" ? (
@@ -408,7 +415,7 @@ export default function TechmartEventsPage() {
                         )}
                       </div>
                       <p className="text-xs text-slate-400 text-center lg:text-right">
-                        Hỗ trợ doanh nghiệp ĐMST &amp; chuyên gia kết nối trực tiếp
+                        Hỗ trợ doanh nghiệp sản xuất công nghiệp &amp; cố vấn kỹ thuật kết nối trực tiếp
                       </p>
                     </div>
                   </div>
@@ -418,7 +425,7 @@ export default function TechmartEventsPage() {
           ) : (
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
               <h3 className="text-sm font-extrabold text-slate-900 dark:text-white mb-4">
-                Các Kỳ Techmart Đã Kết Thúc &amp; Thống Kê Chuyển Giao
+                Các Sự Kiện Kết Nối B2B Đã Kết Thúc &amp; Thống Kê Giao Thương
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left">
@@ -467,7 +474,7 @@ export default function TechmartEventsPage() {
         </Async>
       </main>
 
-      {/* MODAL: ĐĂNG KÝ THAM GIA PHIÊN CHÀO GIÁ TECHMART */}
+      {/* MODAL: ĐĂNG KÝ THAM GIA SỰ KIỆN & PHIÊN KẾT NỐI B2B */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 dark:border-slate-800 relative">
@@ -484,11 +491,11 @@ export default function TechmartEventsPage() {
                 <FileSignature className="size-4" />
               </div>
               <h3 className="type-card-title text-slate-900 dark:text-white">
-                Đăng Ký Tham Gia Phiên Chào Giá Techmart
+                Đăng Ký Tham Gia Sự Kiện &amp; Phiên Kết Nối B2B
               </h3>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Dành cho Doanh nghiệp, Viện, Trường hoặc Cá nhân muốn mở gian hàng chào bán công nghệ hoặc tham dự phiên kết nối B2B.
+              Dành cho Doanh nghiệp Hội viên, nhà máy sản xuất hoặc đối tác muốn mở gian hàng trưng bày năng lực hoặc tham dự phiên kết nối B2B.
             </p>
 
             <form onSubmit={handleSubmitRegistration} className="space-y-3.5 text-xs">

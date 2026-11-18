@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Award, FileCheck2, Upload, Calendar, ShieldCheck, BookOpen } from "lucide-react";
+import { Award, FileCheck2, Upload, ShieldCheck, BookOpen } from "lucide-react";
 import TrlMethodologyModal from "@/components/common/TrlMethodologyModal";
-import { IntellectualPropertyStatus, PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
+import { IntellectualPropertyStatus, FIXED_BACLINK_AUTHORITY } from "@/services/api/technology-offer";
 
 interface IpQuadDigitizationCardProps {
   ipStatus: IntellectualPropertyStatus;
@@ -49,15 +49,6 @@ export function IpQuadDigitizationCard({
     }
   };
 
-  const handleAuthorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setManagingAuthorityId(id);
-    const item = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => a.id === id);
-    if (item) {
-      setManagingAuthorityName(item.name);
-    }
-  };
-
   return (
     <>
     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-6">
@@ -68,10 +59,10 @@ export function IpQuadDigitizationCard({
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-slate-900">
-              Hồ Sơ Sở Hữu Trí Tuệ (IP Quad Digitization) & Pháp Lý
+              Hồ Sơ Sở Hữu Trí Tuệ (IP Quad Digitization) &amp; Pháp Lý
             </h3>
             <p className="text-xs text-slate-500">
-              Khai báo bộ tứ văn bằng SHTT số hóa và cơ quan tiếp nhận hồ sơ theo phân cấp
+              Khai báo bộ tứ văn bằng SHTT số hóa và đơn vị tiếp nhận thẩm định của Hiệp hội BACLINK
             </p>
           </div>
         </div>
@@ -154,25 +145,18 @@ export function IpQuadDigitizationCard({
         </label>
       </div>
 
-      {/* Chọn Sở KH&CN tiếp nhận và cam kết pháp lý */}
+      {/* Cơ quan tiếp nhận cố định của Hiệp hội BACLINK và cam kết pháp lý */}
       <div className="border-t border-slate-100 pt-4 space-y-4">
         <div>
           <label className="mb-1 block text-xs font-bold text-slate-700">
-            Sở KH&CN tiếp nhận thẩm định và quản lý địa bàn <span className="text-rose-600">*</span>
+            Cơ quan tiếp nhận &amp; thẩm định hồ sơ
           </label>
-          <select
-            value={managingAuthorityId}
-            onChange={handleAuthorityChange}
-            className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-medium text-slate-700 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
-          >
-            {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
-              <option key={auth.id} value={auth.id}>
-                {auth.name} ({auth.scopeType})
-              </option>
-            ))}
-          </select>
+          <div className="h-9 w-full rounded-lg border border-emerald-200 bg-emerald-50/60 px-3 flex items-center gap-2 text-xs font-bold text-emerald-900">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{FIXED_BACLINK_AUTHORITY.name}</span>
+          </div>
           <p className="mt-1 text-xs text-slate-500">
-            Hồ sơ sẽ được chuyển tới Cán bộ chuyên môn của Sở để tiến hành thẩm định trước khi xuất bản lên Sàn Quốc gia.
+            Hồ sơ sẽ được chuyển trực tiếp tới Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK để rà soát trước khi niêm yết trên Cổng Giao Thương BACLINK.
           </p>
         </div>
 

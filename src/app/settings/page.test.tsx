@@ -16,7 +16,7 @@ describe("SettingsPage logout", () => {
     localStorage.clear();
     push.mockReset();
     replace.mockReset();
-    authClient.setSession("token", { id: "person-1", email: "member@nacentech.local", fullName: "Nguyễn Minh An", role: "PUBLIC_USER" });
+    authClient.setSession("token", { id: "person-1", email: "member@baclink.org.vn", fullName: "Nguyễn Minh An", role: "PUBLIC_USER" });
   });
 
   afterEach(cleanup);
@@ -47,8 +47,8 @@ describe("SettingsPage logout", () => {
     // Card 2: Doanh nghiệp
     expect(screen.getByText("Doanh nghiệp")).toBeInTheDocument();
 
-    // Card 3: Doanh nghiệp ĐMST
-    expect(screen.getByText("Doanh nghiệp ĐMST")).toBeInTheDocument();
+    // Card 3: Doanh nghiệp Hội viên BACLINK
+    expect(screen.getByText("Doanh nghiệp Hội viên BACLINK")).toBeInTheDocument();
   });
 });
 

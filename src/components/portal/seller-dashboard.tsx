@@ -333,24 +333,6 @@ export function SellerDashboard({ user }: { user: UserContext | null }) {
               </div>
             )}
           </div>
-
-          {/* Quick Shortcuts */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-slate-900 dark:to-teal-950/40 border border-teal-200/80 dark:border-teal-900/60 space-y-2">
-            <span className="text-xs font-bold text-teal-800 dark:text-teal-300 flex items-center gap-1.5">
-              <FileCheck className="w-4 h-4 text-teal-600" />
-              Đo Lường Uy Tín Công Nghệ
-            </span>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Thực hiện tự đánh giá trình độ công nghệ TT17 để nhận điểm tín nhiệm và gia tăng cơ hội khớp nối B2B.
-            </p>
-            <Link
-              href="/assessments/tt17"
-              className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-900 dark:text-teal-300 hover:underline pt-1"
-            >
-              <span>Vào Module Đánh Giá TT17</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
         </div>
       </div>
     </div>

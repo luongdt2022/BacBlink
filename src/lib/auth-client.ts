@@ -57,17 +57,17 @@ const ROLE_DISPLAY_NAMES: Record<string, string> = {
   ENTERPRISE: "Doanh nghiệp Hội viên",
   PUBLIC_USER: "Thành viên công chúng",
 
-  // Legacy display names (giữ tương thích hiển thị cho token cũ)
+  // Legacy display names (chuẩn hóa về ngôn ngữ BACLINK 3 cấp, không còn ĐMST/tỉnh)
   SUPER_ADMIN: "Quản trị viên cấp cao",
   OPERATOR_ADMIN: "Quản trị viên vận hành",
-  PROVINCIAL_ADMIN: "Quản trị viên cấp tỉnh",
-  SECTOR_ADMIN: "Quản trị viên ngành",
-  CLUSTER_ADMIN: "Quản trị viên đơn vị liên kết",
+  PROVINCIAL_ADMIN: "Thành viên công chúng",
+  SECTOR_ADMIN: "Thành viên công chúng",
+  CLUSTER_ADMIN: "Thành viên công chúng",
   SELLER: "Nhà cung ứng công nghệ",
   BUYER: "Bên có nhu cầu công nghệ",
-  INNOVATION_ENTITY: "Chủ thể đổi mới sáng tạo",
-  VERIFIED_EXPERT: "Chuyên gia KH&CN đã xác thực",
-  EXPERT: "Chuyên gia KH&CN",
+  INNOVATION_ENTITY: "Doanh nghiệp Hội viên",
+  VERIFIED_EXPERT: "Cố vấn kỹ thuật đã xác thực",
+  EXPERT: "Cố vấn kỹ thuật BACLINK",
   USER: "Thành viên",
   GUEST: "Khách",
 };

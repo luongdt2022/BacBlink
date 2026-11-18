@@ -28,7 +28,7 @@ export async function readApiError(response: Response, fallback: string): Promis
 export function userFacingRequestError(error: unknown, fallback: string): string {
   const message = error instanceof Error ? error.message : "";
   if (message === "Load failed" || message === "Failed to fetch" || error instanceof TypeError) {
-    return "Không thể kết nối máy chủ đăng ký. Vui lòng kiểm tra API NacenTech đang chạy rồi thử lại.";
+    return "Không thể kết nối máy chủ hệ thống. Vui lòng kiểm tra dịch vụ API BACLINK đang hoạt động rồi thử lại.";
   }
   return message || fallback;
 }

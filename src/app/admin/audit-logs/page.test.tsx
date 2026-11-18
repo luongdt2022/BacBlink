@@ -8,24 +8,24 @@ const mockAuditLogs = [
     id: "LOG-2026-001",
     createdAt: "2026-10-26T08:45:12Z",
     actorName: "Nguyễn Văn Hùng",
-    actorRole: "SUPER_ADMIN",
-    provinceCode: "HN",
+    actorRole: "ADMIN",
+    provinceCode: "KCN_VSIP_BN",
     action: "OVERRIDE_APPROVE",
-    targetTitle: "PGS.TS Trần Mạnh Cương (Lý lịch khoa học)",
+    targetTitle: "PGS.TS Trần Mạnh Cương (Hồ sơ Cố vấn kỹ thuật)",
     targetType: "EXPERT",
-    reason: "Thực thi can thiệp vượt cấp Tầng 0 theo Công văn chỉ đạo số 142/BKHCN-ĐMST",
+    reason: "Phê duyệt đặc cách bởi Ban Quản trị Hiệp hội BACLINK Bắc Ninh",
     ipAddress: "14.238.102.45",
   },
   {
     id: "LOG-2026-002",
     createdAt: "2026-10-26T07:30:00Z",
     actorName: "Lê Thị Thảo",
-    actorRole: "PROVINCIAL_ADMIN",
-    provinceCode: "SG",
+    actorRole: "ADMIN",
+    provinceCode: "KCN_YEN_PHONG",
     action: "APPROVED",
-    targetTitle: "Công ty CP Giải pháp Năng lượng Xanh SG (Gian hàng)",
+    targetTitle: "Công ty CP Cơ khí Chính xác Yên Phong (Hồ sơ Hội viên)",
     targetType: "SHOP",
-    reason: "ĐKKD và năng lực tài chính hợp lệ đạt chuẩn Sàn giao dịch",
+    reason: "ĐKKD và năng lực sản xuất hợp lệ đạt chuẩn Hội viên BACLINK",
     ipAddress: "115.79.201.88",
   },
 ];
@@ -52,31 +52,32 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-describe("T069 [FE-AuditLogs] Interactive Audit Logs Data Table Verification", () => {
-  it("renders live audit log records, filters and export button", async () => {
-    render(<AdminAuditLogsPage />);
+describe("T069 [FE-AuditLogs] BACLINK Audit Logs Data Table Verification (CR-BACLINK-007)", () => {
+  it("renders live audit log records, filters and export button with zero Sở/Tầng 0/NacenTwin remnants", async () => {
+    const { container } = render(<AdminAuditLogsPage />);
 
-    expect(screen.getByText("Nhật Ký Kiểm Toán Toàn Quốc (Audit Logs)")).toBeInTheDocument();
+    expect(screen.getByText("Nhật Ký Kiểm Toán Hệ Thống BACLINK (Audit Logs)")).toBeInTheDocument();
     expect(screen.getByText("Xuất File CSV / Excel")).toBeInTheDocument();
 
-    // Table columns
     expect(await screen.findByText("Thời Gian")).toBeInTheDocument();
     expect(screen.getByText("Tác Nhân Thực Thi")).toBeInTheDocument();
     expect(screen.getByText("Địa Bàn")).toBeInTheDocument();
     expect(screen.getByText("Hành Vi Thao Tác")).toBeInTheDocument();
     expect(screen.getByText("Hồ Sơ / Chủ Thể")).toBeInTheDocument();
 
-    // Records visible
     await waitFor(() => {
       expect(screen.getByText("Nguyễn Văn Hùng")).toBeInTheDocument();
       expect(screen.getByText("Lê Thị Thảo")).toBeInTheDocument();
     });
+
+    const text = container.textContent || "";
+    expect(text).not.toMatch(/Sở KH&CN|Tầng 0|TT17|ĐMST|NacenTwin|NacenTech/i);
   });
 
   it("filters audit log records by search query keyword", async () => {
     render(<AdminAuditLogsPage />);
 
-    const searchInput = screen.getByPlaceholderText(/Tìm theo tên cán bộ, hồ sơ/i);
+    const searchInput = screen.getByPlaceholderText(/Tìm theo tên quản trị viên, hồ sơ/i);
     fireEvent.change(searchInput, { target: { value: "Nguyễn Văn Hùng" } });
 
     await waitFor(() => {
@@ -92,9 +93,29 @@ describe("T069 [FE-AuditLogs] Interactive Audit Logs Data Table Verification", (
     fireEvent.change(select, { target: { value: "OVERRIDE_APPROVE" } });
 
     await waitFor(() => {
-      expect(screen.getByText("Can Thiệp Tầng 0")).toBeInTheDocument();
+      expect(screen.getAllByText("Phê Duyệt Đặc Cách").length).toBeGreaterThanOrEqual(1);
       expect(screen.queryByText("Lê Thị Thảo")).not.toBeInTheDocument();
     });
+  });
+
+  it("exports CSV with baclink_audit_logs_*.csv filename", async () => {
+    const createObjectURLMock = vi.fn().mockReturnValue("blob:http://localhost/test-csv");
+    vi.stubGlobal("URL", {
+      createObjectURL: createObjectURLMock,
+      revokeObjectURL: vi.fn(),
+    });
+    const appendSpy = vi.spyOn(document.body, "appendChild");
+
+    render(<AdminAuditLogsPage />);
+    await waitFor(() => expect(screen.getByText("Nguyễn Văn Hùng")).toBeInTheDocument());
+
+    fireEvent.click(screen.getByText("Xuất File CSV / Excel"));
+
+    const appendedLink = appendSpy.mock.calls.find(
+      ([node]) => (node as HTMLElement).tagName === "A"
+    )?.[0] as HTMLAnchorElement | undefined;
+    expect(appendedLink).toBeDefined();
+    expect(appendedLink?.getAttribute("download")).toMatch(/^baclink_audit_logs_\d{4}-\d{2}-\d{2}\.csv$/);
   });
 
   it("opens modal detail view when clicking 'Chi tiết'", async () => {
@@ -107,11 +128,9 @@ describe("T069 [FE-AuditLogs] Interactive Audit Logs Data Table Verification", (
     const detailButtons = screen.getAllByRole("button", { name: /Chi tiết/i });
     fireEvent.click(detailButtons[0]);
 
-    // Modal opens
     expect(screen.getByText(/Chi Tiết Vết Kiểm Toán/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Thực thi can thiệp vượt cấp Tầng 0/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Phê duyệt đặc cách bởi Ban Quản trị Hiệp hội BACLINK/i).length).toBeGreaterThanOrEqual(1);
 
-    // Close modal
     fireEvent.click(screen.getByRole("button", { name: "✕" }));
     expect(screen.queryByText(/Chi Tiết Vết Kiểm Toán/i)).not.toBeInTheDocument();
   });

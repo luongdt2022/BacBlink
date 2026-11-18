@@ -12,7 +12,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 const mockPublicProfile = {
-  expertCode: "CG-NACEN-DEMO01",
+  expertCode: "CG-BL-001",
   fullName: "GS.TS. Nguyễn Văn Tuấn",
   academicRank: "GS",
   degree: "DOCTOR",
@@ -21,7 +21,7 @@ const mockPublicProfile = {
   organizationName: "Viện Cơ học & Tự động hóa",
   positionTitle: "Trưởng phòng Thí nghiệm",
   publicBio: "Chuyên gia về Robot công nghiệp.",
-  expertiseSectors: ["LV01"],
+  expertiseSectors: ["IND_AUTO"],
   specializedKeywords: ["Robot Delta", "Xử lý ảnh công nghiệp"],
   masteredTechCodes: ["CN01"],
   isVerified: true,
@@ -40,7 +40,7 @@ const mockPublicProfile = {
 const mockPrivateDetail = {
   publicProfile: mockPublicProfile,
   phone: "0912345678",
-  email: "tuan.nv@nacentech.vn",
+  email: "tuan.nv@baclink.org.vn",
   organizationAddress: "18 Hoàng Quốc Việt, Cầu Giấy, Hà Nội",
   pdpdConsent: true,
   legalOath: true,
@@ -51,7 +51,7 @@ const mockPrivateDetail = {
 const mockCompleteness = {
   score: 80,
   grade: "GOOD",
-  completedCriteria: ["Định danh & Cam kết pháp lý", "Học vị & Cơ quan", "Lĩnh vực TT17", "Thành tựu KH&CN"],
+  completedCriteria: ["Định danh & Cam kết pháp lý", "Học vị & Cơ quan", "Ngành công nghiệp chuyên môn (BACLINK)", "Thành tựu KH&CN"],
   missingCriteria: ["Chưa bật nhận lời mời tư vấn"],
   suggestions: ["Bổ sung tóm tắt tiểu sử và bật sẵn sàng nhận tư vấn"],
 };
@@ -62,8 +62,8 @@ describe("ExpertProfileEditPage", () => {
     vi.restoreAllMocks();
     localStorage.clear();
     vi.spyOn(masterDataApi, "getActiveSectors").mockResolvedValue([
-      { code: "LV01", name: "Cơ khí chế tạo & Tự động hóa" },
-      { code: "LV07", name: "Công nghệ thông tin & Trí tuệ nhân tạo" },
+      { code: "IND_AUTO", name: "Tự động hóa, Robot & Nhà máy thông minh" },
+      { code: "IND_IT", name: "CNTT, Phần mềm quản trị & AI công nghiệp" },
     ]);
   });
 

@@ -71,11 +71,11 @@ export function InnovativeProfile({
           <div className="flex flex-wrap items-center gap-2">
             <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 shadow-sm">
               <MapPin className="w-3.5 h-3.5 text-white/80" />
-              <span>{data.provinceCity || "Toàn quốc"}</span>
+              <span>{data.provinceCity || "Bắc Ninh"}</span>
             </span>
             <span className="bg-white/15 backdrop-blur-md border border-white/25 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-white" />
-              <span>DN Đổi Mới Sáng Tạo</span>
+              <span>Doanh Nghiệp Hội Viên</span>
             </span>
           </div>
 
@@ -104,7 +104,7 @@ export function InnovativeProfile({
               {data.isVerified && (
                 <div
                   className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1 rounded-full border-2 border-white shadow-md"
-                  title="Đã xác thực số hóa bởi Sở KH&CN / Viện NacenTech"
+                  title="Đã xác thực bởi Ban Thẩm định BACLINK Bắc Ninh"
                 >
                   <BadgeCheck className="w-4 h-4" />
                 </div>
@@ -115,14 +115,18 @@ export function InnovativeProfile({
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-slate-800 text-teal-300 border border-slate-700">
-                  {data.subjectType || "DN ĐMST"}
+                  {!data.subjectType || data.subjectType === "INNOVATIVE_ENTERPRISE" || /ĐMST|đổi mới sáng tạo/i.test(data.subjectType)
+                    ? "Doanh nghiệp Hội viên"
+                    : data.subjectType === "ENTERPRISE" || data.subjectType === "COMMERCIAL_ENTERPRISE"
+                    ? "Doanh nghiệp Sản xuất"
+                    : data.subjectType}
                 </span>
 
                 {/* Digital Verification Badge */}
                 {data.isVerified ? (
                   <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 backdrop-blur-md">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Đã xác thực (Sở KH&amp;CN)</span>
+                    <span>Đã xác thực (Hiệp hội BACLINK)</span>
                   </span>
                 ) : (
                   <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1.5">
@@ -236,7 +240,7 @@ export function InnovativeProfile({
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
-            ⭐ Năng Lực ĐMST
+            ⭐ Năng Lực Sản Xuất
           </button>
           <button
             type="button"
@@ -258,7 +262,7 @@ export function InnovativeProfile({
                 : "border-transparent text-slate-600 hover:text-slate-900"
             }`}
           >
-            🔬 Năng Lực R&amp;D &amp; ĐMST
+            🔬 Năng Lực R&amp;D &amp; Kỹ Thuật
           </button>
           <button
             type="button"
@@ -299,15 +303,15 @@ export function InnovativeProfile({
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-2">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur text-xs font-semibold text-brand-100 border border-white/20">
-                      <span>Bộ Tiêu Chí ĐMST Quốc Gia v1.0</span>
+                      <span>Khung Năng Lực Nhà Máy BACLINK</span>
                       <span>•</span>
-                      <span>Kỳ 2024</span>
+                      <span>Chuẩn Công Nghiệp</span>
                     </div>
                     <h3 className="text-xl md:text-2xl font-extrabold text-white">
-                      Hồ Sơ Năng Lực Đổi Mới Sáng Tạo
+                      Hồ Sơ Năng Lực Sản Xuất &amp; Công Nghệ
                     </h3>
                     <p className="text-xs md:text-sm text-white/85 max-w-xl leading-relaxed">
-                      Đánh giá toàn diện trên 8 nhóm năng lực (37 tiêu chí chuẩn hóa, thang 100 điểm) theo Quyết định PO-DEC-20261014-03 của Cục ĐMST và Sở KH&amp;CN.
+                      Tổng hợp năng lực nhà máy, dây chuyền thiết bị, quản trị chất lượng (ISO/IATF/ESG) và chuỗi cung ứng trên 8 nhóm tiêu chí cốt lõi (thang 100 điểm) của Hiệp hội BACLINK.
                     </p>
                   </div>
 
@@ -327,23 +331,25 @@ export function InnovativeProfile({
                       <div className="text-xs uppercase tracking-wider text-teal-100 font-semibold">Phân Tầng</div>
                       {innovationRating?.classification === "LEADING" ? (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs mt-1 shadow-sm">
-                          ⭐️ {innovationRating.badgeName || "Huy hiệu Vàng ĐMST"}
+                          ⭐️ {innovationRating.badgeName ? innovationRating.badgeName.replace(/\s*ĐMST/gi, "") : "Huy hiệu Hạng Vàng"}
                         </div>
                       ) : innovationRating?.classification === "DEVELOPING" ? (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white text-brand-900 font-extrabold text-xs mt-1 shadow-sm">
-                          🥈 {innovationRating.badgeName || "Huy hiệu Bạc ĐMST"}
+                          🥈 {innovationRating.badgeName ? innovationRating.badgeName.replace(/\s*ĐMST/gi, "") : "Huy hiệu Hạng Bạc"}
                         </div>
                       ) : innovationRating?.classification === "POTENTIAL" ? (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-600 text-white font-extrabold text-xs mt-1 shadow-sm">
-                          🥉 {innovationRating.badgeName || "Huy hiệu Đồng ĐMST"}
+                          🥉 {innovationRating.badgeName ? innovationRating.badgeName.replace(/\s*ĐMST/gi, "") : "Huy hiệu Hạng Đồng"}
                         </div>
                       ) : (
                         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/20 text-white font-extrabold text-xs mt-1 border border-white/30">
-                          ⚪ Chưa Đánh Giá
+                          ⚪ Chưa Xếp Hạng
                         </div>
                       )}
                       <div className="text-xs text-white/80 mt-0.5">
-                        {innovationRating?.reviewedBy ? `Thẩm định: ${innovationRating.reviewedBy}` : "Tính toán tự động"}
+                        {innovationRating?.reviewedBy
+                          ? `Thẩm định: ${/Sở KH/i.test(innovationRating.reviewedBy) ? "Ban Thẩm định BACLINK" : innovationRating.reviewedBy}`
+                          : "Tổng hợp từ hồ sơ năng lực"}
                       </div>
                     </div>
                   </div>
@@ -359,10 +365,10 @@ export function InnovativeProfile({
                 <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 space-y-3">
                   <div className="text-4xl text-slate-400">📊</div>
                   <h4 className="text-base font-bold text-slate-800">
-                    Chưa có dữ liệu đánh giá ĐMST cho doanh nghiệp này
+                    Chưa có dữ liệu hồ sơ năng lực chuyên sâu cho doanh nghiệp này
                   </h4>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Doanh nghiệp có thể hoàn thiện bảng câu hỏi khảo sát tại Bàn làm việc để hệ thống tự động lượng hóa 8 nhóm năng lực.
+                    Doanh nghiệp có thể cập nhật hồ sơ năng lực nhà máy và chứng nhận chất lượng tại Bàn làm việc Hội viên.
                   </p>
                 </div>
               ) : (
@@ -475,7 +481,7 @@ export function InnovativeProfile({
                     <div className="p-3 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs text-amber-800 leading-relaxed flex items-start gap-2">
                       <span className="text-base shrink-0">🛡️</span>
                       <span>
-                        <strong>Bảo vệ dữ liệu (PDPD):</strong> Theo Nghị định 13/2023/NĐ-CP, chi tiết doanh thu từ sản phẩm mới và kinh phí R&amp;D nội bộ được bảo mật đối với người xem công chúng. Chỉ chủ sở hữu và cán bộ Sở KH&amp;CN phụ trách địa bàn mới có quyền khai thác số liệu chi tiết.
+                        <strong>Bảo vệ dữ liệu (PDPD):</strong> Theo Nghị định 13/2023/NĐ-CP, chi tiết doanh thu từ sản phẩm mới và kinh phí R&amp;D nội bộ được bảo mật đối với người xem công chúng. Chỉ chủ sở hữu và Ban Thư ký Hiệp hội BACLINK mới có quyền khai thác số liệu chi tiết.
                       </span>
                     </div>
                   </div>
@@ -493,14 +499,14 @@ export function InnovativeProfile({
                     Danh Mục Sản Phẩm &amp; Giải Pháp Chào Bán
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Các giải pháp công nghệ, thiết bị và sản phẩm thương mại của {data.name} niêm yết trên Sàn NacenTwin
+                    Các giải pháp công nghệ, thiết bị và sản phẩm thương mại của {data.name} niêm yết trên Cổng giao thương BACLINK
                   </p>
                 </div>
                 <Link
                   href="/chao-ban-cong-nghe"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1.5 rounded-xl border border-brand-200 self-start sm:self-auto"
                 >
-                  Xem tất cả trên Sàn công nghệ →
+                  Xem tất cả trên Sàn sản phẩm &amp; năng lực →
                 </Link>
               </div>
 
@@ -516,7 +522,7 @@ export function InnovativeProfile({
                     Doanh nghiệp chưa có sản phẩm chào bán niêm yết công khai
                   </h4>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Hồ sơ sản phẩm đang được cập nhật hoặc đang trong quá trình thẩm định của Sở KH&amp;CN.
+                    Hồ sơ sản phẩm đang được cập nhật hoặc đang trong quá trình thẩm định của Hiệp hội BACLINK.
                   </p>
                 </div>
               ) : (
@@ -584,7 +590,7 @@ export function InnovativeProfile({
                   </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between py-1 border-b border-slate-200/60">
-                      <span className="text-slate-500">Lĩnh vực chính (TT17):</span>
+                      <span className="text-slate-500">Ngành sản xuất chính:</span>
                       <span className="font-semibold text-slate-800">{data.mainSectorName || "Chưa phân loại"}</span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-slate-200/60">
@@ -659,7 +665,7 @@ export function InnovativeProfile({
                 </div>
 
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
-                  <div className="text-xs uppercase font-bold text-slate-600 tracking-wider">Dự án ĐMST</div>
+                  <div className="text-xs uppercase font-bold text-slate-600 tracking-wider">Dự án Kỹ thuật</div>
                   <div className="text-2xl font-bold text-slate-800 mt-2">
                     {data.projects?.length || 0}
                   </div>
@@ -669,7 +675,7 @@ export function InnovativeProfile({
 
               {/* Projects List */}
               <div className="space-y-3">
-                <h3 className="font-bold text-slate-800 text-base">Danh mục dự án ĐMST tiêu biểu</h3>
+                <h3 className="font-bold text-slate-800 text-base">Danh mục dự án sản xuất &amp; R&amp;D tiêu biểu</h3>
                 {data.projects && data.projects.length > 0 ? (
                   <div className="space-y-3">
                     {data.projects.map((p) => (
@@ -693,7 +699,7 @@ export function InnovativeProfile({
                   </div>
                 ) : (
                   <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-xs text-slate-500">
-                    Doanh nghiệp chưa công bố dự án ĐMST nào.
+                    Doanh nghiệp chưa công bố dự án kỹ thuật nào.
                   </div>
                 )}
               </div>
@@ -760,7 +766,7 @@ export function InnovativeProfile({
                 {/* Support Needs */}
                 <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 space-y-3">
                   <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
-                    🎯 Nhu cầu hỗ trợ từ Hệ sinh thái &amp; Nhà nước
+                    🎯 Nhu cầu kết nối chuỗi cung ứng &amp; Hỗ trợ kỹ thuật
                   </h3>
                   {data.supportNeeds && data.supportNeeds.length > 0 ? (
                     <ul className="space-y-2">
@@ -781,7 +787,7 @@ export function InnovativeProfile({
                 <div>
                   <h4 className="font-bold text-brand-900 text-sm">Bạn quan tâm đến việc hợp tác cùng doanh nghiệp này?</h4>
                   <p className="text-xs text-brand-700 mt-0.5">
-                    Gửi yêu cầu kết nối để mở luồng trao đổi trực tiếp qua mạng lưới Đổi mới sáng tạo.
+                    Gửi yêu cầu kết nối để mở luồng trao đổi trực tiếp qua Cổng giao thương BACLINK.
                   </p>
                 </div>
                 <button

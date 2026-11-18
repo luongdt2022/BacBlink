@@ -32,8 +32,7 @@ import {
   updateSellerOffer,
   deleteSellerOffer,
   togglePublishOffer,
-  PROVINCIAL_AUTHORITIES_CATALOG,
-  resolveDefaultAuthority,
+  FIXED_BACLINK_AUTHORITY,
 } from "@/services/api/technology-offer";
 import { getStoredSession } from "@/lib/auth-client";
 import {
@@ -88,7 +87,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [problemSolved, setProblemSolved] = useState("");
-  const [sectorCode, setSectorCode] = useState("LV07");
+  const [sectorCode, setSectorCode] = useState("IND_MECH");
 
   // Pricing (Inline Step 1)
   const [pricingType, setPricingType] = useState<PricingType>("CONTACT");
@@ -140,8 +139,8 @@ export default function ChinhSuaHoSoChaoBanPage() {
 
   // Step 4: SHTT, DataRoom & Pháp lý
   const [documents, setDocuments] = useState<OfferDocument[]>([]);
-  const [managingAuthorityId, setManagingAuthorityId] = useState("VN-HN");
-  const [managingAuthorityName, setManagingAuthorityName] = useState("Sở Khoa học và Công nghệ TP. Hà Nội");
+  const [managingAuthorityId, setManagingAuthorityId] = useState<string>(FIXED_BACLINK_AUTHORITY.id);
+  const [managingAuthorityName, setManagingAuthorityName] = useState<string>(FIXED_BACLINK_AUTHORITY.name);
   const [isAutoDetectedAuthority, setIsAutoDetectedAuthority] = useState(false);
   const [legalCommitmentConfirmed, setLegalCommitmentConfirmed] = useState(false);
 
@@ -234,20 +233,9 @@ export default function ChinhSuaHoSoChaoBanPage() {
 
         // Lớp 4 DataRoom & Governance
         if (data.documents) setDocuments(data.documents);
-        if (data.managingAuthorityId) {
-          setManagingAuthorityId(data.managingAuthorityId);
-          setManagingAuthorityName(data.managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội");
-          setIsAutoDetectedAuthority(false);
-        } else {
-          // Nếu hồ sơ cũ chưa có managingAuthorityId, tự động nhận diện theo địa bàn doanh nghiệp / user
-          const session = getStoredSession();
-          const resolved = resolveDefaultAuthority(session?.user, data);
-          if (resolved) {
-            setManagingAuthorityId(resolved.id);
-            setManagingAuthorityName(resolved.name);
-            setIsAutoDetectedAuthority(resolved.isAutoDetected);
-          }
-        }
+        setManagingAuthorityId(FIXED_BACLINK_AUTHORITY.id);
+        setManagingAuthorityName(FIXED_BACLINK_AUTHORITY.name);
+        setIsAutoDetectedAuthority(false);
         if (typeof data.legalCommitmentConfirmed === "boolean") setLegalCommitmentConfirmed(data.legalCommitmentConfirmed);
 
         // Doanh nghiệp
@@ -510,7 +498,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
             <div>
               <p className="font-bold text-sm">Cảnh báo tái thẩm định theo Quy tắc BR-SELLER-07:</p>
               <p className="mt-1 leading-relaxed">
-                Do bạn vừa thay đổi các trường cốt lõi liên quan tới Cấp độ TRL / Tình trạng Sở hữu Trí tuệ / Phương thức chuyển giao, hồ sơ này đã được hệ thống tự động chuyển về trạng thái <b>CHỜ THẨM ĐỊNH (PENDING)</b> để Sở Khoa học &amp; Công nghệ rà soát lại trước khi tái xuất bản.
+                Do bạn vừa thay đổi các trường cốt lõi liên quan tới Cấp độ TRL / Tình trạng Sở hữu Trí tuệ / Phương thức chuyển giao, hồ sơ này đã được hệ thống tự động chuyển về trạng thái <b>CHỜ THẨM ĐỊNH (PENDING)</b> để Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK rà soát lại trước khi tái xuất bản.
               </p>
             </div>
           </div>
@@ -582,7 +570,7 @@ export default function ChinhSuaHoSoChaoBanPage() {
           <section className="min-w-0 space-y-6">
             {currentStep === 1 && (
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm p-4 sm:p-5 space-y-5">
-                {/* Doanh nghiệp liên kết (TASK-02) & Chọn Sở KH&CN tiếp nhận (Delta v9) */}
+                {/* Doanh nghiệp liên kết & Ban Thẩm định Kỹ thuật BACLINK */}
                 <SellerIdentityCard
                   enterpriseName={enterpriseName}
                   enterpriseTaxCode={enterpriseTaxCode}
@@ -714,10 +702,10 @@ export default function ChinhSuaHoSoChaoBanPage() {
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-base font-extrabold text-slate-900">
-                      Bước 2: Thông số kỹ thuật & 10 Lĩnh Vực TT17
+                      Bước 2: Thông số kỹ thuật &amp; Đặc thù ngành công nghiệp
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Lớp 2 (Kỹ thuật chung) & Lớp 3 (Đặc thù ngành) theo ma trận 1.479 quy tắc Excel Master.
+                      Lớp 2 (Kỹ thuật chung) &amp; Lớp 3 (Đặc thù 8 ngành công nghiệp mũi nhọn BACLINK).
                     </p>
                   </div>
                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">

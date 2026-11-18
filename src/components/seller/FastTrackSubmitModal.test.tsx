@@ -5,7 +5,7 @@ import { FastTrackSubmitModal } from "./FastTrackSubmitModal";
 describe("FastTrackSubmitModal", () => {
   afterEach(cleanup);
 
-  it("renders when open and displays title, offerType, sectorName, pricing", () => {
+  it("renders when open and displays title, offerType, sectorName, pricing and fixed BACLINK authority", () => {
     render(
       <FastTrackSubmitModal
         isOpen={true}
@@ -13,23 +13,23 @@ describe("FastTrackSubmitModal", () => {
         onConfirm={vi.fn()}
         title="Công nghệ sấy thăng hoa chân không"
         offerType="Thiết bị"
-        sectorName="Chế biến thực phẩm"
+        sectorName="Cơ khí chính xác, Khuôn mẫu & Chế tạo máy"
         pricingDisplay="100,000,000 VND / Bộ"
         isSubmitting={false}
-        managingAuthorityId="VN-HN"
-        managingAuthorityName="Sở Khoa học và Công nghệ TP. Hà Nội"
+        managingAuthorityId="VN-BN"
+        managingAuthorityName="Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK"
       />
     );
 
     expect(screen.getByText(/Xác Nhận Nộp Hồ Sơ Nhanh \(Fast-Track\)/i)).toBeInTheDocument();
     expect(screen.getByText("Công nghệ sấy thăng hoa chân không")).toBeInTheDocument();
     expect(screen.getByText("Thiết bị")).toBeInTheDocument();
-    expect(screen.getByText("Chế biến thực phẩm")).toBeInTheDocument();
+    expect(screen.getByText("Cơ khí chính xác, Khuôn mẫu & Chế tạo máy")).toBeInTheDocument();
     expect(screen.getByText("100,000,000 VND / Bộ")).toBeInTheDocument();
+    expect(screen.getByText("Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK")).toBeInTheDocument();
   });
 
-  it("calls onAuthorityChange with VN-TN and Thái Nguyên name when user selects Thái Nguyên", () => {
-    const handleAuthorityChange = vi.fn();
+  it("does not render provincial authority dropdown and enforces fixed BACLINK authority", () => {
     render(
       <FastTrackSubmitModal
         isOpen={true}
@@ -37,26 +37,14 @@ describe("FastTrackSubmitModal", () => {
         onConfirm={vi.fn()}
         title="Công nghệ sấy thăng hoa chân không"
         offerType="Thiết bị"
-        sectorName="Chế biến thực phẩm"
+        sectorName="Cơ khí chính xác, Khuôn mẫu & Chế tạo máy"
         pricingDisplay="100,000,000 VND / Bộ"
         isSubmitting={false}
-        managingAuthorityId="VN-HN"
-        managingAuthorityName="Sở Khoa học và Công nghệ TP. Hà Nội"
-        onAuthorityChange={handleAuthorityChange}
       />
     );
 
-    const select = screen.getByRole("combobox");
-    expect(select).toBeInTheDocument();
-
-    // Select VN-TN (Sở Khoa học và Công nghệ tỉnh Thái Nguyên)
-    fireEvent.change(select, { target: { value: "VN-TN" } });
-
-    expect(handleAuthorityChange).toHaveBeenCalledTimes(1);
-    expect(handleAuthorityChange).toHaveBeenCalledWith(
-      "VN-TN",
-      "Sở Khoa học và Công nghệ tỉnh Thái Nguyên"
-    );
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByText("Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK")).toBeInTheDocument();
   });
 
   it("disables submit button when legal agreement checkbox is unchecked", () => {
@@ -68,11 +56,11 @@ describe("FastTrackSubmitModal", () => {
         onConfirm={handleConfirm}
         title="Công nghệ Nano"
         offerType="Sản phẩm"
-        sectorName="Vật liệu mới"
+        sectorName="Vật liệu mới & Công nghiệp hỗ trợ"
         pricingDisplay="Liên hệ báo giá"
         isSubmitting={false}
-        managingAuthorityId="VN-TN"
-        managingAuthorityName="Sở Khoa học và Công nghệ tỉnh Thái Nguyên"
+        managingAuthorityId="VN-BN"
+        managingAuthorityName="Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK"
       />
     );
 

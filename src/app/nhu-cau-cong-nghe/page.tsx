@@ -129,7 +129,7 @@ export default function PublicDemandsPage() {
     };
   }, [statsVersion]);
 
-  // Load 10 Lĩnh vực TT17 từ API Master Data
+  // Load 8 Ngành công nghiệp BACLINK từ API Master Data
   useEffect(() => {
     getActiveSectors()
       .then((data) => {
@@ -237,12 +237,12 @@ export default function PublicDemandsPage() {
     }
   };
 
-  // Xử lý bảo vệ phân quyền khi bấm "Đăng Nhanh Bài Toán" (CR-TASK-03-DELTA-01: T-03.DEL-01 & T-03.DEL-02)
+  // Xử lý bảo vệ phân quyền khi bấm "Đăng Nhanh Bài Toán"
   const handleOpenQuickDemand = () => {
     const user = authClient.getUser();
     if (!user) {
       toast.info(
-        "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên công chúng miễn phí để đăng bài toán kỹ thuật, hoặc điền Phiếu Khảo Sát DNNVV mở.",
+        "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên miễn phí để đăng nhu cầu đặt hàng và bài toán kỹ thuật.",
         "Yêu Cầu Xác Thực"
       );
       return;
@@ -252,6 +252,7 @@ export default function PublicDemandsPage() {
     const allowedRoles: string[] = [
       ROLES.PUBLIC_USER,
       ROLES.USER,
+      ROLES.ENTERPRISE,
       ROLES.BUYER,
       ROLES.SELLER,
       ROLES.INNOVATION_ENTITY,
@@ -260,7 +261,6 @@ export default function PublicDemandsPage() {
       ROLES.ADMIN,
       ROLES.SUPER_ADMIN,
       ROLES.OPERATOR_ADMIN,
-      ROLES.PROVINCIAL_ADMIN,
     ];
 
     if (allowedRoles.includes(role)) {
@@ -328,14 +328,8 @@ export default function PublicDemandsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col pb-20">
-      {/* HERO BANNER SECTION (ĐỒNG BỘ NACENTWIN VÀ BASIC DESIGN WIREFRAME) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        {/* Lớp nghệ thuật vi mạch vi tính nền mờ nhẹ */}
-        <div
-          aria-hidden="true"
-          className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80"
-        />
-
+      {/* HERO BANNER SECTION (CHUẨN BACLINK) */}
+      <section className="relative overflow-hidden workspace-banner text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
         <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           {/* Cột trái: Tiêu đề & Giới thiệu sắc nét */}
           <div className="space-y-3 max-w-3xl">
@@ -351,13 +345,6 @@ export default function PublicDemandsPage() {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              <Link
-                href="/khao-sat-nhu-cau"
-                className="bg-white/10 hover:bg-white/20 border border-white/25 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 backdrop-blur-sm shadow-xs"
-              >
-                <ClipboardCheck className="w-4 h-4 text-white/80" />
-                Phiếu Đặt Hàng Gia Công
-              </Link>
               <button
                 onClick={handleOpenQuickDemand}
                 className="bg-white hover:bg-slate-100 active:scale-95 text-brand-700 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-xs cursor-pointer"
@@ -437,7 +424,7 @@ export default function PublicDemandsPage() {
         </div>
       </section>
 
-      {/* SEARCH & FILTERS BAR (ĐẦY ĐỦ 10 LĨNH VỰC TT17 & KHOẢNG NGÂN SÁCH) */}
+      {/* SEARCH & FILTERS BAR (8 NGÀNH CÔNG NGHIỆP BACLINK & KHOẢNG NGÂN SÁCH) */}
       <div className="bg-white dark:bg-slate-900 border-b border-border-default dark:border-slate-800 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-3">
           <div className="flex-1 flex flex-wrap items-center gap-2.5">
@@ -453,13 +440,13 @@ export default function PublicDemandsPage() {
               />
             </div>
 
-            {/* Combobox 10 Lĩnh vực TT17 Đầy Đủ */}
+            {/* Combobox 8 Ngành công nghiệp BACLINK */}
             <select
               value={filterSector}
               onChange={(e) => setFilterSector(e.target.value)}
               className="form-control text-xs sm:text-sm font-semibold h-10 w-auto max-w-[170px] xl:max-w-[190px] shrink-0"
             >
-              <option value="">Tất cả Lĩnh vực</option>
+              <option value="">Tất cả Ngành</option>
               {sectors.map((sec) => (
                 <option key={sec.code} value={sec.code}>
                   {sec.name}

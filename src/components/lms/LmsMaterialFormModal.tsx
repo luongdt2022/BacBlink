@@ -62,7 +62,7 @@ export function LmsMaterialFormModal({
   const [initialStatus, setInitialStatus] = useState<LmsStatus>("DRAFT");
   const [title, setTitle] = useState<string>("");
   const [lessonType, setLessonType] = useState<LmsLessonType>("TYPE_A");
-  const [sectorCode, setSectorCode] = useState<string>("CN_THONG_TIN");
+  const [sectorCode, setSectorCode] = useState<string>("IND_ELEC");
   const [durationMinutes, setDurationMinutes] = useState<number>(60);
   const [descriptionHtml, setDescriptionHtml] = useState<string>("");
   const [videoStorageKey, setVideoStorageKey] = useState<string>("");
@@ -109,7 +109,7 @@ export function LmsMaterialFormModal({
           setInitialStatus(detail.status);
           setTitle(detail.title);
           setLessonType(detail.lessonType);
-          setSectorCode(detail.sectorCode || "CN_THONG_TIN");
+          setSectorCode(detail.sectorCode || "IND_ELEC");
           setDurationMinutes(detail.durationMinutes);
           setDescriptionHtml(detail.descriptionHtml || "");
           setVideoStorageKey(detail.videoStorageKey || "");
@@ -131,7 +131,7 @@ export function LmsMaterialFormModal({
       setInitialStatus("DRAFT");
       setTitle("");
       setLessonType("TYPE_A");
-      setSectorCode("CN_THONG_TIN");
+      setSectorCode("IND_ELEC");
       setDurationMinutes(60);
       setDescriptionHtml("");
       setVideoStorageKey("");
@@ -427,7 +427,7 @@ export function LmsMaterialFormModal({
   // Add DB Link (Tab D)
   const handleAddDbLink = () => {
     if (dbLinks.length >= 5) {
-      alert("Tối đa 5 liên kết CSDL NacenTech cho một bài học (BR-EL-05).");
+      alert("Tối đa 5 liên kết dữ liệu BACLINK cho một bài học (BR-EL-05).");
       return;
     }
     const newLink: DbLinkDto = {
@@ -570,7 +570,7 @@ export function LmsMaterialFormModal({
               { key: "A", label: "Tab A: Thông tin chung & Video" },
               { key: "B", label: "Tab B: Câu hỏi kiểm tra (Quiz)" },
               { key: "C", label: "Tab C: Học liệu bổ trợ & File" },
-              { key: "D", label: "Tab D: Liên kết CSDL NacenTech" },
+              { key: "D", label: "Tab D: Liên kết Tài liệu BACLINK" },
             ] as const
           ).map((tab) => {
             const errorCount = tabErrors[tab.key].length;
@@ -651,18 +651,21 @@ export function LmsMaterialFormModal({
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
-                    Lĩnh vực TT17
+                    Ngành công nghiệp BACLINK
                   </label>
                   <select
                     value={sectorCode}
                     onChange={(e) => setSectorCode(e.target.value)}
                     className="form-control-sm w-full text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
-                    <option value="CN_THONG_TIN">Công nghệ thông tin & AI</option>
-                    <option value="SINH_HOC">Công nghệ Sinh học & Y dược</option>
-                    <option value="VAT_LIEU_MOI">Vật liệu mới & Nano</option>
-                    <option value="TU_DONG_HOA">Cơ điện tử & Tự động hóa</option>
-                    <option value="NANG_LUONG">Năng lượng xanh & Môi trường</option>
+                    <option value="IND_ELEC">IND_ELEC — Điện tử, Bán dẫn &amp; Thiết bị điện</option>
+                    <option value="IND_MECH">IND_MECH — Cơ khí chính xác, Khuôn mẫu &amp; Chế tạo máy</option>
+                    <option value="IND_AUTO">IND_AUTO — Tự động hóa, Robot &amp; Smart Factory</option>
+                    <option value="IND_PLAS">IND_PLAS — Nhựa kỹ thuật, Bao bì &amp; Hóa chất công nghiệp</option>
+                    <option value="IND_MAT">IND_MAT — Vật liệu mới &amp; Công nghiệp hỗ trợ</option>
+                    <option value="IND_IT">IND_IT — CNTT, Phần mềm công nghiệp &amp; MES/ERP</option>
+                    <option value="IND_GREEN">IND_GREEN — Công nghiệp xanh, Năng lượng sạch &amp; ESG</option>
+                    <option value="IND_LOG">IND_LOG — Logistics công nghiệp, Kho vận &amp; Chuỗi cung ứng</option>
                   </select>
                 </div>
 
@@ -870,7 +873,7 @@ export function LmsMaterialFormModal({
                               </div>
                               <div className="text-[11px] text-slate-400">
                                 {opt.degree ? `${opt.degree} • ` : ""}
-                                {opt.organization || "Chuyên gia KH&CN"}
+                                {opt.organization || "Cố vấn kỹ thuật BACLINK"}
                               </div>
                             </div>
                             <span className="text-brand-600 font-semibold">+ Thêm</span>
@@ -1204,10 +1207,10 @@ export function LmsMaterialFormModal({
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                     <LinkIcon className="w-4 h-4 text-brand-600" />
-                    Liên kết Cơ sở dữ liệu NacenTech (Tối đa 5 liên kết)
+                    Liên kết dữ liệu BACLINK (Tối đa 5 liên kết)
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Kết nối trực tiếp tới Cung công nghệ, Nhu cầu đổi mới hoặc Bài toán thực tiễn
+                    Kết nối trực tiếp tới Sản phẩm năng lực hội viên, Nhu cầu đặt hàng hoặc Hồ sơ cố vấn kỹ thuật
                   </p>
                 </div>
                 <button
@@ -1222,7 +1225,7 @@ export function LmsMaterialFormModal({
 
               {dbLinks.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
-                  <p className="text-xs text-slate-400">Chưa có liên kết CSDL nào.</p>
+                  <p className="text-xs text-slate-400">Chưa có liên kết dữ liệu BACLINK nào.</p>
                 </div>
               ) : (
                 <div className="space-y-3">

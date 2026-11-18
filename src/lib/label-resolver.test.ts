@@ -41,21 +41,24 @@ describe("T068 [FE-LabelResolver] Universal Label Resolver Verification (BACLINK
     expect(resolveSectorName("SECTOR_02")).toBe("Năng lượng & Tự động hóa");
   });
 
-  it("resolves role codes to human-readable Vietnamese roles", () => {
-    expect(resolveRoleName("SUPER_ADMIN")).toBe("Quản trị Tối cao (NacenTech)");
-    expect(resolveRoleName("PROVINCIAL_ADMIN")).toBe("Lãnh đạo Sở KH&CN Tỉnh/Thành");
-    expect(resolveRoleName("CLUSTER_ADMIN")).toBe("Chuyên viên Thẩm định Sở Tỉnh");
-    expect(resolveRoleName("SELLER")).toBe("Nhà Cung Ứng Công Nghệ");
+  it("resolves role codes to human-readable Vietnamese BACLINK 3-tier roles", () => {
+    expect(resolveRoleName("ADMIN")).toBe("Quản trị Hiệp hội (BACLINK)");
+    expect(resolveRoleName("SUPER_ADMIN")).toBe("Quản trị Hiệp hội (BACLINK)");
+    expect(resolveRoleName("ENTERPRISE")).toBe("Doanh nghiệp Hội viên");
+    expect(resolveRoleName("PROVINCIAL_ADMIN")).toBe("Điều phối Địa bàn BACLINK");
+    expect(resolveRoleName("SECTOR_ADMIN")).toBe("Điều phối Ngành Công nghiệp BACLINK");
+    expect(resolveRoleName("CLUSTER_ADMIN")).toBe("Chuyên viên Thẩm định Kỹ thuật BACLINK");
+    expect(resolveRoleName("SELLER")).toBe("Nhà Cung Ứng Sản Phẩm / Công Nghệ");
     expect(resolveRoleName(null)).toBe("Chưa xác định vai trò");
   });
 
-  it("resolves request type codes to user-friendly titles according to V7 standards", () => {
-    expect(resolveRequestTypeLabel("EXPERT")).toBe("Chuyên Gia KH&CN");
-    expect(resolveRequestTypeLabel("SHOP")).toBe("Chào Bán Công Nghệ");
-    expect(resolveRequestTypeLabel("DEMAND")).toBe("Nhu Cầu Công Nghệ");
-    expect(resolveRequestTypeLabel("FACILITY")).toBe("Doanh Nghiệp ĐMST");
-    expect(resolveRequestTypeLabel("ENTERPRISE")).toBe("Doanh Nghiệp ĐMST");
-    expect(resolveRequestTypeLabel("ACCOUNT")).toBe("Tài Khoản Tổ Chức");
+  it("resolves request type codes to user-friendly BACLINK titles without ĐMST", () => {
+    expect(resolveRequestTypeLabel("EXPERT")).toBe("Ban Cố Vấn Kỹ Thuật");
+    expect(resolveRequestTypeLabel("SHOP")).toBe("Chào Bán Sản Phẩm / Công Nghệ");
+    expect(resolveRequestTypeLabel("DEMAND")).toBe("Nhu Cầu Mua & Đặt Hàng");
+    expect(resolveRequestTypeLabel("FACILITY")).toBe("Doanh Nghiệp Hội Viên");
+    expect(resolveRequestTypeLabel("ENTERPRISE")).toBe("Doanh Nghiệp Hội Viên");
+    expect(resolveRequestTypeLabel("ACCOUNT")).toBe("Tài Khoản Doanh Nghiệp Hội Viên");
     expect(resolveRequestTypeLabel(null)).toBe("Hồ sơ Thẩm định");
   });
 
@@ -72,7 +75,7 @@ describe("T068 [FE-LabelResolver] Universal Label Resolver Verification (BACLINK
     expect(approved.badgeClass).toContain("bg-emerald");
 
     const override = resolveActionBadge("OVERRIDE_APPROVE");
-    expect(override.label).toBe("Can Thiệp Tầng 0");
+    expect(override.label).toBe("Phê Duyệt Đặc Biệt");
     expect(override.badgeClass).toContain("bg-amber");
 
     const rejected = resolveActionBadge("REJECTED");

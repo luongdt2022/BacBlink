@@ -214,14 +214,14 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // Modal không được mở khi chưa đăng nhập
     expect(screen.queryByText("1. Chi Tiết Bài Toán Kỹ Thuật")).not.toBeInTheDocument();
     expect(mockToastInfo).toHaveBeenCalledWith(
-      "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên công chúng miễn phí để đăng bài toán kỹ thuật, hoặc điền Phiếu Khảo Sát DNNVV mở.",
+      "Quý khách vui lòng đăng nhập hoặc đăng ký tài khoản thành viên miễn phí để đăng nhu cầu đặt hàng và bài toán kỹ thuật.",
       "Yêu Cầu Xác Thực"
     );
 
     // 2. Khi đăng nhập vai trò PUBLIC_USER: bấm nút sẽ mở modal
     authClient.setSession("test-token-public", {
       id: "u-public-01",
-      email: "public.user@demo.nacentech.vn",
+      email: "public.user@baclink.org.vn",
       fullName: "Nguyễn Văn Công Chúng",
       role: ROLES.PUBLIC_USER,
     });
@@ -242,7 +242,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // 3. Khi đăng nhập vai trò USER: bấm nút cũng mở modal bình thường
     authClient.setSession("test-token-user", {
       id: "u-standard-01",
-      email: "user@demo.nacentech.vn",
+      email: "user@baclink.org.vn",
       fullName: "Trần Thành Viên",
       role: ROLES.USER,
     });
@@ -282,7 +282,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // 5. Khi đăng nhập vai trò Chuyên gia (EXPERT & VERIFIED_EXPERT): bấm nút sẽ mở modal theo ma trận 10 roles
     authClient.setSession("test-token-expert", {
       id: "u-expert-01",
-      email: "expert@nacentech.vn",
+      email: "expert@baclink.org.vn",
       fullName: "Chuyên gia Tư vấn",
       role: ROLES.EXPERT,
     });
@@ -302,7 +302,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // 5b. Khi đăng nhập vai trò VERIFIED_EXPERT: bấm nút cũng mở modal bình thường
     authClient.setSession("test-token-verified-expert", {
       id: "u-expert-02",
-      email: "verified.expert@nacentech.vn",
+      email: "verified.expert@baclink.org.vn",
       fullName: "Chuyên gia Thẩm định",
       role: ROLES.VERIFIED_EXPERT,
     });
@@ -322,7 +322,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     // 6. Khi đăng nhập vai trò không được cấp quyền (ví dụ: GUEST): không mở modal, hiển thị warning
     authClient.setSession("test-token-guest", {
       id: "u-guest-01",
-      email: "guest@nacentech.vn",
+      email: "guest@baclink.org.vn",
       fullName: "Khách Vãng Lai",
       role: ROLES.GUEST,
     });
@@ -420,7 +420,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     authClient.setSession("test-token-jwt", {
       id: "buyer-user-01",
       fullName: "Đại diện Doanh Nghiệp Buyer",
-      email: "buyer@nacentech.vn",
+      email: "buyer@baclink.org.vn",
       role: ROLES.BUYER,
     });
 
@@ -481,7 +481,7 @@ describe("PublicDemandsPage Component (/nhu-cau-cong-nghe)", () => {
     authClient.setSession("test-token-jwt", {
       id: "buyer-user-01",
       fullName: "Đại diện Doanh Nghiệp Buyer",
-      email: "buyer@nacentech.vn",
+      email: "buyer@baclink.org.vn",
       role: ROLES.BUYER,
     });
 

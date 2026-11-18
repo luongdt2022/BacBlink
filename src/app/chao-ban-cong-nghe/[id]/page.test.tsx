@@ -33,13 +33,13 @@ const mockOffer: TechnologyOffer = {
   ratingScore: 5.0,
   reviewCount: 7,
   createdAt: "2026-10-10T00:00:00Z",
-  managingAuthorityName: "Sở KH&CN Hà Nội",
+  managingAuthorityName: "Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK",
   documents: [
     {
       id: "doc-01",
       documentType: "CATALOGUE",
       fileName: "OFF-202610-LV16-08_Teaser_Tom_Tat_Giai_Phap.pdf",
-      fileUrl: "https://storage.nacentwin.vn/docs/teaser.pdf",
+      fileUrl: "https://dataroom.baclink.org.vn/docs/teaser.pdf",
       fileSizeBytes: 2516582,
       accessScope: "PUBLIC",
     },

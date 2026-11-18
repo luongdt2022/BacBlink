@@ -103,7 +103,7 @@ export default function ChiTietChaoBanPage() {
       let changed = false;
       if (!demandCompany) {
         if (!isPublic) {
-          setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+          setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Hội viên");
           changed = true;
         } else if (user.organizationName) {
           setDemandCompany(user.organizationName);
@@ -148,7 +148,7 @@ export default function ChiTietChaoBanPage() {
     }
     const isPublic = user.role === "PUBLIC_USER" || user.role === "GUEST";
     if (!isPublic) {
-      setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+      setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Hội viên");
     } else {
       setDemandCompany(user.organizationName || "");
     }
@@ -168,7 +168,7 @@ export default function ChiTietChaoBanPage() {
         let changed = false;
         if (!demandCompany) {
           if (!isPublic) {
-            setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Đổi mới sáng tạo");
+            setDemandCompany(user.organizationName || user.fullName || "Doanh nghiệp Hội viên");
             changed = true;
           } else if (user.organizationName) {
             setDemandCompany(user.organizationName);
@@ -325,7 +325,7 @@ export default function ChiTietChaoBanPage() {
                 <span className="font-mono uppercase font-bold bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded">
                   {offer.status || "PENDING"}
                 </span>
-                . Sản phẩm <strong>CHƯA ĐƯỢC NIÊM YẾT CÔNG KHAI</strong> trên Sàn Quốc Gia. Khách hàng bên ngoài không thể tìm kiếm hay giao dịch cho đến khi được Lãnh đạo Sở phê duyệt.
+                . Sản phẩm <strong>CHƯA ĐƯỢC NIÊM YẾT CÔNG KHAI</strong> trên Cổng Giao Thương BACLINK. Khách hàng bên ngoài không thể tìm kiếm hay giao dịch cho đến khi được Ban Quản trị Hiệp hội BACLINK phê duyệt.
               </span>
             </div>
             <span className="text-xs font-extrabold uppercase bg-slate-950 text-amber-300 px-2.5 py-1 rounded-md tracking-wider shrink-0">
@@ -563,7 +563,9 @@ export default function ChiTietChaoBanPage() {
                         <div>
                           <div className="text-xs font-bold uppercase text-slate-400">Phạm vi</div>
                           <div className="mt-1 text-sm font-extrabold text-slate-900">
-                            {offer.managingAuthorityName || "Toàn quốc"}
+                            {offer.managingAuthorityName && !/Sở KH/i.test(offer.managingAuthorityName)
+                              ? offer.managingAuthorityName
+                              : "Bắc Ninh & Vùng công nghiệp"}
                           </div>
                         </div>
 
@@ -768,7 +770,7 @@ export default function ChiTietChaoBanPage() {
                     : "border-transparent text-slate-500 hover:text-slate-900"
                 }`}
               >
-                Thông Số Kỹ Thuật (18 Lĩnh Vực)
+                Thông Số Kỹ Thuật &amp; Tiêu Chuẩn
               </button>
               <button
                 onClick={() => setActiveTab("dataroom")}
@@ -820,7 +822,7 @@ export default function ChiTietChaoBanPage() {
                           </p>
                         </div>
                         <span className="text-xs font-bold bg-brand-50 text-brand-700 px-2.5 py-1 rounded-full border border-brand-200">
-                          Chuẩn TT17
+                          Chuẩn Kỹ Thuật
                         </span>
                       </div>
                       <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -1277,7 +1279,7 @@ export default function ChiTietChaoBanPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Email tiếp nhận:</span>
                   <span className="font-mono font-bold text-slate-700">
-                    {isCommercialProduct ? "sales-co******@nacentech.vn" : "tto-co******@nacentech.vn"}
+                    {isCommercialProduct ? "sales-co******@baclink.org.vn" : "tto-co******@baclink.org.vn"}
                   </span>
                 </div>
               </div>
@@ -1286,13 +1288,15 @@ export default function ChiTietChaoBanPage() {
               </p>
             </div>
 
-            {/* Thông tin hỗ trợ sàn & Cơ quan quản lý */}
+            {/* Thông tin hỗ trợ sàn & Đơn vị quản lý */}
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-1 text-center">
               <p className="text-xs font-bold text-slate-800 flex items-center justify-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Cơ Quan Quản Lý Thẩm Định
+                <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Đơn Vị Thẩm Định Kỹ Thuật
               </p>
               <p className="text-xs font-extrabold text-slate-900">
-                {offer.managingAuthorityName || "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)"}
+                {offer.managingAuthorityName && !/Sở KH/i.test(offer.managingAuthorityName)
+                  ? offer.managingAuthorityName
+                  : "Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK"}
               </p>
               <p className="text-xs text-slate-500">Đã kiểm định văn bằng SHTT & mức TRL</p>
             </div>
@@ -1356,7 +1360,7 @@ export default function ChiTietChaoBanPage() {
                 <p className="text-xs text-slate-600 dark:text-slate-300 max-w-sm mx-auto leading-relaxed">
                   {isCommercialProduct
                     ? `Đơn đặt mua sản phẩm của bạn đã được gửi trực tiếp đến gian hàng tiếp nhận của ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Bên bán sẽ tiếp nhận xử lý và phản hồi trong 24 - 48 giờ làm việc.`
-                    : `Hồ sơ nhu cầu của bạn đã được gửi trực tiếp đến đơn vị ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Đơn vị chủ quản (${offer.managingAuthorityName || "Hiệp hội BACLINK"}) và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.`
+                    : `Hồ sơ nhu cầu của bạn đã được gửi trực tiếp đến đơn vị ${offer.enterpriseName || "Nhà Cung Ứng"}${createdRequestCode ? ` (Mã tiếp nhận: ${createdRequestCode})` : ""}. Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK và Bên bán sẽ tiếp nhận thẩm định và phản hồi trong 24 - 48 giờ làm việc.`
                   }
                 </p>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
@@ -1412,7 +1416,7 @@ export default function ChiTietChaoBanPage() {
                     needConsulting: true,
                     expectedGoal: expectedGoal,
                     applicationScale: effectiveCompany,
-                    sectorCode: offer.sectorCode || 'LV16',
+                    sectorCode: offer.sectorCode || 'IND_ELEC',
                     budgetRange: demandBudget,
                     urgencyScore: 4,
                     impactScore: 4,
@@ -1431,7 +1435,7 @@ export default function ChiTietChaoBanPage() {
                     toast.success(
                       isCommercialProduct
                         ? 'Đã gửi đơn đặt mua sản phẩm tới Bên Bán thành công!'
-                        : (res.message || 'Đã gửi đề xuất kết nối và tạo phiếu nhu cầu thành công!')
+                        : (res.message || 'Đã gửi yêu cầu đặt hàng & kết nối thành công!')
                     );
                   } else {
                     toast.error(res.message || 'Gửi kết nối không thành công, vui lòng thử lại.');
@@ -1583,7 +1587,7 @@ export default function ChiTietChaoBanPage() {
                       <option value="IMMEDIATE">Triển khai ngay (dưới 1 tháng)</option>
                       <option value="1_3M">Trong vòng 1 - 3 tháng</option>
                       <option value="3_6M">Trong vòng 3 - 6 tháng</option>
-                      <option value="RESEARCH">Khảo sát tiền khả thi</option>
+                      <option value="RESEARCH">Đánh giá kỹ thuật tiền khả thi</option>
                     </select>
                   </div>
                 </div>

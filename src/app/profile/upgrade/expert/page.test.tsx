@@ -100,7 +100,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
   it("prefills Zalo handoff draft data when draftToken URL parameter is present (TC-C3-SUB-13)", async () => {
     mockSearchParams = new URLSearchParams("draftToken=DRAFT_ZALO_DEMO_01");
     // Explicit mocked provider contract; no reliance on static fallback or black-box claim.
-    vi.stubGlobal("fetch", vi.fn(async (url: string) => url.includes("/draft?") ? { ok: true, json: async () => ({ success: true, data: { fullName: "TS. Vũ Văn Liệu", phone: "0912345678", email: "lieu.vv@nacentech.vn", organization: "Viện Ứng Dụng Công Nghệ (NacenTech)", sectorCode: "LV91" } }) } : { ok: false, status: 404, json: async () => ({ message: "Not found" }) }));
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => url.includes("/draft?") ? { ok: true, json: async () => ({ success: true, data: { fullName: "TS. Vũ Văn Liệu", phone: "0912345678", email: "lieu.vv@baclink.org.vn", organization: "Trung tâm R&D Công nghiệp Bắc Ninh", sectorCode: "IND_ELEC" } }) } : { ok: false, status: 404, json: async () => ({ message: "Not found" }) }));
     render(<ExpertUpgradePage />);
 
     // Verify Zalo handoff banner is displayed
@@ -113,11 +113,11 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const phoneInput = screen.getByPlaceholderText("0912345678") as HTMLInputElement;
     expect(phoneInput.value).toBe("0912345678");
 
-    const emailInput = screen.getByPlaceholderText("chuyengia@nacentech.vn") as HTMLInputElement;
-    expect(emailInput.value).toBe("lieu.vv@nacentech.vn");
+    const emailInput = screen.getByPlaceholderText("chuyengia@baclink.org.vn") as HTMLInputElement;
+    expect(emailInput.value).toBe("lieu.vv@baclink.org.vn");
 
-    const orgInput = screen.getByPlaceholderText("Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)") as HTMLInputElement;
-    expect(orgInput.value).toBe("Viện Ứng Dụng Công Nghệ (NacenTech)");
+    const orgInput = screen.getByPlaceholderText("Đại học Bách Khoa Hà Nội / Trung tâm R&D Bắc Ninh") as HTMLInputElement;
+    expect(orgInput.value).toBe("Trung tâm R&D Công nghiệp Bắc Ninh");
 
     // Can proceed directly to Step 2 because prefilled name is valid
     const continueBtn = screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i });
@@ -213,7 +213,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const fullNameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An") as HTMLInputElement;
     expect(fullNameInput.value).toBe("GS. TS. Lê Hoài Nam");
 
-    const instInput = screen.getByPlaceholderText("Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)") as HTMLInputElement;
+    const instInput = screen.getByPlaceholderText("Đại học Bách Khoa Hà Nội / Trung tâm R&D Bắc Ninh") as HTMLInputElement;
     expect(instInput.value).toBe("Viện Hàn Lâm Khoa Học và Công Nghệ VN");
 
     // Verify AI badges are rendered
@@ -282,7 +282,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     authClient.setSession("test_token", {
       id: "u-123",
       fullName: "Dang Tien Luong",
-      email: "luong.dt@nacentech.vn",
+      email: "luong.dt@baclink.org.vn",
       phone: "0987654321",
       role: "USER",
     });
@@ -295,15 +295,15 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const phoneInput = (await screen.findByPlaceholderText("0912345678")) as HTMLInputElement;
     expect(phoneInput.value).toBe("0987654321");
 
-    const emailInput = (await screen.findByPlaceholderText("chuyengia@nacentech.vn")) as HTMLInputElement;
-    expect(emailInput.value).toBe("luong.dt@nacentech.vn");
+    const emailInput = (await screen.findByPlaceholderText("chuyengia@baclink.org.vn")) as HTMLInputElement;
+    expect(emailInput.value).toBe("luong.dt@baclink.org.vn");
   });
 
   it("falls back to user context for email and phone when AI scan does not extract them", async () => {
     authClient.setSession("test_token", {
       id: "u-123",
       fullName: "Dang Tien Luong",
-      email: "fallback.user@nacentech.vn",
+      email: "fallback.user@baclink.org.vn",
       phone: "0911223344",
       role: "USER",
     });
@@ -348,8 +348,8 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const phoneInput = (await screen.findByPlaceholderText("0912345678")) as HTMLInputElement;
     expect(phoneInput.value).toBe("0911223344");
 
-    const emailInput = (await screen.findByPlaceholderText("chuyengia@nacentech.vn")) as HTMLInputElement;
-    expect(emailInput.value).toBe("fallback.user@nacentech.vn");
+    const emailInput = (await screen.findByPlaceholderText("chuyengia@baclink.org.vn")) as HTMLInputElement;
+    expect(emailInput.value).toBe("fallback.user@baclink.org.vn");
   });
 
   it("executes CR-2026-021 enhancements: overrides demo name, prefills degreeYear, selects suggested receiving unit, and renders click-to-add sector keyword pills", async () => {
@@ -357,7 +357,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     authClient.setSession("test_token", {
       id: "u-demo",
       fullName: "Dang Lanm",
-      email: "demo@nacentech.vn",
+      email: "demo@baclink.org.vn",
       phone: "0987654321",
       role: "USER",
     });
@@ -368,15 +368,15 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
       gender: "Nam",
       academicDegree: "TS",
       degreeYear: 2011,
-      primaryInstitution: "Viện Ứng dụng Công nghệ - Bộ Khoa học và Công nghệ",
+      primaryInstitution: "Viện Khoa Học Công Nghệ Vật Liệu Bán Dẫn",
       workAddress: "C6 Thanh Xuân Bắc, Thanh Xuân, Hà Nội",
       suggestedReceivingUnit: {
-        code: "GLOBAL",
-        type: "GLOBAL",
-        name: "Hội đồng KH&CN NacenTech / Trung ương",
-        reason: "Thuộc Viện/Bộ/Cơ quan Nghiên cứu Trung ương",
+        code: "KCN_YENPHONG_BN",
+        type: "PROVINCE",
+        name: "Ban Hỗ trợ Kỹ thuật KCN Yên Phong",
+        reason: "Chuyên sâu bán dẫn & quang điện tử KCN Yên Phong",
       },
-      primaryDomain: "LV08",
+      primaryDomain: "IND_ELEC",
       rawSectorKeywords: ["Quang điện tử", "Laser", "Vật liệu bán dẫn"],
       yearsOfExperience: 15,
       specializedKeywords: [],
@@ -419,9 +419,9 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const degreeYearInput = screen.getByDisplayValue("2011") as HTMLInputElement;
     expect(degreeYearInput).toBeInTheDocument();
 
-    // Verify receivingUnit prefilled to GLOBAL
-    const receivingSelect = screen.getByDisplayValue("NacenTech Trung Ương (Bộ KH&CN - Toàn quốc)") as HTMLSelectElement;
-    expect(receivingSelect.value).toBe("GLOBAL");
+    // Verify receivingUnit prefilled to KCN_YENPHONG_BN
+    const receivingSelect = screen.getByDisplayValue("Ban Hỗ trợ Kỹ thuật KCN Yên Phong") as HTMLSelectElement;
+    expect(receivingSelect.value).toBe("KCN_YENPHONG_BN");
 
     // Proceed to Step 2
     fireEvent.click(screen.getByRole("button", { name: /Tiếp tục: Năng lực Chuyên môn/i }));
@@ -483,7 +483,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     authClient.setSession("test_token", {
       id: "p-001",
       fullName: "TS. Nguyễn Minh An",
-      email: "minhan@nacentech.vn",
+      email: "minhan@baclink.org.vn",
       phone: "0912345678",
       role: "USER",
     });
@@ -532,7 +532,7 @@ describe("ExpertUpgradePage Validation (TC-C1-EXP-01 & TC-C1-EXP-06 & TC-C3-SUB-
     const nameInput = screen.getByPlaceholderText("TS. Nguyễn Văn An") as HTMLInputElement;
     expect(nameInput.value).toBe("TS. Nguyễn Minh An");
 
-    const orgInput = screen.getByPlaceholderText("Viện Đổi Mới Sáng Tạo Quốc Gia (NacenTech)") as HTMLInputElement;
+    const orgInput = screen.getByPlaceholderText("Đại học Bách Khoa Hà Nội / Trung tâm R&D Bắc Ninh") as HTMLInputElement;
     expect(orgInput.value).toBe("Viện Hàn Lâm Khoa Học và Công Nghệ VN");
 
     const titleInput = screen.getByPlaceholderText("Nghiên cứu viên chính / Trưởng nhóm Lab") as HTMLInputElement;

@@ -230,8 +230,9 @@ describe("CR-2026-010: QC Zero-Mock & Taxonomy SSOT Verification Suite", () => {
       await waitFor(() => {
         expect(screen.getByText("14")).toBeInTheDocument();
         expect(screen.getByText("Hồ Sơ Niêm Yết")).toBeInTheDocument();
-        expect(screen.getByText("Phân Loại TT17")).toBeInTheDocument();
+        expect(screen.getByText("Ngành Công Nghiệp")).toBeInTheDocument();
         expect(screen.getByText("Sáng Chế Độc Quyền")).toBeInTheDocument();
+        expect(screen.queryByText(/TT17/i)).not.toBeInTheDocument();
       });
     });
 

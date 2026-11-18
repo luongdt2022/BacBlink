@@ -83,7 +83,7 @@ export function AIAssistantWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "ai",
-      text: "Xin chào! Tôi là Trợ lý Ảo AI NacentTwin — kết nối trực tiếp với CSDL Sàn Giao dịch Công nghệ Quốc Gia.\n\nTôi có thể hỗ trợ bạn:\n• 🔍 Tra cứu danh bạ Chuyên gia KH&CN thực tế theo ngành\n• 🎪 Lịch các phiên chào giá & đăng ký tham quan Techmart 2026\n• 🎯 Đánh giá cấp độ sẵn sàng công nghệ TRL 1-9 theo TT17\n• 💰 Hướng dẫn phương pháp định giá công nghệ & hợp đồng li-xăng\n• 🤝 Đăng ký chào bán hoặc gửi bài toán nhu cầu doanh nghiệp\n\nBạn cần hỗ trợ tra cứu nội dung nào hôm nay?",
+      text: "Xin chào! Tôi là Trợ lý Ảo AI BACLINK — kết nối mạng lưới Sản xuất Công nghiệp tỉnh Bắc Ninh.\n\nTôi có thể hỗ trợ bạn:\n• 🔍 Tra cứu danh bạ Doanh nghiệp hội viên & Chuyên gia kỹ thuật\n• 🎪 Lịch các sự kiện kết nối B2B & xúc tiến thương mại\n• 🎯 Tìm kiếm đối tác cung ứng, gia công cơ khí & tự động hóa\n• 💰 Hướng dẫn dịch vụ bảo hộ SHTT & tư vấn tiêu chuẩn ISO/IATF\n• 🤝 Đăng ký kết nối giao thương trực tiếp\n\nBạn cần hỗ trợ nội dung nào hôm nay?",
       suggestions: [
         {
           title: "Tìm chuyên gia IT / AI",
@@ -92,9 +92,9 @@ export function AIAssistantWidget() {
           tag: "CHUYÊN GIA",
         },
         {
-          title: "Sàn Triển lãm Techmart 2026",
-          subtitle: "Lịch các phiên chào giá & đăng ký vé tham quan",
-          url: "/trien-lam",
+          title: "Tin tức & Sự kiện BACLINK",
+          subtitle: "Diễn đàn Go Global Bắc Ninh & các phiên kết nối B2B",
+          url: "/tin-tuc",
           tag: "SỰ KIỆN",
         },
       ],
@@ -120,8 +120,8 @@ export function AIAssistantWidget() {
   const quickPrompts = [
     "Tìm cho tôi 1 chuyên gia IT",
     "Tìm cho tôi chuyên gia Minh An",
-    "Lịch sự kiện & phiên chào giá Techmart 2026?",
-    "Công nghệ của tôi đạt mức TRL nào theo TT17?",
+    "Lịch sự kiện & phiên kết nối B2B mới nhất?",
+    "Doanh nghiệp hội viên BACLINK tại Từ Sơn, Yên Phong?",
   ];
 
   const handleSend = async (promptToSend?: string) => {
@@ -158,10 +158,6 @@ export function AIAssistantWidget() {
     }
   };
 
-  if (pathname?.startsWith("/khao-sat-doanh-nghiep") || pathname?.startsWith("/khao-sat-cong-nghe")) {
-    return null;
-  }
-
   return (
     <>
       {/* Floating Action Button (FAB) */}
@@ -170,7 +166,7 @@ export function AIAssistantWidget() {
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           className="group relative flex size-12 sm:size-14 items-center justify-center rounded-full bg-gradient-to-tr from-brand-700 to-brand-900 text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-brand-300 dark:focus:ring-brand-900"
-          aria-label="Mở Trợ lý Ảo AI NacentTwin"
+          aria-label="Mở Trợ lý Ảo AI BACLINK"
         >
           {isOpen ? (
             <X className="size-5 sm:size-6 transition-transform group-hover:rotate-90" />
@@ -196,10 +192,10 @@ export function AIAssistantWidget() {
                 <Bot className="size-5 text-teal-200" />
               </div>
               <div>
-                <h3 className="text-sm font-bold leading-tight">Trợ Lý Ảo AI NacentTwin</h3>
+                <h3 className="text-sm font-bold leading-tight">Trợ Lý Ảo AI BACLINK</h3>
                 <p className="flex items-center gap-1.5 text-xs text-teal-200/90 font-medium">
                   <Sparkles className="size-3" />
-                  Định hướng TRL & Ghép cặp Cung–Cầu
+                  Định hướng TRL &amp; Ghép cặp Cung–Cầu
                 </p>
               </div>
             </div>

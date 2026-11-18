@@ -369,14 +369,15 @@ function ChaoBanCongNgheContent() {
     search.trim() !== "";
 
   const selectedSectorName =
-    SECTORS_18_CATALOG.find((s) => s.code === selectedSector)?.name || selectedSector;
+    activeSectors.find((s) => s.code === selectedSector)?.name ||
+    SECTORS_18_CATALOG.find((s) => s.code === selectedSector)?.name ||
+    selectedSector;
 
   return (
     <div className="min-h-screen bg-surface-page dark:bg-slate-950 text-text-primary dark:text-slate-100 flex flex-col">
       {/* HERO BANNER SECTION (WITH BASIC DESIGN WIREFRAME QUICK METRICS) */}
-      <section className="relative overflow-hidden bg-brand-700 text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
-        <div aria-hidden="true" className="innovation-hero-art pointer-events-none absolute inset-0 opacity-80" />
-        <div className="relative max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <section className="relative overflow-hidden workspace-banner text-white py-6 sm:py-8 px-4 sm:px-6 lg:px-8 border-b border-brand-800 shadow-md">
+        <div className="relative z-10 max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-brand-100 text-xs font-semibold backdrop-blur-sm border border-white/20">
               <Sparkles className="w-3.5 h-3.5 text-brand-200" />
@@ -422,7 +423,7 @@ function ChaoBanCongNgheContent() {
                   <div className="border-x border-white/20 px-2 sm:px-3">
                     <div className="h-7 w-12 bg-white/20 rounded mx-auto mb-1" />
                     <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                      Phân Loại TT17
+                      Ngành Công Nghiệp
                     </div>
                   </div>
                   <div className="px-1 sm:px-2">
@@ -457,10 +458,10 @@ function ChaoBanCongNgheContent() {
                 </div>
                 <div className="border-x border-white/20 px-2 sm:px-3">
                   <div className="text-xl sm:text-2xl font-black text-teal-300">
-                    {activeSectors.length > 0 ? `${activeSectors.length} Lĩnh Vực` : "10 Lĩnh Vực"}
+                    {activeSectors.length > 0 ? `${activeSectors.length} Ngành` : "8 Ngành"}
                   </div>
                   <div className="text-caption text-white/85 font-bold uppercase mt-1 tracking-wider">
-                    Phân Loại TT17
+                    Ngành Công Nghiệp
                   </div>
                 </div>
                 <div className="px-1 sm:px-2">
@@ -549,14 +550,14 @@ function ChaoBanCongNgheContent() {
 
       {/* MAIN CONTENT BODY */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
-        {/* SIDEBAR BỘ LỌC ĐA TẦNG 10 LĨNH VỰC CHUẨN CSDL */}
+        {/* SIDEBAR BỘ LỌC ĐA TẦNG 8 NGÀNH CÔNG NGHIỆP BACLINK */}
         <aside className="lg:col-span-1 space-y-5">
-          {/* Lọc 10 Lĩnh vực TT17 */}
+          {/* Lọc Ngành Công Nghiệp */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
               <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
                 <Filter className="w-4 h-4 text-emerald-600" />
-                {activeSectors.length > 0 ? `${activeSectors.length} Lĩnh Vực Công Nghệ` : "Lĩnh Vực Công Nghệ"}
+                {activeSectors.length > 0 ? `${activeSectors.length} Ngành Công Nghiệp` : "Ngành Công Nghiệp"}
               </h3>
               {selectedSector !== "ALL" && (
                 <button
@@ -578,7 +579,7 @@ function ChaoBanCongNgheContent() {
                     : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 }`}
               >
-                <span className="truncate pr-2">Tất cả lĩnh vực</span>
+                <span className="truncate pr-2">Tất cả ngành công nghiệp</span>
                 <span
                   className={`text-caption px-2 py-0.5 rounded-full font-bold ${
                     selectedSector === "ALL"
@@ -1016,7 +1017,7 @@ function ChaoBanCongNgheContent() {
                     className="mb-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 transition shadow-xs"
                   >
                     <Compass className="w-3.5 h-3.5 text-emerald-600" />
-                    Xem tất cả 10 lĩnh vực ({globalTotal})
+                    Xem tất cả ngành công nghiệp ({globalTotal})
                   </button>
                 </div>
               )}

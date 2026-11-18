@@ -84,7 +84,7 @@ export default function AdminBlockchainPage() {
                 Trung Tâm Quản Trị Chuỗi Khối & Mật Mã Học BACLINK Trust
               </h1>
               <p className="text-slate-300 text-sm sm:text-base max-w-3xl leading-relaxed">
-                Hệ thống Sổ cái Chứng thực Hồ sơ Năng lực, MOU Deal Room & Báo cáo TT17 bất biến (RFC 8785 Canonical JSON, Merkle Tree, Salted Commitment AES-256-GCM) của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) liên thông NDAChain.
+                Hệ thống Sổ cái Chứng thực Hồ sơ Năng lực &amp; MOU Deal Room bất biến (RFC 8785 Canonical JSON, Merkle Tree, Salted Commitment AES-256-GCM) của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) liên thông NDAChain.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
@@ -166,8 +166,9 @@ function TabPolicies() {
     setState("loading");
     try {
       const data = await fetchAnchorPolicies();
-      setPolicies(data);
-      setState(data.length === 0 ? "empty" : "idle");
+      const cleaned = data.filter((p) => p.entityType !== "TT17_ASSESSMENT");
+      setPolicies(cleaned);
+      setState(cleaned.length === 0 ? "empty" : "idle");
     } catch (err: unknown) {
       setState("error");
       setErrorMessage(err instanceof Error ? err.message : "Lỗi không xác định khi tải chính sách.");
@@ -760,9 +761,8 @@ function TabLedger() {
                   onChange={(e) => setVerifyEntityType(e.target.value)}
                   className="form-control-sm w-full rounded-lg bg-white dark:bg-slate-800"
                 >
-                  <option value="SELLER_OFFER">SELLER_OFFER (Chào bán công nghệ)</option>
-                  <option value="DEAL_ROOM_MOU">DEAL_ROOM_MOU (Biên bản thỏa thuận)</option>
-                  <option value="TT17_ASSESSMENT">TT17_ASSESSMENT (Đánh giá TT17)</option>
+                  <option value="SELLER_OFFER">SELLER_OFFER (Hồ sơ Năng lực / Chào bán công nghệ)</option>
+                  <option value="DEAL_ROOM_MOU">DEAL_ROOM_MOU (Biên bản thỏa thuận Deal Room)</option>
                 </select>
               </div>
 

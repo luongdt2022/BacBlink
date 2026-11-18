@@ -44,7 +44,7 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
   it("renders 5 TRL Kanban columns and project cards correctly", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -78,10 +78,10 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
     expect(screen.getByText("Khám Phá Radar AI")).toBeInTheDocument();
   });
 
-  it("strictly DOES NOT contain 'Giám sát Sở KH&CN' button on expert workspace", async () => {
+  it("strictly DOES NOT contain external agency monitor button on expert workspace", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -90,15 +90,14 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
 
     expect(screen.getByText(/Dự Án Đồng Hành & Hợp Tác/i)).toBeInTheDocument();
 
-    // Strict Negative Assertion: Giám sát Sở KH&CN is forbidden on expert workspace
-    expect(screen.queryByText(/Giám Sát Sở KH&CN/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Giám Sát Sở KH&CN/i })).not.toBeInTheDocument();
+    // Strict Negative Assertion: External agency monitor button is forbidden on expert workspace
+    expect(screen.queryByRole("button", { name: /Giám Sát/i })).not.toBeInTheDocument();
   });
 
   it("strictly DOES NOT contain rudimentary text 'Trống' on empty columns and renders graphical empty state with Radar CTA", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -111,7 +110,7 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
     expect(screen.queryByText(/^Trống$/i)).not.toBeInTheDocument();
 
     // When all items in a column are filtered or moved, Empty State with CTA is rendered
-    const sectorSelect = screen.getByLabelText(/Lĩnh vực TT17:/i);
+    const sectorSelect = screen.getByLabelText(/Ngành công nghiệp chuyên môn \(BACLINK\):/i);
     // Filter to sector '07' which has 0 projects in INITIAL_EXPERT_PROJECTS
     fireEvent.change(sectorSelect, { target: { value: "07" } });
 
@@ -122,7 +121,7 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
   it("filters projects by search query and TRL range", async () => {
     authClient.setSession("token-verified", {
       id: "u-exp-1",
-      email: "tuan.nv@nacentech.vn",
+      email: "tuan.nv@baclink.org.vn",
       fullName: "GS.TS. Nguyễn Văn Tuấn",
       role: "VERIFIED_EXPERT",
     });
@@ -147,14 +146,14 @@ describe("ExpertProjectsPage (T133 & T135 & T164)", () => {
   it("displays amber warning banner when role is EXPERT (pending review)", () => {
     authClient.setSession("token-expert", {
       id: "u-exp-2",
-      email: "pending@nacentech.vn",
+      email: "pending@baclink.org.vn",
       fullName: "TS. Ứng Viên Chuyên Gia",
       role: "EXPERT",
     });
 
     render(<ExpertProjectsPage />);
 
-    expect(screen.getByText(/Tài Khoản Đang Chờ Phê Duyệt Cấp Sở \(EXPERT\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hồ Sơ Đang Chờ Ban Quản Trị BACLINK Phê Duyệt/i)).toBeInTheDocument();
     expect(
       screen.getByText(/Bạn đang ở chế độ xem trước dự án/i)
     ).toBeInTheDocument();

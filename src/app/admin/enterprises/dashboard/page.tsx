@@ -65,10 +65,10 @@ export default function EnterpriseAdminDashboardPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-              Bảng Điều Khiển & Giám Sát Doanh Nghiệp ĐMST
+              Bảng Điều Khiển Doanh Nghiệp Hội Viên BACLINK
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              Trung tâm Dữ liệu Đổi mới sáng tạo Quốc gia — Phân tích theo Thông tư 17/2019/TT-BKHCN
+              Thống kê năng lực sản xuất &amp; chuỗi cung ứng của Doanh nghiệp Hội viên tại các KCN Bắc Ninh
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function EnterpriseAdminDashboardPage() {
               href="/enterprises"
               className="px-4 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm"
             >
-              📖 Xem Danh bạ
+              📖 Xem Danh bạ Hội viên
             </Link>
             <Link
               href="/admin/approvals"
@@ -90,36 +90,36 @@ export default function EnterpriseAdminDashboardPage() {
         {/* 4 Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="text-xs font-bold uppercase text-slate-400 tracking-wider">Tổng số DN trong kho</div>
+            <div className="text-xs font-bold uppercase text-slate-400 tracking-wider">Tổng số DN Hội viên</div>
             <div className="text-3xl font-extrabold text-slate-900 mt-2">{stats.totalEnterprises}</div>
-            <div className="text-xs text-slate-500 mt-1">Doanh nghiệp trong hệ thống</div>
+            <div className="text-xs text-slate-500 mt-1">Doanh nghiệp trong hệ thống BACLINK</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="text-xs font-bold uppercase text-emerald-600 tracking-wider">Đã xác thực (Sở KH&CN)</div>
+            <div className="text-xs font-bold uppercase text-emerald-600 tracking-wider">Đã xác thực (Hội viên BACLINK)</div>
             <div className="text-3xl font-extrabold text-emerald-600 mt-2">{stats.verifiedCount}</div>
             <div className="text-xs text-slate-500 mt-1">Tỷ lệ đạt chuẩn: <strong>{verifiedPercent}%</strong></div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="text-xs font-bold uppercase text-brand-600 tracking-wider">Địa bàn Tỉnh/Thành</div>
+            <div className="text-xs font-bold uppercase text-brand-600 tracking-wider">Địa bàn KCN Bắc Ninh</div>
             <div className="text-3xl font-extrabold text-brand-600 mt-2">{stats.byProvince?.length || 0}</div>
-            <div className="text-xs text-slate-500 mt-1">Tỉnh/TP có DN ĐMST ghi nhận</div>
+            <div className="text-xs text-slate-500 mt-1">KCN / Địa bàn có DN ghi nhận</div>
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="text-xs font-bold uppercase text-amber-600 tracking-wider">Lĩnh vực công nghệ</div>
+            <div className="text-xs font-bold uppercase text-amber-600 tracking-wider">Ngành công nghiệp</div>
             <div className="text-3xl font-extrabold text-amber-600 mt-2">{stats.bySector?.length || 0}</div>
-            <div className="text-xs text-slate-500 mt-1">Ngành mũi nhọn theo TT17</div>
+            <div className="text-xs text-slate-500 mt-1">8 Ngành công nghiệp mũi nhọn BACLINK</div>
           </div>
         </div>
 
         {/* Charts & Distributions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* By Province */}
+          {/* By Location */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
-              📍 Phân bổ theo Địa bàn Trọng điểm
+              📍 Phân bổ theo Địa bàn &amp; KCN Bắc Ninh
             </h3>
             <div className="space-y-3">
               {stats.byProvince && stats.byProvince.length > 0 ? (
@@ -146,10 +146,10 @@ export default function EnterpriseAdminDashboardPage() {
             </div>
           </div>
 
-          {/* By TNI Classification */}
+          {/* By Capacity Tier */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
-              ⚡ Phân hạng Chỉ số TNI (Chỉ số ĐMST)
+              ⚡ Phân hạng Quy mô &amp; Năng lực Sản xuất
             </h3>
             <div className="space-y-3">
               {stats.byTniClassification && stats.byTniClassification.length > 0 ? (
@@ -176,14 +176,14 @@ export default function EnterpriseAdminDashboardPage() {
             </div>
           </div>
 
-          {/* By Sector TT17 */}
+          {/* By BACLINK Industrial Sector */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
-              🏭 Cơ cấu theo Ngành Lĩnh Vực (TT17)
+              🏭 Cơ cấu theo Ngành Công Nghiệp BACLINK
             </h3>
             <div className="space-y-3">
               {stats.bySector && stats.bySector.length > 0 ? (
-                stats.bySector.slice(0, 6).map((item, idx) => {
+                stats.bySector.slice(0, 8).map((item, idx) => {
                   const pct = Math.round((item.count / stats.totalEnterprises) * 100);
                   return (
                     <div key={idx} className="space-y-1">
@@ -206,10 +206,10 @@ export default function EnterpriseAdminDashboardPage() {
             </div>
           </div>
 
-          {/* Top Bottlenecks */}
+          {/* Top Supply Chain Needs */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider text-rose-700">
-              ⚠️ Điểm nghẽn bức thiết nhất phản ánh từ Doanh nghiệp
+              ⚠️ Nhu cầu Kết nối Chuỗi cung ứng &amp; Kỹ thuật Trọng tâm
             </h3>
             <div className="space-y-3">
               {stats.topBottlenecks && stats.topBottlenecks.length > 0 ? (
@@ -222,7 +222,7 @@ export default function EnterpriseAdminDashboardPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-xs text-slate-400">Chưa ghi nhận điểm nghẽn.</div>
+                <div className="text-xs text-slate-400">Chưa ghi nhận nhu cầu nổi bật.</div>
               )}
             </div>
           </div>

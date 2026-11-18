@@ -91,11 +91,21 @@ export const SECTOR_IMAGE_MAP: Record<string, { main: string; gallery: string[] 
     main: "/tech-ai-vision.png",
     gallery: ["/tech-ai-vision.png", "/tech-solar.png", "/tech-biotech.png", "/tech-agri.png"],
   },
-  // LV17: Đổi mới sáng tạo & Chuyển giao công nghệ
+  // LV17: Công nghệ tổng hợp & Chuyển giao kỹ thuật
   LV17: {
     main: "/innovation-hero-background.png",
     gallery: ["/innovation-hero-background.png", "/tech-ai-vision.png", "/tech-solar.png", "/tech-biotech.png"],
   },
+
+  // 8 ngành công nghiệp BACLINK Bắc Ninh
+  IND_ELEC: { main: "/tech-ai-vision.png", gallery: ["/tech-ai-vision.png", "/tech-solar.png", "/tech-biotech.png", "/tech-agri.png"] },
+  IND_MECH: { main: "/tech-solar.png", gallery: ["/tech-solar.png", "/tech-ai-vision.png", "/tech-biotech.png", "/tech-agri.png"] },
+  IND_AUTO: { main: "/tech-ai-vision.png", gallery: ["/tech-ai-vision.png", "/tech-solar.png", "/tech-biotech.png", "/tech-agri.png"] },
+  IND_PLAS: { main: "/tech-biotech.png", gallery: ["/tech-biotech.png", "/tech-solar.png", "/tech-ai-vision.png", "/tech-agri.png"] },
+  IND_MAT: { main: "/tech-biotech.png", gallery: ["/tech-biotech.png", "/tech-solar.png", "/tech-ai-vision.png", "/tech-agri.png"] },
+  IND_IT: { main: "/tech-ai-vision.png", gallery: ["/tech-ai-vision.png", "/tech-solar.png", "/tech-biotech.png", "/tech-agri.png"] },
+  IND_GREEN: { main: "/tech-solar.png", gallery: ["/tech-solar.png", "/tech-ai-vision.png", "/tech-biotech.png", "/tech-agri.png"] },
+  IND_LOG: { main: "/tech-solar.png", gallery: ["/tech-solar.png", "/tech-ai-vision.png", "/tech-biotech.png", "/tech-agri.png"] },
 
   // Fallback aliases cho các mã ngành text tiếng Anh
   AGRI: { main: "/tech-agri.png", gallery: ["/tech-agri.png", "/tech-biotech.png", "/tech-solar.png", "/tech-ai-vision.png"] },
@@ -186,7 +196,7 @@ export function getTechnologyImage(
     return "/tech-solar.png";
   }
 
-  // Nhóm Đổi mới sáng tạo & Triển lãm Techmart
+  // Nhóm Công nghệ tổng hợp & Triển lãm công nghiệp
   if (
     normalizedTitle.includes("sáng tạo") ||
     normalizedTitle.includes("techmart") ||

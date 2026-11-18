@@ -1,9 +1,8 @@
 /**
- * Danh mục dữ liệu chuẩn Basic Design và Type Definitions cho Form Khảo sát Nhu cầu DNNVV
- * SSOT từ wireframe: Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/wireframe_phieu_khao_sat_dnnvv.html
+ * Danh mục dữ liệu chuẩn và Type Definitions cho Nhu cầu Mua & Đặt hàng công nghiệp BACLINK
  */
 
-// Danh mục 34 Tỉnh/Thành phố Trọng Điểm thuộc phạm vi Đề tài / CSDL Quốc Gia NacenTwin (SSOT)
+// Danh mục Địa bàn trọng điểm phục vụ tương thích ngược
 export const PROVINCES_34 = [
   'Hà Nội', 'TP. Hồ Chí Minh', 'Hải Phòng', 'Đà Nẵng', 'Cần Thơ',
   'Bắc Ninh', 'Quảng Ninh', 'Hưng Yên', 'Thái Nguyên', 'Phú Thọ',
@@ -14,7 +13,7 @@ export const PROVINCES_34 = [
   'Điện Biên', 'Lai Châu', 'Sơn La', 'Lạng Sơn'
 ];
 
-export const PROVINCES_63 = PROVINCES_34; // Đồng bộ toàn bộ dự án về 34 tỉnh thành trọng điểm
+export const PROVINCES_63 = PROVINCES_34;
 
 export interface TechGroupOption {
   code: string;
@@ -23,25 +22,24 @@ export interface TechGroupOption {
 }
 
 /**
- * Danh mục Nhóm Công Nghệ chuẩn và Ma trận tương thích Lĩnh vực (LV01-LV18) <-> Nhóm Công Nghệ
- * Căn cứ: Sheet 10 `Ma trận Lĩnh vực-Công nghệ` (Nacentwin_20260924_bo_loc_da_sua.xlsx) & MasterDataControllers.cs
+ * Danh mục Nhóm Công Nghệ chuẩn và Ma trận tương thích Ngành công nghiệp (IND_*) <-> Nhóm Công Nghệ
  */
 export const TECH_GROUP_OPTIONS: TechGroupOption[] = [
-  { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot', relatedSectors: ['LV07', 'LV08', 'LV03', 'LV04', 'LV13', 'LV18'] },
-  { code: 'CN02', name: 'AI, Thị giác máy tính (Machine Vision) & OCR', relatedSectors: ['LV01', 'LV05', 'LV07', 'LV08', 'LV14', 'LV15', 'LV16', 'LV17', 'LV10'] },
-  { code: 'CN03', name: 'Cảm biến thông minh & Internet vạn vật (IoT)', relatedSectors: ['LV01', 'LV05', 'LV08', 'LV11', 'LV12', 'LV13', 'LV14', 'LV16'] },
-  { code: 'CN04', name: 'Công nghệ sinh học, vi sinh & lên men', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV09', 'LV11', 'LV15', 'LV17'] },
-  { code: 'CN05', name: 'Công nghệ chiết xuất, tinh chế & hóa dược', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV06', 'LV09', 'LV15'] },
-  { code: 'CN06', name: 'Công nghệ bảo quản sau thu hoạch & sấy lạnh', relatedSectors: ['LV01', 'LV02', 'LV04', 'LV05'] },
-  { code: 'CN07', name: 'Vật liệu mới, vật liệu Nano & Polymer composite', relatedSectors: ['LV03', 'LV06', 'LV07', 'LV12', 'LV13', 'LV17'] },
-  { code: 'CN08', name: 'Gia công CNC chính xác, In 3D & Khuôn mẫu', relatedSectors: ['LV04', 'LV07', 'LV08', 'LV10', 'LV12', 'LV13', 'LV17'] },
-  { code: 'CN09', name: 'Hệ thống năng lượng mặt trời, ESS & Tiết kiệm điện', relatedSectors: ['LV01', 'LV05', 'LV07', 'LV11', 'LV12', 'LV18'] },
-  { code: 'CN10', name: 'Xử lý nước thải công nghiệp & Tái tuần hoàn nước', relatedSectors: ['LV01', 'LV02', 'LV03', 'LV05', 'LV06', 'LV11'] },
-  { code: 'CN11', name: 'Xử lý khí thải, bụi & Giảm phát thải CO2 (Sản xuất xanh)', relatedSectors: ['LV01', 'LV05', 'LV06', 'LV07', 'LV11', 'LV12', 'LV17'] },
-  { code: 'CN12', name: 'Phần mềm ERP/MES, Big Data, Cloud & Truy xuất nguồn gốc', relatedSectors: ['LV01', 'LV02', 'LV05', 'LV08', 'LV14', 'LV15', 'LV16', 'LV18'] },
-  { code: 'CN13', name: 'Bản đồ số GIS, Viễn thám & Thiết bị bay UAV (Drone)', relatedSectors: ['LV01', 'LV11', 'LV12', 'LV14', 'LV15', 'LV16'] },
-  { code: 'CN14', name: 'Đo lường, Kiểm định chính xác & Thiết bị quang học', relatedSectors: ['LV07', 'LV08', 'LV09', 'LV10', 'LV15', 'LV17'] },
-  { code: 'CN15', name: 'An toàn thông tin & Bảo mật mạng công nghiệp (Cybersecurity)', relatedSectors: ['LV08', 'LV14', 'LV15', 'LV16'] }
+  { code: 'CN01', name: 'Tự động hóa dây chuyền & Cánh tay Robot', relatedSectors: ['IND_AUTO', 'IND_MECH', 'IND_ELEC', 'LV07', 'LV08', 'LV03', 'LV04', 'LV13', 'LV18'] },
+  { code: 'CN02', name: 'AI, Thị giác máy tính (Machine Vision) & OCR', relatedSectors: ['IND_IT', 'IND_AUTO', 'IND_ELEC', 'LV01', 'LV05', 'LV07', 'LV08', 'LV14', 'LV15', 'LV16', 'LV17', 'LV10'] },
+  { code: 'CN03', name: 'Cảm biến thông minh & Internet vạn vật (IoT)', relatedSectors: ['IND_ELEC', 'IND_AUTO', 'IND_IT', 'LV01', 'LV05', 'LV08', 'LV11', 'LV12', 'LV13', 'LV14', 'LV16'] },
+  { code: 'CN04', name: 'Công nghệ sinh học, vi sinh & lên men', relatedSectors: ['IND_PLAS', 'IND_GREEN', 'LV01', 'LV02', 'LV05', 'LV09', 'LV11', 'LV15', 'LV17'] },
+  { code: 'CN05', name: 'Công nghệ chiết xuất, tinh chế & hóa chất kỹ thuật', relatedSectors: ['IND_PLAS', 'IND_MAT', 'LV01', 'LV02', 'LV05', 'LV06', 'LV09', 'LV15'] },
+  { code: 'CN06', name: 'Công nghệ bảo quản công nghiệp & sấy lạnh', relatedSectors: ['IND_LOG', 'IND_GREEN', 'LV01', 'LV02', 'LV04', 'LV05'] },
+  { code: 'CN07', name: 'Vật liệu mới, vật liệu Nano & Polymer composite', relatedSectors: ['IND_MAT', 'IND_PLAS', 'IND_ELEC', 'LV03', 'LV06', 'LV07', 'LV12', 'LV13', 'LV17'] },
+  { code: 'CN08', name: 'Gia công CNC chính xác, In 3D & Khuôn mẫu', relatedSectors: ['IND_MECH', 'IND_MAT', 'IND_AUTO', 'LV04', 'LV07', 'LV08', 'LV10', 'LV12', 'LV13', 'LV17'] },
+  { code: 'CN09', name: 'Hệ thống năng lượng mặt trời, ESS & Tiết kiệm điện', relatedSectors: ['IND_GREEN', 'IND_ELEC', 'LV01', 'LV05', 'LV07', 'LV11', 'LV12', 'LV18'] },
+  { code: 'CN10', name: 'Xử lý nước thải công nghiệp & Tái tuần hoàn nước', relatedSectors: ['IND_GREEN', 'IND_PLAS', 'LV01', 'LV02', 'LV03', 'LV05', 'LV06', 'LV11'] },
+  { code: 'CN11', name: 'Xử lý khí thải, bụi & Giảm phát thải CO2 (Sản xuất xanh)', relatedSectors: ['IND_GREEN', 'IND_MAT', 'LV01', 'LV05', 'LV06', 'LV07', 'LV11', 'LV12', 'LV17'] },
+  { code: 'CN12', name: 'Phần mềm ERP/MES, Big Data, Cloud & Truy xuất nguồn gốc', relatedSectors: ['IND_IT', 'IND_LOG', 'IND_AUTO', 'LV01', 'LV02', 'LV05', 'LV08', 'LV14', 'LV15', 'LV16', 'LV18'] },
+  { code: 'CN13', name: 'Kho vận tự động AGV, Logistics số & Truy vết chuỗi cung ứng', relatedSectors: ['IND_LOG', 'IND_IT', 'IND_AUTO', 'LV01', 'LV11', 'LV12', 'LV14', 'LV15', 'LV16'] },
+  { code: 'CN14', name: 'Đo lường, Kiểm định chính xác & Thiết bị quang học', relatedSectors: ['IND_ELEC', 'IND_MECH', 'IND_AUTO', 'LV07', 'LV08', 'LV09', 'LV10', 'LV15', 'LV17'] },
+  { code: 'CN15', name: 'An toàn thông tin & Bảo mật mạng công nghiệp (Cybersecurity)', relatedSectors: ['IND_IT', 'IND_ELEC', 'LV08', 'LV14', 'LV15', 'LV16'] }
 ];
 
 /**
@@ -228,10 +226,10 @@ export const DESIRED_PARTNERS = [
 
 export const SUPPORT_NEEDS_LIST = [
   { id: 'consulting', label: 'Tư vấn đánh giá hiện trạng & xây dựng bài toán kỹ thuật' },
-  { id: 'matching', label: 'Kết nối trực tiếp Chuyên gia / Viện nghiên cứu phù hợp' },
-  { id: 'finance', label: 'Hỗ trợ tiếp cận nguồn vốn ưu đãi / Quỹ ĐMST (NATIF)' },
-  { id: 'training', label: 'Đào tạo nâng cao tay nghề & chuyển giao công nghệ' },
-  { id: 'assessment', label: 'Đánh giá, thẩm định trình độ công nghệ theo TT17' }
+  { id: 'matching', label: 'Kết nối trực tiếp Ban Cố vấn Kỹ thuật & Nhà cung ứng phù hợp' },
+  { id: 'finance', label: 'Hỗ trợ tiếp cận nguồn vốn tài chính xanh & nâng cấp thiết bị' },
+  { id: 'training', label: 'Đào tạo nâng cao tay nghề, Lean/5S & chuyển giao công nghệ' },
+  { id: 'assessment', label: 'Tư vấn chuẩn hóa chứng chỉ ISO 9001 / IATF 16949 / ESG chuỗi cung ứng FDI' }
 ];
 
 // =========================================================================

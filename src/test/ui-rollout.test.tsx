@@ -71,7 +71,7 @@ describe("Existing screen rollout regression", () => {
     vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({data:profile})}));
     const pub=render(<ExpertPublicDetailPage expertCode="CG-UI-QA"/>);
     await screen.findByText(profile.fullName);artifact("expert-public",pub.container);
-    fireEvent.click(screen.getByText("Điền phiếu yêu cầu kết nối"));artifact("expert-consultation",pub.container);
+    fireEvent.click(screen.getByText("Điền yêu cầu kết nối"));artifact("expert-consultation",pub.container);
     cleanup();
     authClient.setSession("ui-qa-only",{id:"qa",email:"qa@example.invalid",fullName:profile.fullName,role:"VERIFIED_EXPERT"});
     vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({data:owner})}));

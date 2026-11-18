@@ -59,7 +59,7 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Cơ sở khoa học thuật toán K-L-N-O & Kết quả thực nghiệm 304 Doanh nghiệp Việt Nam (PO-DEC-20261008-03)
+                Nguyên lý phương pháp luận thuật toán K-L-N-O &amp; Hệ tiêu chí ưu tiên đặt hàng của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
                 : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
             }`}
           >
-            4. Thực Nghiệm 304 Doanh Nghiệp
+            4. Chuẩn Đối Chiếu Công Nghiệp
           </button>
         </div>
 
@@ -180,15 +180,15 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   <div className="p-3 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60">
-                    <span className="font-bold text-amber-900 dark:text-amber-300">Tầng 1: Tự đánh giá (SELF_DECLARED)</span>
+                    <span className="font-bold text-amber-900 dark:text-amber-300">Tầng 1: Tự kê khai nhu cầu (SELF_DECLARED)</span>
                     <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Doanh nghiệp thực hiện điền phiếu khảo sát nhu cầu, hệ thống tự động tính điểm TNI tức thì để đưa vào luồng gợi ý công nghệ và phân loại sơ bộ.
+                      Doanh nghiệp Hội viên đăng bài toán đặt hàng và mua sắm thiết bị, hệ thống tự động tính điểm ưu tiên TNI tức thì để đưa vào luồng gợi ý nhà cung ứng phù hợp.
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/60">
-                    <span className="font-bold text-emerald-900 dark:text-emerald-300">Tầng 2: Thẩm định Nhà Nước (VERIFIED_BY_GOV)</span>
+                    <span className="font-bold text-emerald-900 dark:text-emerald-300">Tầng 2: Thẩm định BACLINK (VERIFIED_BY_GOV)</span>
                     <p className="text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
-                      Cán bộ Sở KH&CN / Chuyên gia Trung tâm ĐMST thẩm định tính xác thực của sự cố, báo cáo tài chính và năng lực tiếp nhận trước khi phê duyệt hỗ trợ vốn/liên kết 1-1.
+                      Ban Cố vấn & Thẩm định BACLINK thẩm định tính xác thực của sự cố, báo cáo tài chính và năng lực tiếp nhận trước khi phê duyệt hỗ trợ vốn/liên kết 1-1.
                     </p>
                   </div>
                 </div>
@@ -309,7 +309,7 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
                     PHÂN KHÚC: NHU CẦU RẤT CAO (VERY_HIGH)
                   </h4>
                   <p className="text-xs text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
-                    <strong>Chính sách điều phối P0:</strong> Đẩy ngay vào luồng Matching 1-1 tự động với Sáng chế TRL 7–9. Bố trí chuyên gia chuyển giao công nghệ làm việc trực tiếp trong vòng 24 giờ để khảo sát hiện trường.
+                    <strong>Chính sách điều phối P0:</strong> Đẩy ngay vào luồng Matching 1-1 tự động với sản phẩm &amp; giải pháp TRL 7–9. Bố trí Ban Cố vấn Kỹ thuật BACLINK làm việc trực tiếp trong vòng 24 giờ để kết nối nhà máy.
                   </p>
                 </div>
               </div>
@@ -358,78 +358,78 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
             </div>
           )}
 
-          {/* TAB 4: THỰC NGHIỆM 304 DN */}
+          {/* TAB 4: CHUẨN ĐỐI CHIẾU CÔNG NGHIỆP */}
           {activeTab === "EMPIRICAL_304" && (
             <div className="space-y-4 animate-in fade-in duration-150">
               <div className="rounded-xl border border-emerald-300 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 p-4 space-y-2">
                 <div className="flex items-center gap-2 font-bold text-emerald-950 dark:text-emerald-300 text-xs uppercase">
                   <BarChart3 className="w-4 h-4 text-emerald-600" />
-                  Báo Cáo Thực Nghiệm 304 Doanh Nghiệp Việt Nam (REPORT-TNI-304DN-v1.0)
+                  Thang Chuẩn Đối Chiếu Mức Ưu Tiên Đặt Hàng Công Nghiệp BACLINK
                 </div>
                 <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Thuật toán TNI đã được kiểm chứng thực tế trên 304 hồ sơ khảo sát doanh nghiệp đổi mới sáng tạo từ tệp dữ liệu quốc gia (tháng 10/2026), bảo đảm phân phối chuẩn, không có bản ghi khuyết thiếu và không bị hiệu ứng lệch trần/sàn.
+                  Thuật toán TNI được chuẩn hóa theo thực tiễn các đơn đặt hàng gia công linh kiện, cơ khí chính xác và tự động hóa tại các khu công nghiệp tỉnh Bắc Ninh, bảo đảm phân hóa rõ mức độ ưu tiên điều phối nhà cung ứng.
                 </p>
               </div>
 
-              {/* Bảng phân vị thực nghiệm */}
+              {/* Bảng phân vị đối chiếu */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                  <div className="text-[11px] text-slate-500 font-bold">Điểm Cao Nhất (Max)</div>
-                  <div className="text-xl font-black text-rose-600 mt-1">90.0 / 100</div>
-                  <div className="text-[10px] text-slate-500">DN xuất khẩu, R&D mạnh</div>
+                  <div className="text-[11px] text-slate-500 font-bold">Ngưỡng Ưu Tiên P0</div>
+                  <div className="text-xl font-black text-rose-600 mt-1">80 – 100</div>
+                  <div className="text-[10px] text-slate-500">Đơn hàng FDI khẩn cấp</div>
                 </div>
                 <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                  <div className="text-[11px] text-slate-500 font-bold">Điểm Trung Bình (Mean)</div>
-                  <div className="text-xl font-black text-amber-600 mt-1">68.94 / 100</div>
-                  <div className="text-[10px] text-slate-500">Mặt bằng chuẩn DNNVV</div>
+                  <div className="text-[11px] text-slate-500 font-bold">Mức Chuẩn Ngành</div>
+                  <div className="text-xl font-black text-amber-600 mt-1">65 – 79</div>
+                  <div className="text-[10px] text-slate-500">Mở rộng dây chuyền KCN</div>
                 </div>
                 <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                  <div className="text-[11px] text-slate-500 font-bold">Điểm Trung Vị (Median)</div>
-                  <div className="text-xl font-black text-blue-600 mt-1">66.5 / 100</div>
-                  <div className="text-[10px] text-slate-500">Phân vị 50% mẫu</div>
+                  <div className="text-[11px] text-slate-500 font-bold">Mức Kế Hoạch Năm</div>
+                  <div className="text-xl font-black text-blue-600 mt-1">50 – 64</div>
+                  <div className="text-[10px] text-slate-500">Nâng cấp định kỳ</div>
                 </div>
                 <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
-                  <div className="text-[11px] text-slate-500 font-bold">Điểm Thấp Nhất (Min)</div>
-                  <div className="text-xl font-black text-slate-600 mt-1">51.5 / 100</div>
-                  <div className="text-[10px] text-slate-500">Máy móc truyền thống</div>
+                  <div className="text-[11px] text-slate-500 font-bold">Mức Tham Khảo</div>
+                  <div className="text-xl font-black text-slate-600 mt-1">20 – 49</div>
+                  <div className="text-[10px] text-slate-500">Tìm hiểu nguồn cung</div>
                 </div>
               </div>
 
-              {/* Phân bố 4 phân khúc */}
+              {/* Phân bố SLA theo 4 phân khúc */}
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
                     <tr>
-                      <th className="p-3">Phân khúc</th>
-                      <th className="p-3">Dải điểm</th>
-                      <th className="p-3">Số lượng DN</th>
-                      <th className="p-3">Tỷ lệ (%)</th>
+                      <th className="p-3">Phân khúc ưu tiên</th>
+                      <th className="p-3">Dải điểm TNI</th>
+                      <th className="p-3">Cam kết phản hồi (SLA)</th>
+                      <th className="p-3">Cơ chế ghép nối BACLINK</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                     <tr className="bg-rose-50/40 dark:bg-rose-950/20">
                       <td className="p-3 font-bold text-rose-700">Rất cao (VERY_HIGH)</td>
-                      <td className="p-3">$\ge 80$</td>
-                      <td className="p-3 font-bold">18 DN</td>
-                      <td className="p-3 font-bold text-rose-700">5.9%</td>
+                      <td className="p-3">≥ 80</td>
+                      <td className="p-3 font-bold">Trong 24 giờ</td>
+                      <td className="p-3 font-bold text-rose-700">Radar AI + Cố vấn 1-1</td>
                     </tr>
                     <tr className="bg-amber-50/40 dark:bg-amber-950/20">
                       <td className="p-3 font-bold text-amber-700">Cao (HIGH)</td>
-                      <td className="p-3">65 – 79.9</td>
-                      <td className="p-3 font-bold">155 DN</td>
-                      <td className="p-3 font-bold text-amber-700">51.0%</td>
+                      <td className="p-3">65 – 79</td>
+                      <td className="p-3 font-bold">Trong 48 giờ</td>
+                      <td className="p-3 font-bold text-amber-700">Gợi ý ưu tiên Nhà máy KCN</td>
                     </tr>
                     <tr className="bg-yellow-50/40 dark:bg-yellow-950/20">
                       <td className="p-3 font-bold text-yellow-800">Trung bình (MEDIUM)</td>
-                      <td className="p-3">50 – 64.9</td>
-                      <td className="p-3 font-bold">131 DN</td>
-                      <td className="p-3 font-bold text-yellow-800">43.1%</td>
+                      <td className="p-3">50 – 64</td>
+                      <td className="p-3 font-bold">3 – 5 ngày làm việc</td>
+                      <td className="p-3 font-bold text-yellow-800">Niêm yết Bảng Nhu cầu</td>
                     </tr>
                     <tr>
                       <td className="p-3 font-bold text-slate-500">Thấp (LOW)</td>
                       <td className="p-3">&lt; 50</td>
-                      <td className="p-3">0 DN</td>
-                      <td className="p-3">0.0%</td>
+                      <td className="p-3">Định kỳ hàng tuần</td>
+                      <td className="p-3">Lưu trữ &amp; Bản tin nguồn cung</td>
                     </tr>
                   </tbody>
                 </table>
@@ -441,7 +441,7 @@ export function TniMethodologyModal({ isOpen, onClose }: TniMethodologyModalProp
         {/* Footer */}
         <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 sm:p-5 flex items-center justify-between">
           <div className="text-xs text-slate-500">
-            Cơ sở dữ liệu khảo sát 304 DN ĐMST Việt Nam · Cổng Chuỗi Cung Ứng BACLINK
+            Hệ tiêu chí ưu tiên đặt hàng K-L-N-O · Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)
           </div>
           <button
             type="button"

@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Building2, User, Phone, Mail, ShieldCheck, Sparkles } from "lucide-react";
-import { PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
+import { Building2, User, Phone, Mail, ShieldCheck } from "lucide-react";
+import { FIXED_BACLINK_AUTHORITY } from "@/services/api/technology-offer";
 
 interface SellerIdentityCardProps {
   enterpriseName?: string | null;
@@ -49,14 +49,6 @@ export function SellerIdentityCard({
     return email;
   };
 
-  const handleSelectAuthority = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = e.target.value;
-    const selectedItem = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => a.id === selectedId);
-    if (selectedItem && onAuthorityChange) {
-      onAuthorityChange(selectedItem.id, selectedItem.name);
-    }
-  };
-
   return (
     <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -94,39 +86,21 @@ export function SellerIdentityCard({
         </div>
       </div>
 
-      {/* Trường chọn Sở KH&CN tiếp nhận thẩm định hồ sơ */}
-      {onAuthorityChange && (
-        <div className="border-t border-slate-200/80 pt-3 space-y-1.5">
-          <div className="flex flex-wrap items-center justify-between gap-1.5">
-            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <span>Sở KH&CN tiếp nhận thẩm định hồ sơ:</span>
-              <span className="text-rose-500">*</span>
-            </label>
-            {isAutoDetected && (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                <Sparkles className="h-3 w-3 text-emerald-600" />
-                [Tự động nhận diện từ địa bàn doanh nghiệp]
-              </span>
-            )}
-          </div>
-          <div className="relative">
-            <select
-              value={managingAuthorityId || "VN-HN"}
-              onChange={handleSelectAuthority}
-              className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 pr-8 text-xs font-semibold text-slate-800 outline-none focus:border-brand-500 transition cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%2364748b%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat"
-            >
-              {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
-                <option key={auth.id} value={auth.id}>
-                  {auth.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <p className="text-xs text-slate-500">
-            Hồ sơ chào bán sẽ được chuyển trực tiếp tới Sở KH&CN được chọn để thẩm định trước khi niêm yết công khai.
-          </p>
+      {/* Cơ quan tiếp nhận cố định của Hiệp hội BACLINK */}
+      <div className="border-t border-slate-200/80 pt-3 space-y-1.5">
+        <div className="flex flex-wrap items-center justify-between gap-1.5">
+          <span className="text-xs font-bold text-slate-800">
+            Cơ quan tiếp nhận thẩm định hồ sơ:
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+            {FIXED_BACLINK_AUTHORITY.name}
+          </span>
         </div>
-      )}
+        <p className="text-xs text-slate-500">
+          Hồ sơ chào bán được chuyển trực tiếp tới Ban Thẩm định Kỹ thuật — Hiệp hội BACLINK để rà soát trước khi niêm yết công khai.
+        </p>
+      </div>
 
       <div className="border-t border-slate-200/60 pt-2 flex items-center justify-between text-xs text-slate-500">
         <span className="flex items-center gap-1">

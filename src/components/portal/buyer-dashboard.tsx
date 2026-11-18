@@ -110,17 +110,17 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
           <div className="space-y-2 max-w-3xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-bold text-brand-100">
               <ShoppingBag className="w-3.5 h-3.5 text-brand-200" />
-              <span>Trung Tâm Điều Hành Mua Sắm & Đổi Mới Công Nghệ</span>
+              <span>Trung Tâm Điều Hành Mua Sắm &amp; Kết Nối Công Nghệ</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
-              Xin chào, {user?.fullName || "Doanh Nghiệp Đổi Mới"}!
+              Xin chào, {user?.fullName || "Doanh Nghiệp Hội Viên"}!
             </h1>
             <p className="text-white/85 text-xs sm:text-sm leading-relaxed max-w-2xl">
               Quản trị bài toán kỹ thuật, kết nối nhà cung ứng công nghệ, theo dõi tiến trình thử nghiệm và ký kết MOU chuyển giao giải pháp.
             </p>
           </div>
 
-          {/* 3 Quick Action Buttons */}
+          {/* 2 Quick Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
             <button
               onClick={() => setIsQuickDemandOpen(true)}
@@ -129,14 +129,6 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
               <PlusCircle className="w-4 h-4 text-brand-700" />
               <span>+ Khai Báo Bài Toán Nhanh</span>
             </button>
-
-            <Link
-              href="/khao-sat-nhu-cau"
-              className="px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 active:scale-95 border border-white/25 text-white text-xs font-bold flex items-center gap-2 backdrop-blur-sm transition"
-            >
-              <FileCheck2 className="w-4 h-4 text-teal-300" />
-              <span>Khảo Sát Nhu Cầu (TNI 4 Bước)</span>
-            </Link>
 
             <Link
               href="/portal/matching/radar"
@@ -370,7 +362,7 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
                   Chưa có bài toán kỹ thuật nào được đăng tải
                 </p>
                 <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Khai báo bài toán hoặc khảo sát TNI để hệ thống AI tự động quét giải pháp phù hợp.
+                  Khai báo bài toán kỹ thuật để hệ thống AI tự động quét giải pháp phù hợp.
                 </p>
                 <button
                   onClick={() => setIsQuickDemandOpen(true)}
@@ -389,9 +381,6 @@ export function BuyerDashboard({ user }: { user: UserContext | null }) {
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs font-black text-brand-700 dark:text-cyan-400">
                         {d.itemCode}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
-                        TNI: {d.tniScore}/100
                       </span>
                     </div>
                     <p className="text-xs font-extrabold text-slate-900 dark:text-white truncate">

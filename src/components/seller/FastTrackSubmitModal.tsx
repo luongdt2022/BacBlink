@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Send, ShieldAlert, CheckCircle2, X, AlertCircle } from "lucide-react";
-import { PROVINCIAL_AUTHORITIES_CATALOG } from "@/services/api/technology-offer";
+import { FIXED_BACLINK_AUTHORITY } from "@/services/api/technology-offer";
 
 interface FastTrackSubmitModalProps {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export function FastTrackSubmitModal({
             </div>
             <div>
               <h3 className="font-extrabold text-base text-white">Xác Nhận Nộp Hồ Sơ Nhanh (Fast-Track)</h3>
-              <p className="text-xs text-brand-200">Gửi trực tiếp tới Sở KH&CN tiếp nhận thẩm định</p>
+              <p className="text-xs text-brand-200">Gửi trực tiếp tới Ban Thẩm định BACLINK tiếp nhận thẩm định</p>
             </div>
           </div>
           <button
@@ -85,31 +85,12 @@ export function FastTrackSubmitModal({
               <span className="font-bold text-slate-900">{pricingDisplay}</span>
             </div>
 
-            {/* Khối chọn / thay đổi Sở KH&CN tiếp nhận thẩm định */}
+            {/* Đơn vị tiếp nhận cố định của Hiệp hội BACLINK */}
             <div className="flex items-center justify-between pt-2 border-t border-brand-200/50 gap-2">
-              <span className="text-slate-500 font-medium shrink-0">Sở KH&CN tiếp nhận:</span>
-              {onAuthorityChange ? (
-                <div className="flex items-center gap-2">
-                  <select
-                    value={managingAuthorityId || "VN-HN"}
-                    onChange={(e) => {
-                      const selected = PROVINCIAL_AUTHORITIES_CATALOG.find((a) => a.id === e.target.value);
-                      if (selected) onAuthorityChange(selected.id, selected.name);
-                    }}
-                    className="text-xs font-bold text-slate-900 bg-white border border-brand-200 rounded px-2 py-1 max-w-[260px] truncate outline-none focus:border-brand-500 transition cursor-pointer"
-                  >
-                    {PROVINCIAL_AUTHORITIES_CATALOG.map((auth) => (
-                      <option key={auth.id} value={auth.id}>
-                        {auth.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <span className="font-bold text-slate-900 text-right max-w-[260px] line-clamp-1">
-                  {managingAuthorityName || "Sở Khoa học và Công nghệ TP. Hà Nội"}
-                </span>
-              )}
+              <span className="text-slate-500 font-medium shrink-0">Đơn vị tiếp nhận:</span>
+              <span className="font-bold text-slate-900 text-right max-w-[280px] line-clamp-1">
+                {FIXED_BACLINK_AUTHORITY.name}
+              </span>
             </div>
           </div>
 
@@ -119,7 +100,7 @@ export function FastTrackSubmitModal({
               <div className="text-xs text-amber-900 leading-5">
                 <p className="font-bold">Cơ chế nộp hồ sơ Fast-Track không chặn (ADR-04-01):</p>
                 <p className="mt-0.5">
-                  Hệ thống cho phép nộp ngay hồ sơ tối giản Bước 1. Cơ quan quản lý Sở KH&CN sẽ tự động tiếp nhận. Bạn có thể quay lại bổ sung thông số kỹ thuật Lớp 2-3 và minh chứng DataRoom bất cứ lúc nào.
+                  Hệ thống cho phép nộp ngay hồ sơ tối giản Bước 1. Ban Thẩm định BACLINK sẽ tự động tiếp nhận. Bạn có thể quay lại bổ sung thông số kỹ thuật Lớp 2-3 và minh chứng DataRoom bất cứ lúc nào.
                 </p>
               </div>
             </div>

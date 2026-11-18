@@ -412,7 +412,7 @@ export async function fetchInnovationRating(taxCode: string): Promise<Innovation
 
   const res = await fetch(`${API_BASE}/api/v1/enterprises/${encodeURIComponent(taxCode)}/innovation-rating`, { headers });
   if (!res.ok) {
-    throw new Error(await readApiError(res, "Không thể tải kết quả đánh giá năng lực ĐMST."));
+    throw new Error(await readApiError(res, "Không thể tải kết quả đánh giá năng lực doanh nghiệp."));
   }
   const body = await res.json();
   return body.data || body;

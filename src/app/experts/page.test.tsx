@@ -33,7 +33,7 @@ const mockExpertsData = {
         fullName: "ThS. Phạm Văn Thực Chiến",
         academicRank: "NONE",
         degree: "MASTER",
-        organizationName: "Doanh nghiệp Tư vấn ĐMST",
+        organizationName: "Doanh nghiệp Hội viên",
         positionTitle: "Chuyên gia chuyển giao",
         primarySectorCode: "LV01",
         primarySectorName: "Nông nghiệp",
@@ -99,10 +99,10 @@ const mockExpertsData = {
 };
 
 const mockProvincesData = [
-  { code: "HN", name: "Sở KH&CN TP. Hà Nội", region: "NORTH" },
-  { code: "HP", name: "Sở KH&CN TP. Hải Phòng", region: "NORTH" },
-  { code: "DN", name: "Sở KH&CN TP. Đà Nẵng", region: "CENTRAL" },
-  { code: "SG", name: "Sở KH&CN TP. Hồ Chí Minh", region: "SOUTH" },
+  { code: "BN-VSIP", name: "KCN VSIP Bắc Ninh", region: "NORTH" },
+  { code: "BN-YP", name: "KCN Yên Phong", region: "NORTH" },
+  { code: "DN", name: "KCN Đà Nẵng", region: "CENTRAL" },
+  { code: "SG", name: "KCN TP. Hồ Chí Minh", region: "SOUTH" },
 ];
 
 const setupFetch = (directory: unknown = mockExpertsData) => {
@@ -230,7 +230,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     expect(screen.getByText(/Học vị: Phó Giáo sư \(PGS\)/i)).toBeDefined();
   });
 
-  it("normalizes province dropdown with 3 regional optgroups (T140)", async () => {
+  it("normalizes province dropdown with Bac Ninh default option (T140)", async () => {
     setupFetch();
 
     render(<ExpertsDirectoryPage />);
@@ -242,15 +242,8 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     const select = screen.getByTestId("province-filter-select") as HTMLSelectElement;
     expect(select).toBeDefined();
 
-    // Kiểm tra có option mặc định 34 Sở KH&CN
-    expect(screen.getByText("Tất cả địa bàn (34 Sở KH&CN)")).toBeDefined();
-
-    // Kiểm tra có đủ 3 optgroups
-    const optgroups = select.querySelectorAll("optgroup");
-    expect(optgroups.length).toBe(3);
-    expect(optgroups[0].label).toBe("Miền Bắc (12 Tỉnh/TP)");
-    expect(optgroups[1].label).toBe("Miền Trung & Tây Nguyên (10 Tỉnh/TP)");
-    expect(optgroups[2].label).toBe("Miền Nam (12 Tỉnh/TP)");
+    // Kiểm tra có option mặc định Bắc Ninh
+    expect(screen.getByText("Tất cả địa bàn (Bắc Ninh)")).toBeDefined();
   });
 
   it("supports searchable multi-select province combobox with checkboxes (TASK-05-CR144)", async () => {
@@ -270,24 +263,24 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
     const searchInput = screen.getByTestId("province-search-input");
     expect(searchInput).toBeDefined();
 
-    // 3. Tích chọn checkbox Hà Nội (HN) và Đà Nẵng (DN)
-    const hnCheckbox = screen.getByTestId("province-checkbox-HN");
+    // 3. Tích chọn checkbox BN-VSIP và DN
+    const hnCheckbox = screen.getByTestId("province-checkbox-BN-VSIP");
     const dnCheckbox = screen.getByTestId("province-checkbox-DN");
     fireEvent.click(hnCheckbox);
     fireEvent.click(dnCheckbox);
 
     // 4. Trigger hiển thị số lượng đã chọn
-    expect(screen.getByText(/Đã chọn \(2 Tỉnh\/TP\)/i)).toBeDefined();
+    expect(screen.getByText(/Đã chọn \(2 địa bàn\/KCN\)/i)).toBeDefined();
 
-    // 5. Active chips xuất hiện cho cả 2 tỉnh
+    // 5. Active chips xuất hiện cho cả 2 địa bàn
     await waitFor(() => {
-      expect(screen.getByText(/Địa bàn: Sở KH&CN TP. Hà Nội/i)).toBeDefined();
-      expect(screen.getByText(/Địa bàn: Sở KH&CN TP. Đà Nẵng/i)).toBeDefined();
+      expect(screen.getByText(/Địa bàn: KCN VSIP Bắc Ninh/i)).toBeDefined();
+      expect(screen.getByText(/Địa bàn: KCN Đà Nẵng/i)).toBeDefined();
     });
 
-    // 6. Nhập từ khóa tìm kiếm lọc danh sách tỉnh
-    fireEvent.change(searchInput, { target: { value: "Hải Phòng" } });
-    expect(screen.getByTestId("province-checkbox-HP")).toBeDefined();
+    // 6. Nhập từ khóa tìm kiếm lọc danh sách địa bàn
+    fireEvent.change(searchInput, { target: { value: "Yên Phong" } });
+    expect(screen.getByTestId("province-checkbox-BN-YP")).toBeDefined();
     expect(screen.queryByTestId("province-checkbox-SG")).toBeNull();
   });
 
@@ -667,7 +660,7 @@ describe("ExpertsDirectoryPage Component (/experts) - Spec Delta v17", () => {
             fullName: "ThS. KS. Phạm Văn C",
             academicRank: "NONE",
             degree: "MASTER",
-            organizationName: "Trung tâm ĐMST",
+            organizationName: "Trung tâm R&D Bắc Ninh",
             expertiseSectors: ["03"],
             masteredTechCodes: [],
             publicationCount: 1,

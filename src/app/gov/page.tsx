@@ -6,8 +6,8 @@ import { DeprecatedRouteNotice } from "@/components/common/deprecated-route-noti
 export default function GovRetiredPage() {
   return (
     <DeprecatedRouteNotice
-      title="Cổng Công Vụ cấp Sở KH&CN đã ngừng vận hành (410 Gone)"
-      description="Phân hệ /gov/* đã được gỡ bỏ theo kiến trúc 3 cấp BACLINK. Vui lòng sử dụng không gian làm việc tương ứng với vai trò của bạn."
+      title="Phân hệ cũ đã ngừng vận hành (410 Gone)"
+      description="Theo kiến trúc phân quyền 3 cấp của Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK), đường dẫn này đã được gỡ bỏ. Vui lòng sử dụng không gian làm việc tương ứng với vai trò của bạn."
     />
   );
 }

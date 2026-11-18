@@ -1,5 +1,5 @@
 /**
- * Tiện ích định dạng tiền tệ Triệu / Tỷ VNĐ dùng chung cho sàn NacenTech.
+ * Tiện ích định dạng tiền tệ Triệu / Tỷ VNĐ dùng chung cho cổng BACLINK.
  * Quy đổi:
  * - null / undefined / 0 -> "0 VNĐ" (hoặc "0 Tr" nếu compact, hoặc emptyLabel nếu được cấu hình)
  * - value >= 1000 -> (value / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + (" Tỷ" hoặc " Tỷ VNĐ")

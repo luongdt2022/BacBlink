@@ -89,18 +89,19 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       { role: ROLES.SUPER_ADMIN, expectedName: "Quản trị viên cấp cao", expectedWorkspace: "/admin", tier: 0 },
       { role: ROLES.OPERATOR_ADMIN, expectedName: "Quản trị viên vận hành", expectedWorkspace: "/admin", tier: 0 },
       { role: ROLES.ADMIN, expectedName: "Quản trị viên", expectedWorkspace: "/admin", tier: 0 },
-      { role: ROLES.PROVINCIAL_ADMIN, expectedName: "Quản trị viên cấp tỉnh", expectedWorkspace: "/portal", tier: 1 },
-      { role: ROLES.SECTOR_ADMIN, expectedName: "Quản trị viên ngành", expectedWorkspace: "/portal", tier: 1 },
-      { role: ROLES.CLUSTER_ADMIN, expectedName: "Quản trị viên đơn vị liên kết", expectedWorkspace: "/portal", tier: 1 },
-      { role: ROLES.SELLER, expectedName: "Nhà cung ứng công nghệ", expectedWorkspace: "/portal", tier: 2 },
-      { role: ROLES.BUYER, expectedName: "Bên có nhu cầu công nghệ", expectedWorkspace: "/portal", tier: 2 },
-      { role: ROLES.INNOVATION_ENTITY, expectedName: "Chủ thể đổi mới sáng tạo", expectedWorkspace: "/portal", tier: 2 },
-      { role: ROLES.VERIFIED_EXPERT, expectedName: "Chuyên gia KH&CN đã xác thực", expectedWorkspace: "/portal", tier: 2 },
-      { role: ROLES.EXPERT, expectedName: "Chuyên gia KH&CN", expectedWorkspace: "/portal", tier: 2 },
-      { role: ROLES.PUBLIC_USER, expectedName: "Thành viên công chúng", expectedWorkspace: "/portal", tier: 3 },
+      { role: ROLES.ENTERPRISE, expectedName: "Doanh nghiệp Hội viên", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.PROVINCIAL_ADMIN, expectedName: "Thành viên công chúng", expectedWorkspace: "/portal", tier: 2 },
+      { role: ROLES.SECTOR_ADMIN, expectedName: "Thành viên công chúng", expectedWorkspace: "/portal", tier: 2 },
+      { role: ROLES.CLUSTER_ADMIN, expectedName: "Thành viên công chúng", expectedWorkspace: "/portal", tier: 2 },
+      { role: ROLES.SELLER, expectedName: "Nhà cung ứng công nghệ", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.BUYER, expectedName: "Bên có nhu cầu công nghệ", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.INNOVATION_ENTITY, expectedName: "Doanh nghiệp Hội viên", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.VERIFIED_EXPERT, expectedName: "Cố vấn kỹ thuật đã xác thực", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.EXPERT, expectedName: "Cố vấn kỹ thuật BACLINK", expectedWorkspace: "/portal", tier: 1 },
+      { role: ROLES.PUBLIC_USER, expectedName: "Thành viên công chúng", expectedWorkspace: "/portal", tier: 2 },
     ];
 
-    it("1.1 Đối soát 100% hiển thị tiếng Việt và định tuyến Workspace cho 10+ vai trò", () => {
+    it("1.1 Đối soát 100% hiển thị tiếng Việt và định tuyến Workspace cho 3 cấp vai trò & token tương thích", () => {
       testRoles.forEach(({ role, expectedName, expectedWorkspace }) => {
         expect(getRoleDisplayName(role)).toBe(expectedName);
         expect(getWorkspacePath(role)).toBe(expectedWorkspace);
@@ -109,11 +110,11 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
 
     it("1.2 Hiển thị đúng Role Badge và thông tin người dùng trong Navbar Account Menu", async () => {
       const sampleRoles = [
+        { role: "ENTERPRISE", expectedBadge: "Doanh nghiệp Hội viên" },
         { role: "SELLER", expectedBadge: "Nhà cung ứng công nghệ" },
         { role: "BUYER", expectedBadge: "Bên có nhu cầu công nghệ" },
         { role: "ADMIN", expectedBadge: "Quản trị viên" },
-        { role: "PROVINCIAL_ADMIN", expectedBadge: "Quản trị viên cấp tỉnh" },
-        { role: "EXPERT", expectedBadge: "Chuyên gia KH&CN" },
+        { role: "EXPERT", expectedBadge: "Cố vấn kỹ thuật BACLINK" },
       ];
 
       for (const { role, expectedBadge } of sampleRoles) {
@@ -121,7 +122,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
         localStorage.clear();
         authClient.setSession("token-xyz", {
           id: `usr-${role.toLowerCase()}`,
-          email: `${role.toLowerCase()}@nacentech.gov.vn`,
+          email: `${role.toLowerCase()}@baclink.org.vn`,
           fullName: `Người dùng ${role}`,
           role,
         });
@@ -273,14 +274,14 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
     });
 
     it("3.3 Giữ Active Indicator khi truy cập vào sub-path tương ứng", () => {
-      mockPathname = "/trien-lam/dang-ky-tham-quan";
+      mockPathname = "/tin-tuc/dien-dan-go-global-bac-ninh-2026-ket-noi-chuoi-cung-ung-toan-cau";
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const eventLink = within(mainNav).getByRole("link", { name: /^Sự kiện$/i });
+      const newsLink = within(mainNav).getByRole("link", { name: /^Tin tức$/i });
 
-      expect(eventLink.className).toContain("after:bg-white/40");
-      expect(eventLink.className).not.toContain("after:bg-cyan-400");
+      expect(newsLink.className).toContain("after:bg-white/40");
+      expect(newsLink.className).not.toContain("after:bg-cyan-400");
     });
   });
 
@@ -356,13 +357,12 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
     it("5.1 Hiển thị đầy đủ thông tin chuẩn hóa của Footer tối giản", () => {
       renderWithShell(<Footer />);
 
-      // Thông tin Cơ quan thành lập & Đơn vị vận hành theo chuẩn BACLINK
-      expect(screen.getByText(/Cơ quan thành lập:/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/UBND TỈNH BẮC NINH/i).length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText(/Đơn vị vận hành:/i)).toBeInTheDocument();
+      // Thông tin Đơn vị chủ quản theo chuẩn BACLINK (Owner là BACLINK)
+      expect(screen.getByText(/Đơn vị chủ quản:/i)).toBeInTheDocument();
       expect(screen.getAllByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH \(BACLINK\)/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.queryByText(/Cơ quan thành lập:/i)).not.toBeInTheDocument();
       expect(screen.getByText(/Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP\. Bắc Ninh, Tỉnh Bắc Ninh/i)).toBeInTheDocument();
-      expect(screen.getByText(/Thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
+      expect(screen.getByText(/Hiệp hội thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
 
       // Hotline & Văn phòng Hiệp hội BACLINK
       expect(screen.getByText("Văn phòng Hiệp hội BACLINK")).toBeInTheDocument();
@@ -416,7 +416,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       mockPathname = "/doanh-nghiep-dmst/0101234567";
       render(<AppBreadcrumb />);
 
-      expect(screen.getByRole("link", { name: /Doanh nghiệp ĐMST/i })).toHaveAttribute("href", "/doanh-nghiep-dmst");
+      expect(screen.getByRole("link", { name: /Danh bạ Doanh nghiệp Hội viên/i })).toHaveAttribute("href", "/doanh-nghiep-dmst");
       expect(screen.getByText("0101234567")).toHaveAttribute("aria-current", "page");
     });
 
@@ -436,13 +436,13 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
         "@type": "ListItem",
         position: 1,
         name: "Trang chủ",
-        item: "https://nacentech.gov.vn/",
+        item: "https://baclink.org.vn/",
       });
       expect(jsonLd.itemListElement[1]).toEqual({
         "@type": "ListItem",
         position: 2,
         name: "Không gian làm việc",
-        item: "https://nacentech.gov.vn/portal",
+        item: "https://baclink.org.vn/portal",
       });
       expect(jsonLd.itemListElement[2]).toEqual({
         "@type": "ListItem",

@@ -1,8 +1,8 @@
 export interface SuggestedReceivingUnit {
-  code: string;                  // 'GLOBAL' | 'HN' | 'HP' | 'HCM' | 'DN' ...
-  type: "GLOBAL" | "PROVINCE";   // Thẩm quyền Trung ương / Cấp Sở Tỉnh
-  name: string;                  // Tên hiển thị đầy đủ của cơ quan thẩm định
-  reason: string;                // Căn cứ suy luận (tên viện hoặc địa chỉ cơ quan)
+  code: string;                  // 'GLOBAL' | 'BN' ...
+  type: "GLOBAL" | "PROVINCE";
+  name: string;                  // Tên hiển thị đơn vị tiếp nhận thẩm định BACLINK
+  reason: string;                // Căn cứ suy luận
 }
 
 export interface ParsedCvResult {
@@ -12,16 +12,16 @@ export interface ParsedCvResult {
   birthYear?: number;
   gender?: "Nam" | "Nữ" | "Khác";
   academicDegree?: string;
-  degreeYear?: number;           // [MỚI - BR-EXP-CV-012]: Năm đạt học vị cao nhất
+  degreeYear?: number;
   primaryInstitution?: string;
   workAddress?: string;
   professionalTitle?: string;
   yearsOfExperience?: number;
   bioSummary?: string;
   primaryDomain?: string;
-  matchedSectorCodes?: string[]; // Danh sách mã lĩnh vực TT17 sau khi đối soát
-  rawSectorKeywords?: string[];  // [MỚI - BR-EXP-CV-014]: Từ khóa/chuyên ngành thô bóc tách từ CV
-  suggestedReceivingUnit?: SuggestedReceivingUnit; // [MỚI - BR-EXP-CV-013]: Gợi ý cơ quan tiếp nhận Cấp 2
+  matchedSectorCodes?: string[];
+  rawSectorKeywords?: string[];
+  suggestedReceivingUnit?: SuggestedReceivingUnit;
   specializedKeywords?: string[];
   googleScholarUrl?: string;
   orcidId?: string;
@@ -40,18 +40,44 @@ export interface ParsedCvResult {
   }>;
 }
 
-// Bảng từ điển mở rộng chuyên ngành KH&CN -> Mã TT17 SSOT
+// Bảng từ điển chuyên ngành công nghiệp -> 8 ngành chuẩn BACLINK (IND_*) & mã lịch sử
 export const SECTOR_ALIAS_DICTIONARY: Record<string, string[]> = {
-  LV01: ["công nghệ thông tin", "cntt", "it", "phần mềm", "trí tuệ nhân tạo", "ai", "machine learning", "học máy", "khoa học dữ liệu", "data science", "iot", "internet vạn vật", "an toàn thông tin", "an ninh mạng", "blockchain", "chuỗi khối", "cloud", "điện toán đám mây"],
-  LV02: ["năng lượng sinh học", "năng lượng tái tạo", "điện gió", "điện mặt trời", "pin", "năng lượng mới", "tiết kiệm năng lượng"],
-  LV03: ["công nghệ sinh học", "biotech", "gen", "vi sinh", "công nghệ gen", "tế bào", "lên men", "chế phẩm sinh học"],
-  LV04: ["nông nghiệp công nghệ cao", "nông nghiệp thông minh", "trồng trọt", "chăn nuôi", "thủy sản", "bảo vệ thực vật", "giống cây trồng"],
-  LV05: ["y tế thông minh", "dược phẩm", "thiết bị y tế", "chẩn đoán hình ảnh", "vắc xin", "dược liệu", "cảm biến y sinh"],
-  LV06: ["môi trường", "xử lý nước thải", "xử lý khí thải", "tái chế", "chất thải rắn", "biến đổi khí hậu", "kinh tế tuần hoàn"],
-  LV07: ["tự động hóa", "robot", "robotic", "cơ điện tử", "mechatronics", "điều khiển tự động", "chế tạo máy", "cơ khí chính xác", "đo lường điều khiển"],
-  LV08: ["vật liệu mới", "vật liệu tiên tiến", "vật liệu bán dẫn", "bán dẫn", "semiconductor", "nano", "vật liệu nano", "quang điện tử", "laser", "optoelectronics", "vi điện tử", "microelectronics", "chip"],
-  LV09: ["hàng không", "vũ trụ", "đô thị thông minh", "giao thông thông minh", "gis", "viễn thám", "drone", "uav"],
-  LV17: ["khoa học công nghệ", "đổi mới sáng tạo", "quản lý công nghệ", "chuyển giao công nghệ", "sở hữu trí tuệ", "chính sách khcn"]
+  IND_ELEC: [
+    "điện tử", "bán dẫn", "semiconductor", "vi điện tử", "microelectronics", "chip",
+    "quang điện tử", "laser", "optoelectronics", "bo mạch", "pcb", "smt", "esd", "rf", "thiết bị điện"
+  ],
+  IND_MECH: [
+    "cơ khí chính xác", "khuôn mẫu", "chế tạo máy", "cnc", "gia công kim loại", "đúc kim loại",
+    "gá đặt", "jig", "nhiệt luyện", "hàn công nghiệp", "cơ khí"
+  ],
+  IND_AUTO: [
+    "tự động hóa", "robot", "robotic", "cơ điện tử", "mechatronics", "điều khiển tự động",
+    "plc", "scada", "smart factory", "nhà máy thông minh", "đo lường điều khiển", "thị giác máy"
+  ],
+  IND_PLAS: [
+    "nhựa kỹ thuật", "ép phun", "bao bì công nghiệp", "hóa chất công nghiệp", "polymer",
+    "cao su kỹ thuật", "xi mạ", "sơn phủ bề mặt"
+  ],
+  IND_MAT: [
+    "vật liệu mới", "vật liệu tiên tiến", "vật liệu bán dẫn", "nano", "vật liệu nano",
+    "composite", "hợp kim", "công nghiệp hỗ trợ", "linh kiện phụ trợ"
+  ],
+  IND_IT: [
+    "công nghệ thông tin", "cntt", "it", "phần mềm", "trí tuệ nhân tạo", "ai",
+    "machine learning", "học máy", "khoa học dữ liệu", "data science", "iot",
+    "internet vạn vật", "an toàn thông tin", "an ninh mạng", "erp", "mes", "cloud"
+  ],
+  IND_GREEN: [
+    "công nghiệp xanh", "năng lượng sạch", "năng lượng tái tạo", "điện mặt trời", "esg",
+    "kiểm kê khí nhà kính", "môi trường", "xử lý nước thải", "xử lý khí thải", "kinh tế tuần hoàn", "tiết kiệm năng lượng"
+  ],
+  IND_LOG: [
+    "logistics", "kho vận", "chuỗi cung ứng", "supply chain", "wms", "kho thông minh",
+    "vận tải công nghiệp", "agv"
+  ],
+  LV01: ["công nghệ thông tin", "cntt", "it", "phần mềm", "trí tuệ nhân tạo", "ai", "machine learning", "học máy", "iot"],
+  LV07: ["tự động hóa", "robot", "cơ điện tử", "chế tạo máy", "cơ khí chính xác", "đo lường điều khiển"],
+  LV08: ["vật liệu mới", "bán dẫn", "semiconductor", "nano", "quang điện tử", "laser", "vi điện tử", "chip"],
 };
 
 export function normalizeString(str: string): string {
@@ -71,7 +97,7 @@ export function calculateTokenSimilarity(s1: string, s2: string): number {
   for (const token of t1) {
     if (t2.has(token)) intersect++;
   }
-  return (2 * intersect) / (t1.size + t2.size); // Dice coefficient
+  return (2 * intersect) / (t1.size + t2.size);
 }
 
 export function matchSectors(
@@ -115,142 +141,46 @@ export function matchSectors(
   const matchedList = Array.from(matchedCodes);
   const resolvedPrimary = matchedList[0];
 
-  // Tầng 4: Zero Data Loss Fallback - Không xóa trắng nếu không match code
-  // Giữ nguyên rawSectorKeywords để UI hiển thị các tag gợi ý chuyên gia bấm chọn
   return {
     primaryDomain: resolvedPrimary || (aiDomain && activeCodes.has(aiDomain) ? aiDomain : undefined),
     matchedSectorCodes: matchedList,
-    rawSectorKeywords: rawKeywords.length > 0 ? rawKeywords : (allInputs.length > 0 ? allInputs : [])
+    rawSectorKeywords: rawKeywords.length > 0 ? rawKeywords : (allInputs.length > 0 ? allInputs : []),
   };
 }
 
+/**
+ * Suy luận đơn vị tiếp nhận thẩm định theo kiến trúc 3 cấp 1-bước của Hiệp hội BACLINK (GLOBAL)
+ */
 export function inferReceivingUnit(
   primaryInstitution?: string,
   workAddress?: string
 ): SuggestedReceivingUnit {
   const text = normalizeString(`${primaryInstitution || ""} ${workAddress || ""}`);
 
-  // 1. Kiểm tra Khối Trung ương / Bộ KH&CN -> 'GLOBAL'
-  const globalKeywords = [
-    "vien ung dung cong nghe",
-    "nacentech",
-    "bo khoa hoc va cong nghe",
-    "bo kh&cn",
-    "bo khcn",
-    "vien han lam",
-    "dai hoc quoc gia",
-    "vien nang luong nguyen tu",
-    "cuc so huu tri tue",
-    "trung tam doi moi sang tao quoc gia",
-    "nic"
-  ];
-  for (const kw of globalKeywords) {
-    if (text.includes(kw)) {
-      return {
-        code: "GLOBAL",
-        type: "GLOBAL",
-        name: "Hội đồng KH&CN NacenTech / Trung ương",
-        reason: "Thuộc Viện/Bộ/Cơ quan Nghiên cứu Trung ương"
-      };
-    }
-  }
-
-  // 2. Kiểm tra Địa bàn Tỉnh/Thành phố trực thuộc
-  if (text.includes("ha noi") || text.includes("thanh xuan") || text.includes("cau giay") || text.includes("hoan kiem") || text.includes("hai ba trung") || text.includes("dong da") || text.includes("ba dinh")) {
+  if (
+    text.includes("bac ninh") ||
+    text.includes("tu son") ||
+    text.includes("yen phong") ||
+    text.includes("que vo") ||
+    text.includes("vsip") ||
+    text.includes("tien son") ||
+    text.includes("thuan thanh") ||
+    text.includes("gia binh") ||
+    text.includes("luong tai")
+  ) {
     return {
-      code: "HN",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ TP. Hà Nội",
-      reason: "Địa chỉ cơ quan công tác tại TP. Hà Nội"
-    };
-  }
-  if (text.includes("hai phong") || text.includes("hong bang") || text.includes("ngo quyen") || text.includes("le chan")) {
-    return {
-      code: "HP",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ TP. Hải Phòng",
-      reason: "Địa chỉ cơ quan công tác tại TP. Hải Phòng"
-    };
-  }
-  if (text.includes("quang ninh") || text.includes("ha long") || text.includes("cam pha")) {
-    return {
-      code: "QN",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Quảng Ninh",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Quảng Ninh"
-    };
-  }
-  if (text.includes("bac ninh") || text.includes("tu son")) {
-    return {
-      code: "BN",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Bắc Ninh",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Bắc Ninh"
-    };
-  }
-  if (text.includes("thai nguyen") || text.includes("song cong")) {
-    return {
-      code: "TN",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Thái Nguyên",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Thái Nguyên"
-    };
-  }
-  if (text.includes("hai duong") || text.includes("chi linh")) {
-    return {
-      code: "HD",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Hải Dương",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Hải Dương"
-    };
-  }
-  if (text.includes("vinh phuc") || text.includes("vinh yen")) {
-    return {
-      code: "VP",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Vĩnh Phúc",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Vĩnh Phúc"
-    };
-  }
-  if (text.includes("nam dinh")) {
-    return {
-      code: "ND",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Nam Định",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Nam Định"
-    };
-  }
-  if (text.includes("thai binh")) {
-    return {
-      code: "TB",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ tỉnh Thái Bình",
-      reason: "Địa chỉ cơ quan công tác tại tỉnh Thái Bình"
-    };
-  }
-  if (text.includes("ho chi minh") || text.includes("tp.hcm") || text.includes("tphcm") || text.includes("sai gon") || text.includes("thu duc") || text.includes("quan 1") || text.includes("quan 3")) {
-    return {
-      code: "HCM",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ TP. Hồ Chí Minh",
-      reason: "Địa chỉ cơ quan công tác tại TP. Hồ Chí Minh"
-    };
-  }
-  if (text.includes("da nang") || text.includes("hai chau") || text.includes("thanh khe") || text.includes("son tra")) {
-    return {
-      code: "DN",
-      type: "PROVINCE",
-      name: "Sở Khoa học và Công nghệ TP. Đà Nẵng",
-      reason: "Địa chỉ cơ quan công tác tại TP. Đà Nẵng"
+      code: "GLOBAL",
+      type: "GLOBAL",
+      name: "Ban Quản trị & Ban Cố vấn Kỹ thuật BACLINK (Bắc Ninh)",
+      reason: "Đơn vị hoạt động tại địa bàn công nghiệp tỉnh Bắc Ninh — Phê duyệt tập trung 1 cấp",
     };
   }
 
-  // Mặc định fallback về GLOBAL nếu là cơ quan cấp cao, hoặc để trống lựa chọn, TUYỆT ĐỐI KHÔNG gán cứng 'HP'
   return {
     code: "GLOBAL",
     type: "GLOBAL",
-    name: "Hội đồng KH&CN NacenTech / Trung ương",
-    reason: "Đơn vị tiếp nhận thẩm định mặc định toàn quốc"
+    name: "Ban Quản trị & Ban Cố vấn Kỹ thuật BACLINK",
+    reason: "Phê duyệt tập trung 1 cấp tại Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh",
   };
 }
 
@@ -258,10 +188,10 @@ export const DEMO_PLACEHOLDER_NAMES = [
   "Dang Lanm",
   "Người dùng",
   "Chuyên gia",
-  "Chuyên gia NacenTech",
+  "Chuyên gia mẫu",
   "User",
   "Expert Demo",
-  "Demo"
+  "Demo",
 ];
 
 export const shouldOverrideFullName = (currentVal: string): boolean => {

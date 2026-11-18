@@ -165,7 +165,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
 
     // Popover opens
     await waitFor(() => {
-      expect(screen.getByText("Lọc theo ngành TT17")).toBeInTheDocument();
+      expect(screen.getByText("Lọc theo ngành công nghiệp")).toBeInTheDocument();
     });
   });
 
@@ -191,7 +191,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     // Verify Dossier Detail Modal opens
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
-      expect(screen.getByText("Hồ Sơ Chuyên Gia KH&CN: TS. Nguyễn Minh Triết")).toBeInTheDocument();
+      expect(screen.getByText("Hồ Sơ Chuyên Gia Cố Vấn: TS. Nguyễn Minh Triết")).toBeInTheDocument();
       expect(screen.getAllByText("Đại học Quốc gia Hà Nội").length).toBeGreaterThan(0);
       expect(screen.getByText(/Chuyên gia AI và xử lý ngôn ngữ tự nhiên/i)).toBeInTheDocument();
       expect(screen.getByRole("button", { name: /Tiến Hành Phê Duyệt Hồ Sơ/i })).toBeInTheDocument();
@@ -204,7 +204,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     // Verify Review Modal opens
     await waitFor(() => {
       expect(screen.getByText("Thẩm Định Hồ Sơ Chuyên Gia: TS. Nguyễn Minh Triết")).toBeInTheDocument();
-      expect(screen.getByText(/Quyết Định Phê Duyệt Của Lãnh Đạo Sở KH&CN/i)).toBeInTheDocument();
+      expect(screen.getByText(/Quyết Định Phê Duyệt Của Ban Thư Ký BACLINK/i)).toBeInTheDocument();
     });
   });
 
@@ -359,7 +359,7 @@ describe("T082 [FE-GovApprovalQueue] GovApprovalQueue 5-Tab Workspace Verificati
     await waitFor(() => {
       expect(screen.getByText(/Phương Pháp Luận Cấp Độ Sẵn Sàng Công Nghệ/i)).toBeInTheDocument();
       expect(screen.getAllByText(/NASA TRL/i).length).toBeGreaterThan(0);
-      expect(screen.getByText(/Căn cứ Pháp lý & Khung Tiêu Chuẩn Quốc Tế/i)).toBeInTheDocument();
+      expect(screen.getByText(/Khung Tiêu Chuẩn Kỹ Thuật Công Nghiệp Quốc Tế/i)).toBeInTheDocument();
     });
   });
 

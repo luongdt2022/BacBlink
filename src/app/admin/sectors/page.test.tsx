@@ -3,13 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import AdminSectorsPage from "./page";
 import * as masterDataClient from "@/lib/master-data-client";
 
-vi.mock("@/components/admin/admin-nav", () => ({
-  AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
-}));
-
 const rows = [
-  { code: "IND_ELEC", name: "Điện tử, Bán dẫn & Thiết bị điện", isActive: true },
-  { code: "IND_MECH", name: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy", isActive: false },
+  { id: "sec-1", code: "IND_ELEC", name: "Điện tử, Bán dẫn & Thiết bị điện", vsicCode: "C26", isActive: true },
+  { id: "sec-2", code: "IND_MECH", name: "Cơ khí chính xác, Khuôn mẫu & Chế tạo máy", vsicCode: "C28", isActive: true },
+  { id: "sec-legacy", code: "LV01", name: "Lĩnh vực cũ đã ngừng", isActive: false },
 ];
 
 const locationRows = [
@@ -19,7 +16,7 @@ const locationRows = [
 
 vi.mock("@/lib/auth-client", () => ({ authClient: { getAuthHeaders: () => ({}) } }));
 
-describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-003)", () => {
+describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-007)", () => {
   beforeEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -43,11 +40,27 @@ describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-003)", 
     cleanup();
   });
 
-  it("renders runtime IND_* sector names and active count", async () => {
-    render(<AdminSectorsPage />);
+  it("renders only active IND_* sectors, VSIC column, and only 3 BACLINK tabs (purges tt17/tree/exhibitions & LV*)", async () => {
+    const { container } = render(<AdminSectorsPage />);
     expect(await screen.findByText("Điện tử, Bán dẫn & Thiết bị điện")).toBeInTheDocument();
     expect(screen.getByText("Cơ khí chính xác, Khuôn mẫu & Chế tạo máy")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /1 Ngành hoạt động/ })).toBeInTheDocument();
+    expect(screen.queryByText("Lĩnh vực cũ đã ngừng")).not.toBeInTheDocument();
+    expect(screen.queryByText("LV01")).not.toBeInTheDocument();
+
+    // Column header check
+    expect(screen.getByText("Mã VSIC / Phân ngành")).toBeInTheDocument();
+
+    // Only 3 BACLINK tabs exist
+    expect(screen.getByRole("button", { name: /Ngành công nghiệp BACLINK \(2\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Địa bàn & KCN Bắc Ninh/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ma trận Năng lực & TRL/i })).toBeInTheDocument();
+
+    expect(screen.queryByRole("button", { name: /Phân Ngành TT17/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Cây Taxonomy/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Sự Kiện Kết Nối/i })).not.toBeInTheDocument();
+
+    const text = container.textContent || "";
+    expect(text).not.toMatch(/TT17|Thông tư 17|Bộ KH&CN|34 tỉnh/i);
   });
 
   it("filters runtime IND_* names", async () => {
@@ -115,7 +128,7 @@ describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-003)", 
             ok: true,
             json: async () => ({
               success: true,
-              data: { id: "sec-new", code: "IND_SEMI", name: "Công nghiệp Bán dẫn", isActive: true },
+              data: { id: "sec-new", code: "IND_SEMI", name: "Công nghiệp Bán dẫn", vsicCode: "C261", isActive: true },
             }),
           };
         }
@@ -145,7 +158,7 @@ describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-003)", 
   it("opens safe confirmation dialog when deactivating sector, sends DELETE, and invalidates cache", async () => {
     const invalidateSpy = vi.spyOn(masterDataClient, "invalidateSectorsCache");
     const rowsWithId = [
-      { id: "sec-elec", code: "IND_ELEC", name: "Điện tử, Bán dẫn & Thiết bị điện", isActive: true, filterRuleCount: 3, tt17Code: "C26" },
+      { id: "sec-elec", code: "IND_ELEC", name: "Điện tử, Bán dẫn & Thiết bị điện", isActive: true, filterRuleCount: 3, vsicCode: "C26" },
     ];
     const fetchSpy = vi.fn(async (url: string, opts?: RequestInit) => {
       if (opts?.method === "DELETE") return { ok: true, json: async () => ({ success: true }) };
@@ -182,7 +195,7 @@ describe("Admin runtime sectors & Bac Ninh locations (BACLINK CR-BACLINK-003)", 
     render(<AdminSectorsPage />);
     await screen.findByText("Điện tử, Bán dẫn & Thiết bị điện");
 
-    fireEvent.click(screen.getByRole("button", { name: /Địa Bàn & KCN Bắc Ninh/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Địa bàn & KCN Bắc Ninh/i }));
     expect(await screen.findByText("TP. Bắc Ninh")).toBeInTheDocument();
     expect(screen.getByText("KCN VSIP Bắc Ninh")).toBeInTheDocument();
 

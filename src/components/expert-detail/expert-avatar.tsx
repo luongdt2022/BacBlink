@@ -47,22 +47,22 @@ export function resolveExpertAvatarUrl(
   const name = fullName.toLowerCase();
   const code = (expertCode || "").toUpperCase().trim();
 
-  if (code === "CG-NACEN-DEMO001" || name.includes("trần đình thắng")) {
+  if (code === "CG-BL-001" || code === "CG-NACEN-DEMO001" || name.includes("trần đình thắng")) {
     return "/images/experts/tran-dinh-thang.jpg";
   }
-  if (code === "CG-NACEN-0004" || name.includes("đỗ thị thu hà")) {
+  if (code === "CG-BL-002" || code === "CG-NACEN-0004" || name.includes("đỗ thị thu hà")) {
     return "/images/experts/do-thi-thu-ha.jpg";
   }
-  if (code === "CG-NACEN-0002" || name.includes("lê quốc hùng")) {
+  if (code === "CG-BL-003" || code === "CG-NACEN-0002" || name.includes("lê quốc hùng")) {
     return "/images/experts/le-quoc-hung.jpg";
   }
   if (code === "CG-NACEN-DEMOIT01" || name.includes("nguyễn minh an")) {
     return "/images/experts/nguyen-minh-an.jpg";
   }
-  if (code === "CG-NACEN-0005" || name.includes("vũ mạnh cường")) {
+  if (code === "CG-BL-004" || code === "CG-NACEN-0005" || name.includes("vũ mạnh cường")) {
     return "/images/experts/vu-manh-cuong.jpg";
   }
-  if (code === "CG-NACEN-0003" || name.includes("hoàng minh trí")) {
+  if (code === "CG-BL-005" || code === "CG-NACEN-0003" || name.includes("hoàng minh trí")) {
     return "/images/experts/hoang-minh-tri.jpg";
   }
 

@@ -42,8 +42,7 @@ interface NavItem {
 }
 
 /** Tự động nhận diện nhãn hồ sơ tương thích động theo loại hình chủ thể & role */
-function resolveProfileLabel(role?: string | null, subjectType?: string | null, orgName?: string | null): string {
-  const upperRole = (role ?? "").toUpperCase();
+function resolveProfileLabel(_role?: string | null, subjectType?: string | null, orgName?: string | null): string {
   const st = (subjectType ?? "").toLowerCase();
   const on = (orgName ?? "").toLowerCase();
 
@@ -54,24 +53,13 @@ function resolveProfileLabel(role?: string | null, subjectType?: string | null, 
   if (st.includes("htx") || st.includes("hợp tác xã")) {
     return "Hồ sơ Hợp tác xã";
   }
-  if (st.includes("đmst") || st.includes("đổi mới sáng tạo")) {
-    return "Hồ sơ Doanh nghiệp ĐMST";
-  }
 
   // 2. Nhận diện theo tên đơn vị
   if (on.includes("viện") || on.includes("trường") || on.includes("học viện") || on.includes("đại học")) {
     return "Hồ sơ Viện / Trường";
   }
 
-  // 3. Nhận diện theo vai trò (Role)
-  if (upperRole === "CLUSTER_ADMIN") {
-    return "Hồ sơ Viện / Trường";
-  }
-  if (upperRole === "INNOVATION_ENTITY") {
-    return "Hồ sơ Doanh nghiệp ĐMST";
-  }
-
-  // Mặc định cho Doanh nghiệp (BUYER / SELLER)
+  // Mặc định cho Doanh nghiệp Hội viên (ENTERPRISE / BUYER / SELLER / INNOVATION_ENTITY)
   return "Hồ sơ Doanh nghiệp";
 }
 
@@ -110,22 +98,12 @@ const buyerNavItems: NavItem[] = [
     badgeType: "new",
   },
 
-  // Khối 3: Chẩn đoán & Năng lực
-  {
-    href: "/khao-sat-nhu-cau",
-    label: "Khảo sát Nhu cầu (TNI)",
-    icon: ClipboardList,
-    section: "Chẩn đoán & Hồ sơ",
-  },
-  {
-    href: "/assessments/tt17",
-    label: "Đánh giá Năng lực TT17",
-    icon: FileCheck,
-  },
+  // Khối 3: Hồ sơ
   {
     href: "/portal/enterprise/profile",
     label: "Hồ sơ Doanh nghiệp",
     icon: Building2,
+    section: "Hồ sơ Hội viên",
   },
 ];
 
@@ -147,9 +125,8 @@ const sellerNavItems: NavItem[] = [
     badgeType: "new",
   },
 
-  // Khối 3: Chẩn đoán & Hồ sơ
-  { href: "/assessments/tt17", label: "Đánh giá Năng lực TT17", icon: FileCheck, section: "Chẩn đoán & Hồ sơ" },
-  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2 },
+  // Khối 3: Hồ sơ
+  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2, section: "Hồ sơ Hội viên" },
 ];
 
 // 3. Chuyên Gia KH&CN (EXPERT / VERIFIED_EXPERT) - Thuần chất LLKH, tư vấn & đồng hành
@@ -180,16 +157,15 @@ const expertNavItems: NavItem[] = [
   { href: "/portal/expert/account", label: "Cài đặt & Tài khoản", icon: ShieldCheck, key: "account" },
 ];
 
-// 4. Doanh Nghiệp ĐMST (INNOVATION_ENTITY) - Phân tách 2 khối Cung-Cầu & Năng lực
+// 4. Doanh nghiệp Hội viên (INNOVATION_ENTITY) - Phân tách 2 khối Cung-Cầu & Hồ sơ Hội viên
 const innovationEntityNavItems: NavItem[] = [
-  { href: "/portal", label: "Tổng quan Hoạt động ĐMST", icon: LayoutDashboard, section: "Hoạt động Cung – Cầu" },
+  { href: "/portal", label: "Tổng quan Giao thương", icon: LayoutDashboard, section: "Hoạt động Cung – Cầu" },
   { href: "/portal/buyer/demands", label: "Bài toán Cần Mua", icon: ShoppingBag },
   { href: "/portal/buyer/consultations", label: "Tư Vấn Chuyên Gia", icon: Inbox },
   { href: "/portal/seller/technologies", label: "Công nghệ Chào Bán", icon: Cpu },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
   { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác", icon: Kanban },
-  { href: "/assessments/tt17", label: "Tự Đánh giá TT17", icon: FileCheck, section: "Năng lực & Hồ sơ" },
-  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp ĐMST", icon: Building2 },
+  { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2, section: "Hồ sơ Hội viên" },
 ];
 
 // 5. Thành Viên Đại Chúng (PUBLIC_USER / USER) - Khám phá và hub đăng ký nâng hạng (CR-TASK-03-DELTA-01: T-03.DEL-03, CR-TASK-03-DELTA-02)
@@ -380,8 +356,8 @@ function PortalLayoutInner({ children }: { children: React.ReactNode }) {
     workspaceBadge = "Nhà Cung Ứng Công Nghệ";
   } else if (isInnovationEntity) {
     navItems = innovationEntityNavItems;
-    workspaceTitle = "Workspace Đổi Mới Sáng Tạo";
-    workspaceBadge = "Doanh Nghiệp ĐMST";
+    workspaceTitle = "Workspace Doanh Nghiệp Hội Viên";
+    workspaceBadge = "Doanh nghiệp Hội viên";
   } else if (isAdmin) {
     navItems = adminPortalNavItems;
     workspaceTitle = "Góc Nhìn Giám Sát Thực Địa";
@@ -570,7 +546,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <RoleGuard
       allowedRoles={PORTAL_ALLOWED_ROLES}
-      portalName="Cổng Không Gian Thị Trường & Đổi Mới Sáng Tạo"
+      portalName="Cổng Giao Thương Hiệp Hội BACLINK"
     >
       <React.Suspense fallback={<PortalShellSuspenseFallback />}>
         <PortalLayoutInner>{children}</PortalLayoutInner>

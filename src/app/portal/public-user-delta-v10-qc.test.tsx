@@ -86,12 +86,12 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       // Hero banner greetings & identity
       expect(screen.getByText("Xin chào, Lê Hải Nam!")).toBeInTheDocument();
       expect(screen.getByText("Thành viên Khám phá / Bên Mua tiềm năng")).toBeInTheDocument();
-      expect(screen.getByText("Khám phá công nghệ và kết nối giải pháp đổi mới sáng tạo.")).toBeInTheDocument();
+      expect(screen.getByText("Khám phá công nghệ và kết nối chuỗi cung ứng công nghiệp Bắc Ninh.")).toBeInTheDocument();
 
-      // Button 1: [+ Gửi Nhu cầu Công nghệ mới] -> /khao-sat-nhu-cau
+      // Button 1: [+ Gửi Nhu cầu Công nghệ mới] -> /portal/buyer/demands
       const sendDemandBtn = screen.getByRole("link", { name: /\+ Gửi Nhu cầu Công nghệ mới/i });
       expect(sendDemandBtn).toBeInTheDocument();
-      expect(sendDemandBtn).toHaveAttribute("href", "/khao-sat-nhu-cau");
+      expect(sendDemandBtn).toHaveAttribute("href", "/portal/buyer/demands");
       expect(sendDemandBtn.className).toContain("min-h-11"); // WCAG Touch Target >= 44px
 
       // Button 2: [Khám phá Sàn Công nghệ] -> /chao-ban-cong-nghe
@@ -134,7 +134,7 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       expect(screen.getByText("Doanh nghiệp Mua")).toBeInTheDocument();
       expect(screen.getByText("Nhà Cung ứng")).toBeInTheDocument();
       expect(screen.getByText("Chuyên gia KH&CN")).toBeInTheDocument();
-      expect(screen.getByText("DN Đổi mới sáng tạo")).toBeInTheDocument();
+      expect(screen.getByText("Doanh nghiệp Hội viên")).toBeInTheDocument();
 
       // CTA button
       const upgradeBtn = screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i });
@@ -220,7 +220,7 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       // Verify all required 6 form fields exist
       expect(screen.getByPlaceholderText("Nguyễn Văn")).toBeInTheDocument(); // lastName
       expect(screen.getByPlaceholderText("An")).toBeInTheDocument(); // firstName
-      expect(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn")).toBeInTheDocument(); // email
+      expect(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn")).toBeInTheDocument(); // email
       expect(screen.getByPlaceholderText("0912345678")).toBeInTheDocument(); // phone
       const passwords = screen.getAllByPlaceholderText("••••••••");
       expect(passwords).toHaveLength(2); // password & confirmPassword
@@ -238,7 +238,7 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
 
       fireEvent.change(screen.getByPlaceholderText("Nguyễn Văn"), { target: { value: "Trần" } });
       fireEvent.change(screen.getByPlaceholderText("An"), { target: { value: "Bảo" } });
-      fireEvent.change(screen.getByPlaceholderText("nguyenvanan@institute.gov.vn"), { target: { value: "bao@test.vn" } });
+      fireEvent.change(screen.getByPlaceholderText("nguyenvanan@doanhnghiep.vn"), { target: { value: "bao@test.vn" } });
       const passwords = screen.getAllByPlaceholderText("••••••••");
       fireEvent.change(passwords[0], { target: { value: "SecureP@ss2026" } });
       fireEvent.change(passwords[1], { target: { value: "SecureP@ss2026" } });

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import UserGuidePage from "./page";
+import { GUIDE_MODULES, GUIDE_SCREENS } from "./guide-data";
 
 const push = vi.fn();
 
@@ -25,7 +26,7 @@ vi.mock("@/components/common/toast", () => ({
   useToast: () => ({ info: vi.fn() }),
 }));
 
-describe("UserGuidePage", () => {
+describe("UserGuidePage (BACLINK 3-Tier Slim Edition)", () => {
   beforeEach(() => {
     push.mockReset();
     window.location.hash = "";
@@ -33,28 +34,57 @@ describe("UserGuidePage", () => {
 
   afterEach(cleanup);
 
-  it("renders page title and role navigation buttons", () => {
+  it("renders page title, Màn Hình Chức Năng badge, and 3-tier role navigation buttons without survey or GOV remnants", () => {
     render(<UserGuidePage />);
 
     expect(
       screen.getByText("Cẩm Nang Hướng Dẫn Sử Dụng Chi Tiết Cổng Thông Tin BACLINK")
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/11 Phân Hệ/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/3 Cấp Phân Quyền/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(new RegExp(`${GUIDE_MODULES.length} Phân Hệ · ${GUIDE_SCREENS.length} Màn Hình Chức Năng`, "i"))
+    ).toBeInTheDocument();
+    expect(screen.getByText(/3 Cấp Phân Quyền BACLINK/i)).toBeInTheDocument();
 
     // Role buttons
     expect(
-      screen.getByRole("button", { name: `Tất cả (${61})` })
+      screen.getByRole("button", { name: `Tất cả (${GUIDE_SCREENS.length})` })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Bên mua công nghệ/i })
+      screen.getByRole("button", { name: /Quản trị Hiệp hội \(Admin\)/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Bên chào bán/i })
+      screen.getByRole("button", { name: /Doanh nghiệp Hội viên/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Chuyên gia KH&CN/i })
+      screen.getByRole("button", { name: /Bên Mua & Đặt hàng/i })
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Bên Bán & Cung ứng/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Ban Cố vấn Kỹ thuật/i })
+    ).toBeInTheDocument();
+
+    // Must NOT contain legacy survey filter or TT17 / GOV remnants
+    expect(screen.queryByText(/Các Loại Phiếu Yêu Cầu & Khảo Sát/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Phiếu Nghiệp Vụ/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/TT17/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/26 Tiêu Chí/i)).not.toBeInTheDocument();
+
+    // Ensure no screen routes point to retired paths
+    const forbiddenPrefixes = [
+      "/assessments",
+      "/khao-sat-",
+      "/dieu-tra-",
+      "/gov",
+      "/admin/org-tree",
+      "/admin/assessments",
+    ];
+    for (const s of GUIDE_SCREENS) {
+      for (const prefix of forbiddenPrefixes) {
+        expect(s.route.startsWith(prefix)).toBe(false);
+      }
+    }
   });
 
   it("renders action buttons including PDF download link and Zen mode toggle", () => {
@@ -82,25 +112,25 @@ describe("UserGuidePage", () => {
   it("changes role filter and updates URL hash", () => {
     render(<UserGuidePage />);
 
-    const buyerBtn = screen.getByRole("button", { name: /Bên mua công nghệ/i });
+    const buyerBtn = screen.getByRole("button", { name: /Bên Mua & Đặt hàng/i });
     fireEvent.click(buyerBtn);
 
     expect(buyerBtn).toHaveClass("bg-brand-700");
   });
 
-  it("filters and displays newly added expert screens when EXPERT role is selected", () => {
+  it("filters and displays advisor screens when EXPERT role is selected", () => {
     render(<UserGuidePage />);
 
-    const expertBtn = screen.getByRole("button", { name: /Chuyên gia KH&CN/i });
+    const expertBtn = screen.getByRole("button", { name: /Ban Cố vấn Kỹ thuật/i });
     fireEvent.click(expertBtn);
 
     expect(expertBtn).toHaveClass("bg-brand-700");
-    expect(screen.getByText(/Vai trò: Chuyên gia KH&CN/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vai trò: Ban Cố vấn Kỹ thuật/i)).toBeInTheDocument();
     expect(
-      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Phiếu Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
+      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
     ).toBeInTheDocument();
     expect(
-      screen.getByText("Quản Lý Đề Tài KH&CN & Dự Án Tư Vấn Chuyển Giao Công Nghệ")
+      screen.getByText("Quản Lý Dự Án Tư Vấn Cải Tiến Nhà Máy & Chuyển Giao Công Nghệ")
     ).toBeInTheDocument();
     expect(
       screen.getByText("Xem Trước Thẻ Chuyên Gia Zalo Mini App Danh Thiếp Số")
@@ -116,7 +146,7 @@ describe("UserGuidePage", () => {
     fireEvent.change(searchInput, { target: { value: "consultations" } });
 
     expect(
-      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Phiếu Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
+      screen.getByText("Sổ Tay Quản Lý Lịch Hẹn & Yêu Cầu Tư Vấn 1-1 Doanh Nghiệp")
     ).toBeInTheDocument();
   });
 
@@ -129,26 +159,5 @@ describe("UserGuidePage", () => {
     const cardsModeBtn = screen.getByRole("button", { name: /Thẻ UI\/UX/i });
     expect(cardsModeBtn).toBeInTheDocument();
     fireEvent.click(cardsModeBtn);
-  });
-
-  it("filters technology assessment screens and request forms when special filters are clicked", () => {
-    render(<UserGuidePage />);
-
-    const assessFilterBtn = screen.getByRole("button", { name: /Đánh Giá Công Nghệ/i });
-    fireEvent.click(assessFilterBtn);
-
-    expect(
-      screen.getByText("Trung Tâm Đánh Giá Trình Độ & Năng Lực Công Nghệ Theo TT17/2019/TT-BKHCN")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Wizard Kê Khai 26 Tiêu Chí Đánh Giá Trình Độ Công Nghệ 5 Nhóm T-E-O-R-I")
-    ).toBeInTheDocument();
-
-    const requestFormsBtn = screen.getByRole("button", { name: /Phiếu Yêu Cầu/i });
-    fireEvent.click(requestFormsBtn);
-
-    expect(
-      screen.getByText(/Phiếu Khảo Sát Sâu Nhu Cầu Đổi Mới Công Nghệ DNNVV/i)
-    ).toBeInTheDocument();
   });
 });

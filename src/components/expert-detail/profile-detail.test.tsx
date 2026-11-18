@@ -11,8 +11,8 @@ vi.mock("next/link", () => ({
 }));
 
 const publicProfile = {
-  expertCode: "CG-NACEN-00000001", fullName: "PGS.TS. Trần Văn Hùng", academicRank: "PGS", degree: "DOCTOR", birthYear: 1978, gender: "male",
-  organizationName: "Viện NacenTech", positionTitle: "Trưởng phòng", publicBio: "Chuyên gia vi mạch.", expertiseSectors: ["01"], masteredTechCodes: ["CN06"], isVerified: true, isAcceptingConsultation: true,
+  expertCode: "CG-BL-001", fullName: "PGS.TS. Trần Văn Hùng", academicRank: "PGS", degree: "DOCTOR", birthYear: 1978, gender: "male",
+  organizationName: "Đại học Bách Khoa Hà Nội", positionTitle: "Trưởng phòng", publicBio: "Chuyên gia vi mạch.", expertiseSectors: ["IND_ELEC"], masteredTechCodes: ["CN06"], isVerified: true, isAcceptingConsultation: true,
   training: [], employment: [], patents: [], researchProjects: [], publications: [], practicalProjects: [], awards: [],
 };
 
@@ -21,10 +21,10 @@ describe("ExpertPublicDetailPage", () => {
 
   it("renders public-only profile and opens the consultation form", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true, data: publicProfile }) }));
-    render(<ExpertPublicDetailPage expertCode="CG-NACEN-00000001" />);
+    render(<ExpertPublicDetailPage expertCode="CG-BL-001" />);
     expect(await screen.findByText("PGS.TS. Trần Văn Hùng")).toBeInTheDocument();
     expect(screen.queryByText(/001080/)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText("Điền phiếu yêu cầu kết nối"));
+    fireEvent.click(screen.getByText("Điền yêu cầu kết nối"));
     expect(screen.getByPlaceholderText("Họ tên người liên hệ")).toBeInTheDocument();
   });
 
@@ -80,7 +80,7 @@ describe("ExpertPublicDetailPage", () => {
       organizationAddress: "144 Xuân Thủy, Cầu Giấy, Hà Nội",
       specializedKeywords: ["Vi mạch số", "FPGA", "ASIC"],
       training: [{ title: "Tiến sĩ Điện tử", subtitle: "ĐH Bách khoa Hà Nội", period: "2008 - 2012" }],
-      employment: [{ title: "Trưởng phòng R&D", subtitle: "Viện NacenTech", period: "2015 - nay" }],
+      employment: [{ title: "Trưởng phòng R&D", subtitle: "Trung tâm R&D Bắc Ninh", period: "2015 - nay" }],
       patents: [{ type: "PATENT", title: "Sáng chế chip xử lý tín hiệu", meta: "VN-12345" }],
       publications: [
         { type: "PUB", title: "Bài báo IEEE 2024" },
@@ -134,16 +134,16 @@ describe("ExpertPublicDetailPage", () => {
       return { ok: true, json: async () => ({ success: true, data: publicProfile }) };
     }));
 
-    render(<ExpertPublicDetailPage expertCode="CG-NACEN-00000001" />);
+    render(<ExpertPublicDetailPage expertCode="CG-BL-001" />);
     expect(await screen.findByText("PGS.TS. Trần Văn Hùng")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText("Điền phiếu yêu cầu kết nối"));
+    fireEvent.click(screen.getByText("Điền yêu cầu kết nối"));
     fireEvent.change(screen.getByPlaceholderText("Họ tên người liên hệ"), { target: { value: "Nguyễn Văn Mua" } });
     fireEvent.change(screen.getByPlaceholderText("Nội dung bài toán cần chuyên gia tư vấn hoặc đề xuất hợp tác R&D"), { target: { value: "Cần tư vấn về vi mạch xử lý tín hiệu" } });
     fireEvent.click(screen.getByText("Gửi phiếu yêu cầu tư vấn"));
 
     expect(await screen.findByTestId("consultation-ticket-code")).toHaveTextContent("REQ-CON-2026-000123");
-    expect(screen.getByText("Đã gửi yêu cầu tư vấn thành công tới Viện NacenTech!")).toBeInTheDocument();
+    expect(screen.getByText("Đã gửi yêu cầu tư vấn thành công tới Ban Thư ký & Cố vấn Kỹ thuật BACLINK!")).toBeInTheDocument();
   });
 });
 

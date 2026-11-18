@@ -4,7 +4,6 @@ import React from 'react';
 import { SellerDashboard } from '@/components/portal/seller-dashboard';
 import SellerTechnologiesPage from './seller/technologies/page';
 import EnterpriseOwnerProfilePage from './enterprise/profile/page';
-import Tt17HubPage from '../(portal)/assessments/tt17/page';
 import { brokerageApi } from '@/services/api/brokerage';
 import { fetchSellerWorkspace } from '@/services/api/technology-offer';
 import { authClient } from '@/lib/auth-client';
@@ -306,57 +305,19 @@ describe('DEEP INTERACTIVE QC TEST SUITE: 7 SELLER WORKSPACE ITEMS', () => {
   });
 
   /* =========================================================================
-   * ITEM 6: ĐÁNH GIÁ NĂNG LỰC TT17 (/assessments/tt17)
-   * ========================================================================= */
-  describe('FLOW-09 to FLOW-10: Item 6 - Đánh giá TT17 Text & Hub Interactive Flows', () => {
-    it('FLOW-09: renders clean mathematical notation T_ĐB without raw TeX dollar signs', async () => {
-      render(<Tt17HubPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Đánh Giá Trình Độ & Năng Lực Công Nghệ/i)).toBeInTheDocument();
-      });
-
-      // Assert clean text
-      expect(
-        screen.getByText(/đo lường hệ số đồng bộ T_ĐB và nhận diện điểm nghẽn/i)
-      ).toBeInTheDocument();
-
-      // Negative assertion: no raw LaTeX string
-      expect(screen.queryByText(/\$T_\{"ĐB"\}\$/)).not.toBeInTheDocument();
-      expect(screen.queryByText(/\$T_ĐB\$/)).not.toBeInTheDocument();
-    });
-
-    it('FLOW-10: historical assessment cards render sync coefficient and links to report', async () => {
-      render(<Tt17HubPage />);
-
-      await waitFor(() => {
-        expect(screen.getByText(/Hệ Số Đồng Bộ \(T_ĐB\)/i)).toBeInTheDocument();
-      });
-
-      // Verify sync coefficient value from history mock appears in card and table
-      expect(screen.getAllByText('0.92')[0]).toBeInTheDocument();
-      expect(screen.getAllByText('Trình độ Tiên tiến')[0]).toBeInTheDocument();
-
-      // CTA to wizard
-      const wizardLink = screen.getByText(/Kê Khai Kỳ Mới|Bắt Đầu Kê Khai/i);
-      expect(wizardLink.closest('a')).toHaveAttribute('href', '/dieu-tra-trinh-do-nang-luc');
-    });
-  });
-
-  /* =========================================================================
    * ITEM 7: HỒ SƠ DOANH NGHIỆP (/portal/enterprise/profile)
    * ========================================================================= */
   describe('FLOW-11 to FLOW-14: Item 7 - Hồ sơ Doanh nghiệp Interactive Flows', () => {
     beforeEach(() => {
       vi.mocked(fetchMyEnterpriseProfile).mockResolvedValue({
         id: 'ent-001',
-        name: 'Công ty Cổ phần Cơ khí Chính xác Nacen',
-        subjectType: 'DN ĐMST',
-        provinceCity: 'Hà Nội',
+        name: 'Công ty Cổ phần Cơ khí Chính xác Kinh Bắc',
+        subjectType: 'Doanh nghiệp Hội viên',
+        provinceCity: 'Bắc Ninh',
         highQualificationRatio: '',
         status: 'Draft',
         topBottlenecks: ['Thiếu vốn đầu tư công nghệ mới'],
-        supportNeeds: ['Hỗ trợ kết nối Chuyên gia tư vấn ĐMST và Viện - Trường'],
+        supportNeeds: ['Hỗ trợ kết nối Ban Cố vấn Kỹ thuật BACLINK và Viện - Trường'],
       });
       vi.mocked(updateMyEnterpriseProfile).mockResolvedValue({ success: true } as any);
       vi.mocked(submitEnterpriseVerification).mockResolvedValue({
@@ -365,12 +326,15 @@ describe('DEEP INTERACTIVE QC TEST SUITE: 7 SELLER WORKSPACE ITEMS', () => {
       } as any);
     });
 
-    it('FLOW-11: tab navigation switches seamlessly between legal, HR, and bottlenecks', async () => {
+    it('FLOW-11: tab navigation switches seamlessly between legal, sector, HR, and bottlenecks without TT17', async () => {
       render(<EnterpriseOwnerProfilePage />);
 
       await waitFor(() => {
         expect(screen.getByText(/Kê Khai Hồ Sơ Chủ Thể/i)).toBeInTheDocument();
       });
+
+      expect(screen.getByText(/2\. Ngành sản xuất & Sở hữu/i)).toBeInTheDocument();
+      expect(screen.queryByText(/TT17/i)).not.toBeInTheDocument();
 
       // Tab 3: HR
       const hrTab = screen.getByText(/3\. Lao động & Trình độ/i);
@@ -380,7 +344,7 @@ describe('DEEP INTERACTIVE QC TEST SUITE: 7 SELLER WORKSPACE ITEMS', () => {
       // Tab 9: Bottlenecks
       const bottleneckTab = screen.getByText(/9\. Điểm nghẽn thực tế/i);
       fireEvent.click(bottleneckTab);
-      expect(screen.getByText(/Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động đổi mới sáng tạo/i)).toBeInTheDocument();
+      expect(screen.getByText(/Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động sản xuất & công nghệ/i)).toBeInTheDocument();
     });
 
     it('FLOW-12: save draft executes updateMyEnterpriseProfile without opening modal', async () => {

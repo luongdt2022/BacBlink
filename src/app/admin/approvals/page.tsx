@@ -46,6 +46,22 @@ const BACNINH_LOCATIONS = [
   { code: "NGOAI_TINH", name: "Ngoài tỉnh Bắc Ninh" },
 ] as const;
 
+function sanitizeApprovalTypeLabel(type?: string | null): string {
+  const raw = resolveRequestTypeLabel(type);
+  return raw
+    .replace(/Doanh Nghiệp ĐMST/gi, "Doanh Nghiệp Hội Viên")
+    .replace(/ĐMST/gi, "Hội Viên");
+}
+
+function sanitizeBaclinkLocation(provinceName?: string | null, provinceCode?: string | null): string {
+  const cleaned = (provinceName || "")
+    .replace(/^(Sở Khoa học và Công nghệ|Sở KH&CN)\s*/i, "")
+    .trim();
+  if (cleaned) return cleaned;
+  if (provinceCode) return resolveProvinceName(provinceCode);
+  return "Bắc Ninh";
+}
+
 interface ApprovalItem {
   id: string;
   submitterName: string;
@@ -164,9 +180,7 @@ function parseItem(raw: unknown): ApprovalItem {
   const scopeId = String(item.scopeId || "");
   const scopeType = String(item.scopeType || "");
   const province = scopeType === "PROVINCE" ? scopeId : scopeId || "";
-  const provinceName =
-    (item.provinceName as string) ||
-    resolveProvinceName(province);
+  const provinceName = sanitizeBaclinkLocation(item.provinceName as string | undefined, province);
 
   const submittedAt = item.createdAt
     ? new Date(String(item.createdAt)).toLocaleString("vi-VN")
@@ -484,7 +498,7 @@ function AdminApprovalsContent() {
             { key: "ALL", label: "Tất cả", count: approvals.filter((a) => a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW").length },
             { key: "SHOP", label: "Shop", count: approvals.filter((a) => a.type === "SHOP" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
             { key: "DEMAND", label: "Nhu cầu", count: approvals.filter((a) => a.type === "DEMAND" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
-            { key: "EXPERT", label: "Chuyên gia", alias: "Chuyên gia KH&CN", count: approvals.filter((a) => a.type === "EXPERT" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
+            { key: "EXPERT", label: "Cố vấn kỹ thuật", count: approvals.filter((a) => a.type === "EXPERT" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
             { key: "ACCOUNT", label: "Tài khoản", count: approvals.filter((a) => a.type === "ACCOUNT" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
             { key: "FACILITY", label: "Cơ sở", count: approvals.filter((a) => a.type === "FACILITY" && (a.status === "PENDING_APPROVAL" || a.status === "PENDING_REVIEW")).length },
           ].map((tab) => (
@@ -500,7 +514,6 @@ function AdminApprovalsContent() {
               }`}
             >
               <span>{tab.label}</span>
-              {tab.alias && <span className="hidden">{tab.alias}</span>}
               <span
                 data-testid={`badge-${tab.key.toLowerCase()}`}
                 className={`text-xs px-1.5 py-0.2 rounded-full font-bold ${
@@ -684,7 +697,7 @@ function AdminApprovalsContent() {
                             {item.type === "DEMAND" && <Building2 className="w-3 h-3" />}
                             {item.type === "ACCOUNT" && <UserCheck className="w-3 h-3" />}
                             {item.type === "FACILITY" && <Building2 className="w-3 h-3" />}
-                            <span>{resolveRequestTypeLabel(item.type)}</span>
+                            <span>{sanitizeApprovalTypeLabel(item.type)}</span>
                           </span>
                         </td>
 
@@ -698,7 +711,7 @@ function AdminApprovalsContent() {
                         </td>
 
                         <td className="p-3 font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                          {item.provinceName || (item.province ? resolveProvinceName(item.province) : "Bắc Ninh")}
+                          {sanitizeBaclinkLocation(item.provinceName, item.province)}
                         </td>
 
                         <td className="p-3 text-slate-500 whitespace-nowrap">
@@ -781,7 +794,7 @@ function AdminApprovalsContent() {
                 <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
                   <div>
                     <span className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
-                      Thẩm định {resolveRequestTypeLabel(selectedItem.type)}
+                      Thẩm định {sanitizeApprovalTypeLabel(selectedItem.type)}
                     </span>
                     <h3 className="font-bold text-slate-900 dark:text-white text-base mt-0.5">
                       {selectedItem.submitterName}
@@ -812,14 +825,14 @@ function AdminApprovalsContent() {
                   </div>
 
                   <div>
-                    <span className="text-slate-500 block">Địa phương phụ trách</span>
+                    <span className="text-slate-500 block">Địa Bàn / KCN</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
-                      {selectedItem.provinceName || (selectedItem.province ? resolveProvinceName(selectedItem.province) : "Chưa phân công")}
+                      {sanitizeBaclinkLocation(selectedItem.provinceName, selectedItem.province)}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-500 block">Lĩnh vực chuyên môn</span>
+                    <span className="text-slate-500 block">Ngành công nghiệp / Lĩnh vực</span>
                     <span className="font-semibold text-slate-900 dark:text-slate-100">
                       {sectorLabel(selectedItem.sector)}
                     </span>
@@ -834,12 +847,12 @@ function AdminApprovalsContent() {
                     </div>
                   )}
 
-                  {/* Khối thẩm định chuyên sâu Doanh nghiệp ĐMST (T097) */}
+                  {/* Khối thẩm định Hồ sơ Doanh nghiệp Hội viên BACLINK (1 cấp) */}
                   {(selectedItem.type === "FACILITY" || selectedItem.type === "ACCOUNT" || selectedItem.type === "SHOP" || selectedItem.taxCode) && (
                     <div className="p-3.5 bg-brand-50/70 dark:bg-brand-950/40 rounded-xl border border-brand-200 dark:border-brand-800 space-y-2.5">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-brand-900 dark:text-cyan-300">
                         <Building2 className="w-4 h-4 text-brand-600" />
-                        <span>Hồ Sơ Doanh Nghiệp ĐMST & Tính Pháp Lý</span>
+                        <span>Hồ Sơ Doanh Nghiệp Hội Viên &amp; Tính Pháp Lý</span>
                       </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>

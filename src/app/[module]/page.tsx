@@ -11,13 +11,13 @@ import {
 
 const modules = {
   "doanh-nghiep-dmst": {
-    title: "Doanh nghiệp đổi mới sáng tạo",
-    description: "Không gian hồ sơ doanh nghiệp ĐMST, phân tích theo vùng/ngành và kết nối hệ sinh thái.",
+    title: "Danh bạ Doanh nghiệp Hội viên",
+    description: "Không gian hồ sơ doanh nghiệp hội viên BACLINK, phân tích năng lực sản xuất và kết nối chuỗi cung ứng công nghiệp Bắc Ninh.",
     icon: Building2,
   },
   "chuyen-gia": {
-    title: "Chuyên gia KH&CN",
-    description: "Tìm kiếm hồ sơ chuyên gia và kết nối tư vấn công nghệ.",
+    title: "Ban Cố vấn Kỹ thuật BACLINK",
+    description: "Tra cứu hồ sơ cố vấn kỹ thuật công nghiệp và kết nối tư vấn nhà máy.",
     icon: Handshake,
   },
 } as const;

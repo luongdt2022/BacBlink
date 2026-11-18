@@ -10,7 +10,7 @@ describe("AdminBreadcrumbs (T056)", () => {
         items={[
           { label: "Trang chủ", href: "/" },
           { label: "Quản Trị Hệ Thống", href: "/admin" },
-          { label: "Hàng Đợi Phê Duyệt Toàn Quốc" },
+          { label: "Hàng Đợi Phê Duyệt BACLINK" },
         ]}
       />
     );
@@ -24,7 +24,7 @@ describe("AdminBreadcrumbs (T056)", () => {
     const adminLink = screen.getByRole("link", { name: /Quản Trị Hệ Thống/i });
     expect(adminLink).toHaveAttribute("href", "/admin");
 
-    const currentPage = screen.getByText("Hàng Đợi Phê Duyệt Toàn Quốc");
+    const currentPage = screen.getByText("Hàng Đợi Phê Duyệt BACLINK");
     expect(currentPage).toHaveAttribute("aria-current", "page");
   });
 

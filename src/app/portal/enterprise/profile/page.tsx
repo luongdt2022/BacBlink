@@ -13,7 +13,7 @@ import { ConfirmModal } from "@/components/common/confirm-modal";
 
 const TABS = [
   { id: "legal", label: "1. Pháp lý & Định danh" },
-  { id: "sector", label: "2. Lĩnh vực (TT17) & Sở hữu" },
+  { id: "sector", label: "2. Ngành sản xuất & Sở hữu" },
   { id: "hr", label: "3. Lao động & Trình độ" },
   { id: "finance", label: "4. Doanh thu & Tài chính" },
   { id: "tech", label: "5. Cơ sở & Công nghệ" },
@@ -38,7 +38,7 @@ export default function EnterpriseOwnerProfilePage() {
   // Form State
   const [formData, setFormData] = useState<UpsertEnterpriseRequest>({
     name: "",
-    subjectType: "DN ĐMST",
+    subjectType: "Doanh nghiệp Hội viên",
     establishedDate: "",
     provinceCity: "",
     addressDetail: "",
@@ -73,7 +73,7 @@ export default function EnterpriseOwnerProfilePage() {
       setProfile(res);
       setFormData({
         name: res.name || "",
-        subjectType: res.subjectType || "DN ĐMST",
+        subjectType: res.subjectType || "Doanh nghiệp Hội viên",
         establishedDate: res.establishedDate ? res.establishedDate.substring(0, 10) : "",
         provinceCity: res.provinceCity || "",
         addressDetail: res.addressDetail || "",
@@ -183,10 +183,10 @@ export default function EnterpriseOwnerProfilePage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900">
-              Kê Khai Hồ Sơ Chủ Thể & Năng Lực Đổi Mới Sáng Tạo
+              Kê Khai Hồ Sơ Chủ Thể &amp; Năng Lực Sản Xuất Công Nghiệp
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Hệ thống 10 nhóm trường (225 tiêu chí) theo chuẩn Thông tư 17/2019/TT-BKHCN và Đề án 844
+              Hồ sơ năng lực nhà máy, chứng nhận chất lượng (ISO/IATF/ESG) và chuỗi cung ứng công nghiệp BACLINK
             </p>
           </div>
 
@@ -254,36 +254,6 @@ export default function EnterpriseOwnerProfilePage() {
           </div>
         </div>
 
-        {/* Widget Liên Kết Đánh Giá Trình Độ & Năng Lực Công Nghệ (TT17) */}
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <span className="text-lg">⚙️</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-slate-900">
-                  Tự Đánh Giá Trình Độ & Năng Lực Công Nghệ Sản Xuất (TT17)
-                </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800">
-                  Phụ lục I-IV
-                </span>
-              </div>
-              <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
-                Tự chẩn đoán 26 tiêu chí (5 nhóm T-E-O-R-I), đo lường hệ số đồng bộ $T_ĐB$ và bóc tách điểm nghẽn dây chuyền sản xuất để nhận báo cáo và cấp chứng nhận chính thức.
-              </p>
-            </div>
-          </div>
-          <Link
-            href="/assessments/tt17"
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition shrink-0 shadow-sm shadow-emerald-700/20"
-          >
-            <span>Mở Hồ Sơ Đánh Giá TT17</span>
-            <span>&rarr;</span>
-          </Link>
-        </div>
-
-
         {/* Notification alerts */}
         {error && (
           <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center justify-between">
@@ -334,17 +304,17 @@ export default function EnterpriseOwnerProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Loại hình chủ thể ĐMST</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Loại hình doanh nghiệp hội viên</label>
                     <select
-                      value={formData.subjectType || "DN ĐMST"}
+                      value={formData.subjectType || "Doanh nghiệp Hội viên"}
                       onChange={(e) => setFormData({ ...formData, subjectType: e.target.value })}
                       className="form-control w-full"
                     >
-                      <option value="DN ĐMST">Doanh nghiệp Đổi mới sáng tạo (DN ĐMST)</option>
-                      <option value="DN Khoa học công nghệ">Doanh nghiệp KH&CN (DN KH&CN)</option>
-                      <option value="Startup ĐMST">Startup ĐMST / Khởi nghiệp sáng tạo</option>
-                      <option value="Viện - Trường">Tổ chức R&D / Viện - Trường</option>
-                      <option value="Tổ chức hỗ trợ">Tổ chức trung gian / Hỗ trợ ĐMST</option>
+                      <option value="Doanh nghiệp Hội viên">Doanh nghiệp Hội viên BACLINK</option>
+                      <option value="Doanh nghiệp Sản xuất">Doanh nghiệp Sản xuất Công nghiệp</option>
+                      <option value="DN Khoa học công nghệ">Doanh nghiệp KH&amp;CN / R&amp;D</option>
+                      <option value="Viện - Trường">Tổ chức R&amp;D / Viện - Trường</option>
+                      <option value="Tổ chức hỗ trợ">Đơn vị Dịch vụ Công nghiệp &amp; Logistics</option>
                     </select>
                   </div>
                   <div>
@@ -424,28 +394,28 @@ export default function EnterpriseOwnerProfilePage() {
               </div>
             )}
 
-            {/* TAB 2: Lĩnh vực TT17 */}
+            {/* TAB 2: Ngành sản xuất */}
             {activeTab === "sector" && (
               <div className="space-y-4">
-                <h3 className="font-bold text-slate-800 text-sm">Nhóm 2: Lĩnh vực theo Thông tư 17/2019/TT-BKHCN & Hình thức sở hữu</h3>
+                <h3 className="font-bold text-slate-800 text-sm">Nhóm 2: Ngành sản xuất công nghiệp (BACLINK) &amp; Hình thức sở hữu</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Ngành lĩnh vực chính (TT17) *</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Ngành sản xuất chính *</label>
                     <input
                       type="text"
                       value={formData.mainSectorName || ""}
                       onChange={(e) => setFormData({ ...formData, mainSectorName: e.target.value })}
-                      placeholder="VD: Công nghệ thông tin, Tự động hóa, Nông nghiệp CNC..."
+                      placeholder="VD: Điện tử & Bán dẫn, Cơ khí chính xác, Tự động hóa..."
                       className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Mã ngành cấp 4 / TT17</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Mã ngành công nghiệp (BACLINK / VSIC)</label>
                     <input
                       type="text"
                       value={formData.sectorCode || ""}
                       onChange={(e) => setFormData({ ...formData, sectorCode: e.target.value })}
-                      placeholder="VD: 6201, 7210..."
+                      placeholder="VD: IND_ELEC, IND_MECH, 2610..."
                       className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800"
                     />
                   </div>
@@ -463,12 +433,12 @@ export default function EnterpriseOwnerProfilePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-slate-700 font-semibold mb-1">Khu vực / Địa bàn kinh doanh</label>
+                    <label className="block text-slate-700 font-semibold mb-1">Khu công nghiệp / Địa bàn nhà máy</label>
                     <input
                       type="text"
                       value={formData.operatingZone || ""}
                       onChange={(e) => setFormData({ ...formData, operatingZone: e.target.value })}
-                      placeholder="VD: Khu CNC Hòa Lạc, KCN Sài Đồng, Khu vực Miền Trung..."
+                      placeholder="VD: KCN VSIP Bắc Ninh, KCN Yên Phong, KCN Quế Võ..."
                       className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800"
                     />
                   </div>
@@ -651,30 +621,21 @@ export default function EnterpriseOwnerProfilePage() {
             {activeTab === "bottlenecks" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-slate-800 text-sm">Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động đổi mới sáng tạo</h3>
+                  <h3 className="font-bold text-slate-800 text-sm">Nhóm 9: Điểm nghẽn lớn nhất trong hoạt động sản xuất &amp; công nghệ</h3>
                   <Link
                     href="/portal/buyer/demands"
                     className="text-xs font-bold text-brand-600 hover:text-brand-700 underline flex items-center gap-1"
                   >
-                    Tạo Bài Toán Đổi Mới Công Nghệ &rarr;
-                  </Link>
-                </div>
-                <div className="p-3 bg-brand-50/60 border border-brand-200/80 rounded-xl text-xs text-brand-900 flex items-center justify-between">
-                  <span>Bạn có sự cố máy móc hoặc điểm nghẽn sản xuất cụ thể cần Viện - Trường giải quyết?</span>
-                  <Link
-                    href="/khao-sat-nhu-cau"
-                    className="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold shrink-0 shadow-sm"
-                  >
-                    Kê khai phiếu TNI 4 Bước
+                    Tạo Bài Toán Đặt Hàng Kỹ Thuật &rarr;
                   </Link>
                 </div>
                 <div className="space-y-2 text-xs">
                   {[
-                    "Thiếu vốn và khó tiếp cận nguồn vốn ưu đãi ĐMST",
-                    "Thiếu nhân sự chất lượng cao và chuyên gia R&D",
-                    "Khó khăn trong thủ tục đăng ký quyền Sở hữu trí tuệ",
-                    "Khó tiếp cận công nghệ mới và thị trường tiêu thụ",
-                    "Chính sách thử nghiệm (Sandbox) chưa rõ ràng",
+                    "Thiếu vốn và khó tiếp cận nguồn vốn đầu tư nâng cấp dây chuyền",
+                    "Thiếu nhân sự kỹ thuật cao và chuyên gia R&D",
+                    "Khó khăn trong thủ tục đăng ký tiêu chuẩn ISO / IATF / SHTT",
+                    "Khó tiếp cận công nghệ mới và chuỗi cung ứng FDI",
+                    "Chi phí vận hành năng lượng và chuyển đổi xanh (ESG) cao",
                   ].map((bn) => {
                     const isChecked = formData.topBottlenecks?.includes(bn);
                     return (
@@ -703,14 +664,14 @@ export default function EnterpriseOwnerProfilePage() {
             {/* TAB 10: Nhu cầu hỗ trợ */}
             {activeTab === "needs" && (
               <div className="space-y-4">
-                <h3 className="font-bold text-slate-800 text-sm">Nhóm 10: Nhu cầu hỗ trợ từ cơ quan Nhà nước & Hệ sinh thái</h3>
+                <h3 className="font-bold text-slate-800 text-sm">Nhóm 10: Nhu cầu hỗ trợ từ Hiệp hội BACLINK &amp; Mạng lưới Cố vấn</h3>
                 <div className="space-y-2 text-xs">
                   {[
-                    "Hỗ trợ kết nối Chuyên gia tư vấn ĐMST và Viện - Trường",
-                    "Hỗ trợ kinh phí thực hiện đề tài / dự án thử nghiệm",
-                    "Đào tạo nâng cao năng lực quản trị ĐMST cho đội ngũ",
+                    "Hỗ trợ kết nối Ban Cố vấn Kỹ thuật BACLINK và Viện - Trường",
+                    "Hỗ trợ tư vấn giải pháp tự động hóa và tối ưu nhà máy",
+                    "Đào tạo nâng cao năng lực quản trị sản xuất (Lean/IATF/ISO) cho đội ngũ",
                     "Hỗ trợ đăng ký và thương mại hóa tài sản trí tuệ",
-                    "Xúc tiến thương mại và tham gia chuỗi cung ứng toàn cầu",
+                    "Xúc tiến thương mại và kết nối chuỗi cung ứng FDI tại Bắc Ninh",
                   ].map((need) => {
                     const isChecked = formData.supportNeeds?.includes(need);
                     return (

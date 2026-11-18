@@ -88,11 +88,11 @@ export function ReactiveYellowTrlPanel({
         </button>
       </div>
 
-      {/* Dẫn chứng quy chuẩn NASA / TT17 */}
+      {/* Dẫn chứng quy chuẩn NASA TRL & ISO 16290:2013 */}
       <div className="flex items-center justify-between rounded-xl bg-amber-100/60 border border-amber-200/80 px-3 py-2 text-xs text-amber-900">
         <span className="flex items-center gap-1.5 font-medium">
           <Info className="w-4 h-4 text-amber-700 shrink-0" />
-          Căn cứ NASA TRL (1989), ISO 16290:2013 và Thông tư 17/2019/TT-BKHCN. TRL ≥ 7 bắt buộc nộp Bằng SHTT hoặc Báo cáo thử nghiệm thực tế.
+          Căn cứ chuẩn quốc tế NASA TRL &amp; ISO 16290:2013. TRL ≥ 7 khuyến nghị đính kèm Bằng SHTT hoặc Báo cáo thử nghiệm vận hành thực tế.
         </span>
         <button
           type="button"
@@ -146,7 +146,7 @@ export function ReactiveYellowTrlPanel({
             type="text"
             value={developerOrigin}
             onChange={(e) => setDeveloperOrigin(e.target.value)}
-            placeholder="VD: The Industrial Technology Research Institute (ITRI), Viện NacenTech..."
+            placeholder="VD: Hanel PT / INTECH Group, Đại học Bách Khoa Hà Nội..."
             className="w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm outline-none focus:border-brand-500"
           />
           {errors.developerOrigin && (

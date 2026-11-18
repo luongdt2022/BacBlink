@@ -82,7 +82,7 @@ export function Tier2CommonTechnicalForm({
               type="text"
               value={modelCode}
               onChange={(e) => setModelCode(e.target.value)}
-              placeholder="VD: NCT-CNC-5X-PRO"
+              placeholder="VD: BL-CNC-5X-PRO"
               className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>
@@ -93,7 +93,7 @@ export function Tier2CommonTechnicalForm({
               type="text"
               value={manufacturer}
               onChange={(e) => setManufacturer(e.target.value)}
-              placeholder="VD: NacenTech Robotics"
+              placeholder="VD: Hanel PT / INTECH Group"
               className="h-9 w-full rounded-lg border border-slate-300 bg-white px-3 text-xs outline-none focus:border-brand-500 transition"
             />
           </div>

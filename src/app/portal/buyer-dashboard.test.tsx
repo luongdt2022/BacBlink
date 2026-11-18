@@ -81,10 +81,10 @@ describe('BuyerDashboard Component (/portal for BUYER role)', () => {
     cleanup();
   });
 
-  it('renders Executive Banner with welcome greeting and 3 quick action buttons', async () => {
+  it('renders Executive Banner with welcome greeting and quick action buttons', async () => {
     render(<BuyerDashboard user={{ id: 'u1', fullName: 'Doanh Nghiệp An Phát', role: 'BUYER', email: 'anphat@corp.vn' }} />);
 
-    expect(await screen.findByText(/Trung Tâm Điều Hành Mua Sắm & Đổi Mới Công Nghệ/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Trung Tâm Điều Hành Mua Sắm & Kết Nối Công Nghệ/i)).toBeInTheDocument();
     expect(screen.getByText(/Xin chào, Doanh Nghiệp An Phát!/i)).toBeInTheDocument();
 
     // 3 Quick Action buttons
@@ -92,7 +92,7 @@ describe('BuyerDashboard Component (/portal for BUYER role)', () => {
     expect(quickBtn).toBeInTheDocument();
     expect(quickBtn.className).toContain('bg-white');
     expect(quickBtn.className).toContain('text-brand-700');
-    expect(screen.getByRole('link', { name: /Khảo Sát Nhu Cầu \(TNI 4 Bước\)/i })).toHaveAttribute('href', '/khao-sat-nhu-cau');
+    expect(screen.queryByRole('link', { name: /Khảo Sát Nhu Cầu \(TNI 4 Bước\)/i })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Radar Ghép Nối AI/i })).toHaveAttribute('href', '/portal/matching/radar');
   });
 
@@ -151,7 +151,7 @@ describe('BuyerDashboard Component (/portal for BUYER role)', () => {
     // Check Demand Widget
     expect(screen.getByText('DMD-202610-01')).toBeInTheDocument();
     expect(screen.getByText(/Hiện tượng nứt gãy vật liệu/i)).toBeInTheDocument();
-    expect(screen.getByText(/TNI: 88\/100/i)).toBeInTheDocument();
+    expect(screen.getByText(/Gia công nhiệt luyện/i)).toBeInTheDocument();
   });
 
   it('opens QuickDemandModal when clicking "+ Khai Báo Bài Toán Nhanh" button', async () => {

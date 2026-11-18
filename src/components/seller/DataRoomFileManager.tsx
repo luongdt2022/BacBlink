@@ -27,7 +27,7 @@ export function DataRoomFileManager({
       return;
     }
 
-    const finalUrl = fileUrl.trim() || `https://dataroom.nacentech.vn/docs/${encodeURIComponent(fileName.trim())}`;
+    const finalUrl = fileUrl.trim() || `https://dataroom.baclink.org.vn/docs/${encodeURIComponent(fileName.trim())}`;
 
     // Kiểm tra dung lượng
     const isVid = docType === "VIDEO" || fileName.endsWith(".mp4");
@@ -72,7 +72,7 @@ export function DataRoomFileManager({
       case "ADMIN_ONLY":
         return (
           <span className="inline-flex items-center gap-1 rounded bg-rose-50 border border-rose-200 px-2 py-0.5 text-xs font-bold text-rose-700">
-            <Lock className="h-3 w-3" /> ADMIN_ONLY (Nội bộ Sở KH&CN)
+            <Lock className="h-3 w-3" /> ADMIN_ONLY (Nội bộ Admin BACLINK)
           </span>
         );
     }
@@ -139,7 +139,7 @@ export function DataRoomFileManager({
             >
               <option value="PUBLIC">PUBLIC — Ai cũng xem được</option>
               <option value="AFTER_CONNECTION">AFTER_CONNECTION — Chỉ sau kết nối</option>
-              <option value="ADMIN_ONLY">ADMIN_ONLY — Chỉ Sở KH&CN</option>
+              <option value="ADMIN_ONLY">ADMIN_ONLY — Chỉ Admin BACLINK</option>
             </select>
           </div>
         </div>

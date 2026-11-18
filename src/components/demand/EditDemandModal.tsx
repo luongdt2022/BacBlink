@@ -17,7 +17,7 @@ import { useToast } from '@/components/common/toast';
 import { authClient } from '@/lib/auth-client';
 import { getActiveSectors, SectorOption } from '@/lib/master-data-client';
 import { SECTORS_18_CATALOG } from '@/services/api/technology-offer';
-import { getTechGroupsBySector } from '@/app/khao-sat-nhu-cau/types';
+import { getTechGroupsBySector } from '@/components/demand/demand-taxonomy';
 
 export interface DemandItemData {
   id?: string;
@@ -77,7 +77,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
     desiredSolution: '',
     needConsulting: true,
     expectedGoal: '',
-    sectorCode: 'LV01',
+    sectorCode: 'IND_ELEC',
     techGroupCode: 'CN01',
     demandTypeCode: 'NC01',
     budgetRange: '500 triệu – 1 tỷ VNĐ'
@@ -98,7 +98,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
         desiredSolution: demand.desiredSolution || '',
         needConsulting: demand.needConsulting ?? true,
         expectedGoal: demand.expectedGoal || '',
-        sectorCode: demand.sectorCode || 'LV01',
+        sectorCode: demand.sectorCode || 'IND_ELEC',
         techGroupCode: demand.techGroupCode || 'CN01',
         demandTypeCode: demand.demandTypeCode || 'NC01',
         budgetRange: demand.budgetRange || '500 triệu – 1 tỷ VNĐ'
@@ -372,7 +372,7 @@ export default function EditDemandModal({ isOpen, demand, onClose, onSuccess }: 
                 className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 border-slate-300 dark:border-slate-700"
               />
               <label htmlFor="needConsultingEdit" className="text-xs font-semibold text-text-primary dark:text-slate-300 cursor-pointer">
-                Cần Sở KH&CN chỉ định chuyên gia tư vấn công nghệ 1-1 hỗ trợ thẩm định giải pháp
+                Cần Ban Cố vấn BACLINK chỉ định chuyên gia tư vấn công nghệ 1-1 hỗ trợ thẩm định giải pháp
               </label>
             </div>
           </div>

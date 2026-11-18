@@ -115,7 +115,7 @@ export default function DashboardOrchestratorPage() {
             </span>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <h1 className="text-xs font-bold text-text-primary dark:text-white truncate">
-              NacenTwin Orchestrator & Quản Lý Tiến Độ
+              Bảng Điều Khiển &amp; Quản Lý Tiến Độ BACLINK
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-cyan-50 px-2 py-0.5 text-caption font-bold text-cyan-700 border border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">
               <Activity className="size-3 animate-pulse text-cyan-600" />
@@ -185,7 +185,7 @@ export default function DashboardOrchestratorPage() {
         <iframe
           ref={iframeRef}
           src="/orchestrator-app"
-          title="NacenTech Agent Orchestrator Dashboard"
+          title="BACLINK Orchestrator Dashboard"
           className="size-full border-0 block"
           onLoad={() => {
             setIsLoading(false);

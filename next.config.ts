@@ -17,12 +17,102 @@ const config: NextConfig = {
       },
     ],
   },
-  async rewrites() {
+  async redirects() {
     return [
       {
-        source: "/assessments/tt17/wizard",
-        destination: "/dieu-tra-trinh-do-nang-luc",
+        source: "/trien-lam",
+        destination: "/tin-tuc",
+        permanent: false,
       },
+      {
+        source: "/assessments/buyer",
+        destination: "/nhu-cau-cong-nghe",
+        permanent: false,
+      },
+      {
+        source: "/assessments/tt17",
+        destination: "/portal",
+        permanent: false,
+      },
+      {
+        source: "/assessments/tt17/:path*",
+        destination: "/portal",
+        permanent: false,
+      },
+      {
+        source: "/assessments",
+        destination: "/dich-vu-khac",
+        permanent: false,
+      },
+      {
+        source: "/assessments/:path*",
+        destination: "/dich-vu-khac",
+        permanent: false,
+      },
+      {
+        source: "/dieu-tra-trinh-do-nang-luc",
+        destination: "/doanh-nghiep-dmst",
+        permanent: false,
+      },
+      {
+        source: "/khao-sat-nhu-cau",
+        destination: "/nhu-cau-cong-nghe",
+        permanent: false,
+      },
+      {
+        source: "/khao-sat-doanh-nghiep",
+        destination: "/nhu-cau-cong-nghe",
+        permanent: false,
+      },
+      {
+        source: "/khao-sat-cong-nghe",
+        destination: "/chao-ban-cong-nghe",
+        permanent: false,
+      },
+      {
+        source: "/khao-sat-dmst",
+        destination: "/doanh-nghiep-dmst",
+        permanent: false,
+      },
+      {
+        source: "/admin/assessments",
+        destination: "/admin",
+        permanent: false,
+      },
+      {
+        source: "/admin/assessments/:path*",
+        destination: "/admin",
+        permanent: false,
+      },
+      {
+        source: "/admin/org-tree",
+        destination: "/admin",
+        permanent: false,
+      },
+      {
+        source: "/gov",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/gov/:path*",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/governance",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/governance/:path*",
+        destination: "/",
+        permanent: false,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
       {
         source: "/api/v1/:path*",
         destination: "http://localhost:5080/api/v1/:path*",
@@ -74,10 +164,6 @@ const config: NextConfig = {
       {
         source: "/api/task/:path*",
         destination: "http://127.0.0.1:8420/api/task/:path*",
-      },
-      {
-        source: "/wireframes/:path*",
-        destination: "http://127.0.0.1:8420/wireframes/:path*",
       },
       {
         source: "/static/uploads/:path*",

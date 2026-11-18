@@ -228,7 +228,7 @@ function BuyerConsultationsContent() {
               Bạn chưa gửi yêu cầu tư vấn nào
             </h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Hãy duyệt danh bạ chuyên gia KH&CN của Viện NacenTech và gửi phiếu bài toán R&amp;D cần tư vấn giải pháp.
+              Hãy duyệt danh bạ Ban Cố vấn Kỹ thuật Hiệp hội BACLINK và gửi bài toán kỹ thuật cần tư vấn giải pháp.
             </p>
             <Link
               href="/experts"

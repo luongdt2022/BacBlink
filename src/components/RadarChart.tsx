@@ -42,7 +42,7 @@ export default function RadarChart({ data, className = "" }: RadarChartProps) {
         viewBox="0 0 500 500"
         className="w-full max-w-[480px] h-auto overflow-visible"
         role="img"
-        aria-label="Biểu đồ Radar Năng Lực ĐMST 8 Trục"
+        aria-label="Biểu đồ Radar Năng Lực Sản Xuất Doanh Nghiệp"
       >
         <defs>
           <radialGradient id="radarRadialBg" cx="50%" cy="50%" r="50%">
