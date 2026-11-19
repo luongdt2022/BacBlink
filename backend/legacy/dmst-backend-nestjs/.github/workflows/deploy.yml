@@ -1,0 +1,32 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, backend]
+
+    defaults:
+      run:
+        working-directory: /home/sotatek/projects/dmst/dmst-backend
+
+    steps:
+      - name: Pull latest code
+        run: git pull origin main
+
+      - name: Build Docker image
+        run: docker compose --env-file .env build backend_app
+
+      - name: Recreate backend container
+        run: docker compose --env-file .env up -d --no-deps --force-recreate backend_app
+
+      - name: Run database migrations
+        run: docker compose exec backend_app npm run migration:run:prod

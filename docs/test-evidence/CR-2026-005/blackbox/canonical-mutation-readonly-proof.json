@@ -1,0 +1,48 @@
+{
+  "utc": "2026-10-08T01:54:59.139786+00:00",
+  "action": "read-only proof preparation; no canonical mutation executed",
+  "cloneDatabase": "nacentech_qc_delta_20261007",
+  "databaseInventory": [
+    "postgres",
+    "nacentech",
+    "nacentech_qc_delta_20261007"
+  ],
+  "activeSectorCount": 10,
+  "targetRow": {
+    "id": "7bd2054f-3ca2-4a11-849d-8bd92451cabe",
+    "kind": "SECTOR",
+    "name": "Chế biến thực phẩm – đồ uống",
+    "is_active": true,
+    "version": 1,
+    "created_at": "2026-10-06T10:42:16.625023+00:00",
+    "updated_at": "2026-10-06T10:42:16.625023+00:00",
+    "legacy_source_system": null,
+    "legacy_source_table": null,
+    "legacy_id": null,
+    "legacy_source_hash": null,
+    "legacy_migrated_at": null,
+    "legacy_mapping_version": null,
+    "legacy_batch_id": null,
+    "code": "LV05",
+    "metadata": {
+      "tt17Code": "C.10, C.11",
+      "matrixPairsCount": 8
+    }
+  },
+  "restorationConstraints": [
+    "only named clonedatabase",
+    "exact persisted primarykey",
+    "backupfullrow beforeanychange",
+    "SQLescape JSONliteral and validatecolumnidentifiers",
+    "restore allsnapshotcolumns withjson_populate_record incleanup",
+    "originalnames restored bydocumentedPATCH aftercleanup"
+  ],
+  "source": "docker exec psql read-onlySELECT",
+  "apiPID": 1824,
+  "processConnectionDatabaseOnly": [
+    {
+      "key": "ConnectionStrings__Postgres",
+      "database": "nacentech_qc_delta_20261007"
+    }
+  ]
+}

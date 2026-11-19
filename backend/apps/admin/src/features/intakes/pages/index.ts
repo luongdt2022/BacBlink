@@ -1,0 +1,12 @@
+export { IntakesPage } from "./IntakesPage";
+export { CreateIntakePage } from "./CreateIntakePage";
+export { IntakeDetailPage } from "./IntakeDetailPage";
+export { EditIntakePage } from "./EditIntakePage";
+export { IpsPage } from "./IpsPage";
+export { ChallengesPage } from "./ChallengesPage";
+export { IpDetailPage } from "./IpDetailPage";
+export { ChallengeDetailPage } from "./ChallengeDetailPage";
+export { CreateIpPage } from "./CreateIpPage";
+export { CreateChallengePage } from "./CreateChallengePage";
+export { EditIpPage } from "./EditIpPage";
+export { EditChallengePage } from "./EditChallengePage";

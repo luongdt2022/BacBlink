@@ -1,0 +1,67 @@
+export const AUTH_API_CODE = {
+  REGISTER_SUCCESS_PENDING_ACTIVATION: 'REGISTER_SUCCESS_PENDING_ACTIVATION',
+  ACCOUNT_ACTIVATED_SUCCESS: 'ACCOUNT_ACTIVATED_SUCCESS',
+  ACTIVATION_EMAIL_RESENT: 'ACTIVATION_EMAIL_RESENT',
+  PASSWORD_CHANGED_SUCCESS: 'PASSWORD_CHANGED_SUCCESS',
+  INVALID_CREDENTIALS: 'INVALID_CREDENTIALS',
+  ACCOUNT_NOT_ACTIVATED: 'ACCOUNT_NOT_ACTIVATED',
+  LOGIN_FAILED: 'LOGIN_FAILED',
+  CURRENT_PASSWORD_INCORRECT: 'CURRENT_PASSWORD_INCORRECT',
+  CONFIRM_PASSWORD_MISMATCH: 'CONFIRM_PASSWORD_MISMATCH',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  CHANGE_PASSWORD_FAILED: 'CHANGE_PASSWORD_FAILED',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FETCH_ME_FAILED: 'FETCH_ME_FAILED',
+  EMAIL_ALREADY_IN_USE: 'EMAIL_ALREADY_IN_USE',
+  REGISTER_RATE_LIMITED: 'REGISTER_RATE_LIMITED',
+  REGISTRATION_FAILED: 'REGISTRATION_FAILED',
+  REGISTRATION_SUCCESS: 'REGISTRATION_SUCCESS',
+  ACTIVATION_TOKEN_INVALID: 'ACTIVATION_TOKEN_INVALID',
+  ACCOUNT_NOT_FOUND: 'ACCOUNT_NOT_FOUND',
+  RESEND_RATE_LIMITED: 'RESEND_RATE_LIMITED',
+  RESEND_ACTIVATION_FAILED: 'RESEND_ACTIVATION_FAILED',
+  FORGOT_PASSWORD_RATE_LIMITED: 'FORGOT_PASSWORD_RATE_LIMITED',
+  FORGOT_PASSWORD_SUCCESS: 'FORGOT_PASSWORD_SUCCESS',
+  FORGOT_PASSWORD_FAILED: 'FORGOT_PASSWORD_FAILED',
+  RESET_PASSWORD_TOKEN_INVALID: 'RESET_PASSWORD_TOKEN_INVALID',
+  RESET_PASSWORD_SUCCESS: 'RESET_PASSWORD_SUCCESS',
+} as const;
+
+export const AUTH_API_MESSAGE = {
+  REGISTER_SUCCESS_PENDING_ACTIVATION:
+    'Đăng ký thành công. Vui lòng kiểm tra email để kích hoạt tài khoản.',
+  ACCOUNT_ACTIVATED_SUCCESS: 'Xác thực email thành công.',
+  ACTIVATION_EMAIL_RESENT: 'Đã gửi lại email xác thực.',
+  PASSWORD_CHANGED_SUCCESS: 'Đổi mật khẩu thành công.',
+  INVALID_CREDENTIALS: 'Email hoặc mật khẩu không đúng.',
+  ACCOUNT_NOT_ACTIVATED:
+    'Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email xác thực.',
+  LOGIN_FAILED: 'Đăng nhập thất bại.',
+  CURRENT_PASSWORD_INCORRECT: 'Mật khẩu hiện tại không đúng.',
+  CONFIRM_PASSWORD_MISMATCH: 'Mật khẩu xác nhận không khớp.',
+  VALIDATION_ERROR: 'Dữ liệu không hợp lệ.',
+  CHANGE_PASSWORD_FAILED: 'Đổi mật khẩu thất bại.',
+  CHANGE_PASSWORD_SUCCESS: 'Đổi mật khẩu thành công.',
+  UNAUTHORIZED: 'Phiên đăng nhập đã hết hạn.',
+  FETCH_ME_FAILED: 'Không thể tải thông tin người dùng.',
+  EMAIL_ALREADY_IN_USE: 'Email đã được sử dụng.',
+  REGISTER_RATE_LIMITED: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau.',
+  REGISTRATION_FAILED: 'Đăng ký thất bại. Vui lòng thử lại.',
+  REGISTRATION_SUCCESS: 'Đăng ký thành công.',
+  ACTIVATION_TOKEN_INVALID:
+    'Liên kết xác thực không hợp lệ hoặc đã hết hạn.',
+  ACTIVATION_VERIFY_SUCCESS: 'Xác thực email thành công.',
+  ACCOUNT_NOT_FOUND: 'Không tìm thấy tài khoản để gửi lại email xác thực.',
+  RESEND_RATE_LIMITED: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau.',
+  RESEND_ACTIVATION_FAILED: 'Gửi lại email xác thực thất bại.',
+  LOGIN_SUCCESS: 'Đăng nhập thành công.',
+  FORGOT_PASSWORD_SUCCESS:
+    'Nếu email tồn tại trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu.',
+  FORGOT_PASSWORD_FAILED: 'Gửi liên kết đặt lại mật khẩu thất bại.',
+  FORGOT_PASSWORD_RATE_LIMITED: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau.',
+  RESET_PASSWORD_SUCCESS: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập.',
+  RESET_PASSWORD_FAILED:
+    'Đặt lại mật khẩu thất bại. Liên kết có thể đã hết hạn.',
+} as const;
+
+export type AuthApiCode = (typeof AUTH_API_CODE)[keyof typeof AUTH_API_CODE];

@@ -1,0 +1,314 @@
+{
+  "timestamp_utc": "2026-10-08T01:58:49.119051+00:00",
+  "api": "http://localhost:5092",
+  "web": "http://localhost:3092",
+  "source": "Approved 50-case QC-BLUEPRINT-DELTA-V12.md; real HTTP/browser; no mocks",
+  "gate4": "OPEN",
+  "results": [
+    {
+      "id": "TC-C1-01",
+      "description": "Mở danh bạ với query rỗng",
+      "status": "PASS",
+      "evidence": "Real public default directory responds successfully."
+    },
+    {
+      "id": "TC-C1-02",
+      "description": "Nhập từ khóa tiếng Việt có dấu",
+      "status": "PASS",
+      "evidence": "Real Vietnamese public name submitted unchanged and corresponding public expert returned."
+    },
+    {
+      "id": "TC-C1-03",
+      "description": "Nhập từ khóa không có kết quả",
+      "status": "PASS",
+      "evidence": "Real public API empty search returned zero records."
+    },
+    {
+      "id": "TC-C1-04",
+      "description": "Chọn một ngành trong danh sách",
+      "status": "PASS",
+      "evidence": "Real active taxonomy code/name contract observed."
+    },
+    {
+      "id": "TC-C1-05",
+      "description": "Chọn mã ngành không thuộc danh mục active qua request hợp lệ của UI/API",
+      "status": "PASS",
+      "evidence": "Unknown active-sector code returned zero results without 500."
+    },
+    {
+      "id": "TC-C1-06",
+      "description": "Chọn tỉnh từ danh sách địa bàn",
+      "status": "PASS",
+      "evidence": "Real public province projection verified: 34 entries; only code/name/region keys."
+    },
+    {
+      "id": "TC-C1-07",
+      "description": "Đổi trang sau khi đang lọc",
+      "status": "PASS",
+      "evidence": "Actual public API page1/page2 with pageSize1 retained same Vietnamese query; distinct matching experts returned. UI multi-page dataset remains a separate prerequisite."
+    },
+    {
+      "id": "TC-C1-08",
+      "description": "Chọn bộ lọc trạng thái tư vấn",
+      "status": "BLOCKED",
+      "evidence": "Real accessible consultation checkbox sends documented true filter successfully; positive/exclusion response semantics need observable consultation-state detail."
+    },
+    {
+      "id": "TC-C1-09",
+      "description": "Xóa một chip tiêu chí",
+      "status": "PASS",
+      "evidence": "Actual sector chip removal resets only sector and updates real unfiltered query."
+    },
+    {
+      "id": "TC-C1-10",
+      "description": "Xóa toàn bộ tiêu chí",
+      "status": "PASS",
+      "evidence": "Rendered keyword/sector/province reset to actual default values."
+    },
+    {
+      "id": "TC-C1-11",
+      "description": "Dùng bàn phím focus và thao tác filter/CTA",
+      "status": "BLOCKED",
+      "evidence": "Keyboard search-to-action focus verified; visual focus and complete filter/CTA keyboard walkthrough still required."
+    },
+    {
+      "id": "TC-C1-12",
+      "description": "Mở card và kiểm tra nội dung public",
+      "status": "PASS",
+      "evidence": "Real public API projection has no forbidden PII keys; 2 records observed."
+    },
+    {
+      "id": "TC-C2-01",
+      "description": "Tải `/experts` ở 1440×900",
+      "status": "PASS",
+      "evidence": "Actual1440x900 screenshot visually reviewed: full names/options wrap, no overlap/clipping/horizontal overflow, compact cards and nowrapreset. Fresh real screenshot recaptured with no horizontal overflow."
+    },
+    {
+      "id": "TC-C2-02",
+      "description": "Tải `/experts` ở 390×844",
+      "status": "PASS",
+      "evidence": "Actual390x844 screenshot reviewed: compactheading, readable search/filter/cardCTA, no horizontal overflow/overlap. Fresh real screenshot recaptured with no horizontal overflow."
+    },
+    {
+      "id": "TC-C2-03",
+      "description": "Quan sát lúc dữ liệu đang tải",
+      "status": "BLOCKED",
+      "evidence": "Needs real service delayed loading observation; no mock/interception permitted."
+    },
+    {
+      "id": "TC-C2-04",
+      "description": "Đợi tải thành công",
+      "status": "PASS",
+      "evidence": "Actual rendered total and distinct profile-card destinations equal live public API record count."
+    },
+    {
+      "id": "TC-C2-05",
+      "description": "Tạo truy vấn không có kết quả",
+      "status": "PASS",
+      "evidence": "Real no-match search shows empty state and recovery control."
+    },
+    {
+      "id": "TC-C2-06",
+      "description": "Làm danh mục lỗi rồi thử lại",
+      "status": "PASS",
+      "evidence": "Actual browsernetworkblockoftaxonomy request yields errorwithoutfallback; unblocking realrequest andUIretry restores currentoptions."
+    },
+    {
+      "id": "TC-C2-07",
+      "description": "Đổi nhanh 2 bộ lọc liên tiếp",
+      "status": "PASS",
+      "evidence": "Actualrapidtwo-sector selection rendersonlylatest realAPI result and currentcriterion."
+    },
+    {
+      "id": "TC-C2-08",
+      "description": "Mở/đóng bộ lọc mobile và gỡ chip",
+      "status": "PASS",
+      "evidence": "Actual mobile drawer closes with selection retained, chip removes sector, reopened drawer stays consistent."
+    },
+    {
+      "id": "TC-C2-09",
+      "description": "Nhấn xem hồ sơ từ card",
+      "status": "PASS",
+      "evidence": "Actual selected public card destination matches rendered expert code route."
+    },
+    {
+      "id": "TC-C2-10",
+      "description": "Mở alias `/chuyen-gia`",
+      "status": "PASS",
+      "evidence": "Actual alias shows directory and active taxonomy radio selection works."
+    },
+    {
+      "id": "TC-C2-11",
+      "description": "Home nạp taxonomy active",
+      "status": "PASS",
+      "evidence": "Home count and 10 links match real API active code/name data."
+    },
+    {
+      "id": "TC-C2-12",
+      "description": "Login/admin copy khi count chưa tải",
+      "status": "PASS",
+      "evidence": "Actual login/admin commoncopy contains no fixed sector claims; sector metric subtitle updated to dynamic indicator."
+    },
+    {
+      "id": "TC-C2-13",
+      "description": "Admin taxonomy loading/empty/error",
+      "status": "BLOCKED",
+      "evidence": "Needs authenticated admin and safe real empty/error/loading environmental control."
+    },
+    {
+      "id": "TC-C2-14",
+      "description": "Profile detail với sector code active/retired",
+      "status": "BLOCKED",
+      "evidence": "Requires historical retired-sector profile plus active-sector profile."
+    },
+    {
+      "id": "TC-C3-01",
+      "description": "Nạp ngành → đối chiếu danh sách và số lượng với response API active",
+      "status": "PASS",
+      "evidence": "Directory active code/name options and count match liveAPI and independent SQL evidence 2026-10-07T15:40:47.049641+00:00"
+    },
+    {
+      "id": "TC-C3-02",
+      "description": "Chọn ngành → tìm → kiểm tra kết quả → bỏ ngành",
+      "status": "PASS",
+      "evidence": "Real sector filter and removal verified for LV01; 1 records."
+    },
+    {
+      "id": "TC-C3-03",
+      "description": "Chọn tỉnh → tìm",
+      "status": "BLOCKED",
+      "evidence": "Requires public experts with proven province scopes for match/exclusion."
+    },
+    {
+      "id": "TC-C3-04",
+      "description": "Kết hợp từ khóa + ngành + tỉnh + sẵn sàng tư vấn",
+      "status": "BLOCKED",
+      "evidence": "Requires real expert matching all four filters and UI end-to-end query evidence."
+    },
+    {
+      "id": "TC-C3-05",
+      "description": "Đổi bộ lọc ở trang >1",
+      "status": "BLOCKED",
+      "evidence": "Need enough approved experts for page>1 and UI page-reset evidence."
+    },
+    {
+      "id": "TC-C3-06",
+      "description": "API danh mục/lần tìm lỗi → retry",
+      "status": "PASS",
+      "evidence": "ActualCDPoffline produces networkerror; restoringrealnetwork/retry preserveschosencriterion and reloads service."
+    },
+    {
+      "id": "TC-C3-07",
+      "description": "Gửi yêu cầu kết nối với dữ liệu hợp lệ",
+      "status": "PASS",
+      "evidence": "Actual requester form creates real isolated-clone consultation; HTTP202/success drives NacenTech reception copy."
+    },
+    {
+      "id": "TC-C3-08",
+      "description": "Gửi yêu cầu thiếu/sai thông tin hoặc dịch vụ từ chối",
+      "status": "PASS",
+      "evidence": "Actual blank consultation input is rejected by required controls, no successful request, correction remains available."
+    },
+    {
+      "id": "TC-C3-09",
+      "description": "Tạo ngành admin qua UI",
+      "status": "PASS",
+      "evidence": "Actual admin UI POST confirmed; new taxonomy row remains after reload and authenticated API read."
+    },
+    {
+      "id": "TC-C3-10",
+      "description": "Đổi tên ngành DB rồi reload surfaces",
+      "status": "PASS",
+      "evidence": "Real canonical-sector rename appears in Home/directory/admin/upgrade/RBAC; public profile+matrix checked next case."
+    },
+    {
+      "id": "TC-C3-11",
+      "description": "Deactivate ngành, kiểm tra filter/home/form",
+      "status": "PASS",
+      "evidence": "Real canonical deactivation verified with normalized DTO extraction; historical expert sector codes unchanged."
+    },
+    {
+      "id": "TC-C3-12",
+      "description": "DB rỗng/API lỗi",
+      "status": "BLOCKED",
+      "evidence": "Needs safe actual empty taxonomy/outage; production data must not be cleared for a test."
+    },
+    {
+      "id": "TC-C3-13",
+      "description": "TT17 categories",
+      "status": "PASS",
+      "evidence": "Real TT17APIlist/admin names equal independentactiveCATEGORYSQL count=0."
+    },
+    {
+      "id": "TC-C3-14",
+      "description": "Matrix sau rename/deactivate",
+      "status": "PASS",
+      "evidence": "Actualmatrix resolves renamedcanonical beforedeactivation and excludes it afterrealdeactivation."
+    },
+    {
+      "id": "TC-C3-15",
+      "description": "Gán RBAC SECTOR",
+      "status": "BLOCKED",
+      "evidence": "Needs real scoped admin account and approved target officer; cannot fabricate assignment."
+    },
+    {
+      "id": "TC-C3-16",
+      "description": "Upgrade wizard submit",
+      "status": "BLOCKED",
+      "evidence": "Needs real expert account, approved CV/profile data and actual submit evidence."
+    },
+    {
+      "id": "TC-C4-01",
+      "description": "Khách ẩn danh: vào menu/alias → tìm theo từ khóa → mở hồ sơ công khai",
+      "status": "PASS",
+      "evidence": "Real Home menu→alias→publicname search→correct publicprofile completes; detail response has no forbiddenPIIkeys."
+    },
+    {
+      "id": "TC-C4-02",
+      "description": "Doanh nghiệp: tìm → lọc ngành và tỉnh → phân trang → xem hồ sơ",
+      "status": "BLOCKED",
+      "evidence": "Needs real enterprise role account, province/sector dataset and multi-page journey."
+    },
+    {
+      "id": "TC-C4-03",
+      "description": "Doanh nghiệp: tìm chuyên gia → gửi yêu cầu kết nối",
+      "status": "BLOCKED",
+      "evidence": "Requires real enterprise consultation submission input and recipient expert."
+    },
+    {
+      "id": "TC-C4-04",
+      "description": "Người dùng mobile: mở danh bạ → lọc trong drawer → gỡ tiêu chí → xem hồ sơ",
+      "status": "PASS",
+      "evidence": "Real390px directory→drawer→sector→chipremove→publicprofile journey completes without horizontaloverflow."
+    },
+    {
+      "id": "TC-C4-05",
+      "description": "Admin tạo ngành → Home/directory/upgrade",
+      "status": "PASS",
+      "evidence": "Admin actual create persists and Home/directory/upgrade reflect same active taxonomy code/name."
+    },
+    {
+      "id": "TC-C4-06",
+      "description": "Admin deactivate → filter + role",
+      "status": "PASS",
+      "evidence": "Actual canonical deactivation removes public filter and role option; historical expert codes remain intact."
+    },
+    {
+      "id": "TC-C4-07",
+      "description": "CV scan với taxonomy có/không có",
+      "status": "BLOCKED",
+      "evidence": "Requires real CV file/text, configured real AI credentials and safe taxonomy outage control."
+    },
+    {
+      "id": "TC-C4-08",
+      "description": "Matrix + profile sau taxonomy rename",
+      "status": "PASS",
+      "evidence": "Real canonical rename resolves consistently in matrix and actual expert public profile; historical expert codes unchanged."
+    }
+  ],
+  "counts": {
+    "PASS": 36,
+    "FAIL": 0,
+    "BLOCKED": 14
+  }
+}

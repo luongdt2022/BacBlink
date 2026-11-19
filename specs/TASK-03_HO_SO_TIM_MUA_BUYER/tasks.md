@@ -1,0 +1,432 @@
+# Danh Sách Công Việc Kỹ Thuật (tasks.md): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Buyer
+
+**Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
+**Version**: 1.15.0  
+**Status**: In Progress (Gate 2 Architecture Approved - Executing Delta v15)  
+**Last Updated**: 2026-11-04  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
+
+> **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
+> **Quy chuẩn thực thi**: Tuần tự từng màn hình và từng luồng công việc  
+> **Kiểm định chất lượng**: Bàn giao QC kiểm định Black-box 4 tầng đạt 100% Green trước khi đóng Epic
+
+---
+
+## Phase 1: Nền Tảng Domain, CSDL & Thuật Toán TNI (Foundation & Domain Engine)
+
+- [x] **T-03.01** `[BE]` `[CONTRACT]` Định nghĩa Enums & Value Objects: `TniClassification`, `TniResult`, `DemandItemStatus` trong Domain.
+- [x] **T-03.02** `[BE]` Cài đặt Domain Service `TniCalculationEngine`: Công thức $\text{TNI} = \text{ROUND}((35K + 30L + 20N + 15O)/5, 0)$ và 4 ngưỡng xếp loại (VERY_HIGH, HIGH, MEDIUM, LOW).
+- [x] **T-03.03** `[BE]` Cập nhật Entities `DemandSurvey` và `DemandItem` ánh xạ đúng thiết kế CSDL `THIET_KE_CSDL_DEMAND_VA_TNI.md`.
+- [x] **T-03.04** `[BE]` Tạo EF Core Migration cho 2 bảng `demand_surveys` và `demand_items` trên PostgreSQL.
+- [x] **T-03.05** `[BE]` `[TEST]` Viết bộ Unit Test `TniCalculationEngineTests` bao phủ 100% `BR-TNI-01` $\rightarrow$ `BR-TNI-04` (min, max, invalid inputs).
+
+---
+
+## Phase 2: Luồng 1 & Màn hình 1 — Phiếu Khảo Sát Sâu DNNVV & Realtime TNI (`/khao-sat-nhu-cau`)
+
+- [x] **T-03.06** `[BE]` Xây dựng Application Command `SubmitDeepSurveyCommand` & API `POST /api/v1/demands/surveys`.
+- [x] **T-03.07** `[FE]` Xây dựng Component `TniRealtimeCalculator.tsx` hiển thị 4 thanh trượt/radio $K, L, N, O$ và badge điểm TNI đổi màu theo thời gian thực.
+- [x] **T-03.08** `[FE]` Xây dựng Màn hình 1: `src/app/khao-sat-nhu-cau/page.tsx` hoàn thiện 7 phần (A $\rightarrow$ G) theo đúng `wireframe_phieu_khao_sat_dnnvv.html`.
+- [x] **T-03.09** `[FE]` Tích hợp API nộp phiếu, thông báo nộp thành công và cấp mã định danh `SUR-XXXXX`.
+
+---
+
+## Phase 3: Luồng 2 & Màn hình 2, 3 — Buyer Workspace & Tạo Nhanh Bài Toán (`/portal/buyer/demands`)
+
+- [x] **T-03.10** `[BE]` Xây dựng API `POST /api/v1/demands/items` (Tạo bài toán nhanh) và `GET /api/v1/buyer/demands` (Lấy danh sách bài toán bên mua).
+- [x] **T-03.11** `[FE]` Xây dựng Màn hình 3: Component `QuickDemandModal.tsx` tạo nhanh bài toán kỹ thuật kèm tính điểm TNI.
+- [x] **T-03.12** `[FE]` Xây dựng Màn hình 2: `src/app/portal/buyer/demands/page.tsx` gồm hàng KPI Cards, bảng danh sách Demand Tickets, tích hợp `<Async>` 5 trạng thái UX và nút mở Radar Matching.
+
+---
+
+## Phase 4: Luồng 3 & Màn hình 5 — Cổng Thẩm Định & Phân Luồng Sở KH&CN (`/gov/demands`)
+
+- [x] **T-03.13** `[BE]` Xây dựng APIs: `GET /api/v1/gov/demands`, `POST /api/v1/gov/demands/{id}/verify`, `POST /api/v1/gov/demands/{id}/assign-expert`.
+- [x] **T-03.14** `[FE]` Xây dựng Màn hình 5: `src/app/gov/demands/page.tsx` cho cán bộ Sở thẩm định hồ sơ, gắn cờ cảnh báo SLA 24h đối với bài toán $TNI \ge 80$, và chỉ định chuyên gia tư vấn.
+
+---
+
+## Phase 5: Luồng 4 & Màn hình 4 — Sàn Nhu Cầu Công Khai & Bảo Mật PDPD (`/nhu-cau-cong-nghe`)
+
+- [x] **T-03.15** `[BE]` Xây dựng Public APIs `GET /api/v1/public/demands` và `GET /api/v1/public/demands/{id}` thực hiện che giấu 100% PII (SĐT, Email, Ngân sách chi tiết).
+- [x] **T-03.16** `[FE]` Xây dựng Màn hình 4: `src/app/nhu-cau-cong-nghe/page.tsx` (Danh sách thẻ bài toán, bộ lọc đa tiêu chí) và `src/app/nhu-cau-cong-nghe/[id]/page.tsx` (Chi tiết bài toán, nút Gửi đề xuất chào bán).
+
+---
+
+## Phase 6: Luồng 5 & Màn hình 6 — Kênh Triển Lãm & Hội Chợ (`/trien-lam/dang-ky-tham-quan`)
+
+- [x] **T-03.17** `[BE]` Xây dựng API `POST /api/v1/trien-lam/dang-ky` tiếp nhận thông tin khách tham quan và bài toán tại hội chợ.
+- [x] **T-03.18** `[FE]` Xây dựng Màn hình 6: `src/app/trien-lam/dang-ky-tham-quan/page.tsx` thu thập nhu cầu tại triển lãm (ICE Cung Việt Xô, VIMEXPO, AUTOEXPO).
+
+---
+
+## Phase 7: Bàn Giao QC Kiểm Định Black-Box 4 Tầng & Gate 4/5 Sign-Off
+
+- [x] **T-03.19** `[QC-TEST]` Tầng 1 (Invariants): Chạy Unit Test `TniCalculationEngineTests` đạt 100% Pass.
+- [x] **T-03.20** `[QC-TEST]` Tầng 2 (API Contract): Kiểm định DTOs giữa Backend và Frontend không bị lệch contract.
+- [x] **T-03.21** `[QC-TEST]` Tầng 3 (DB Integration): Kiểm định lưu trữ CSDL PostgreSQL, kiểm tra tính toàn vẹn và cách ly với Master DN `TASK-02`.
+- [x] **T-03.22** `[QC-TEST]` Tầng 4 (Playwright E2E Black-box): Xây dựng và thực thi trọn bộ kịch bản E2E `test_task03_buyer_demands_blackbox.py` bao phủ cả 6 màn hình và 5 luồng công việc đạt 100% Pass.
+- [x] **T-03.23** `[PO-GATE]` Nghiệm thu Gate 4 & Gate 5 Sign-off, cập nhật `ROADMAP.md` và `TRACEABILITY.md`.
+
+---
+
+## Phase 8: Delta v2 — Tối Ưu Hóa Sàn Nhu Cầu Công Khai & Phân Quyền Hành Động
+
+- [x] **T-03.24** `[FE]` Tối ưu giao diện Hero Banner: Thêm overlay gradient tối màu, `relative z-10`, khắc phục lỗi text mờ tịt (đạt chuẩn WCAG AA), thêm khối Quick Metrics (140+ Bài toán, 68.5+ Tỷ ngân sách, 24 Giờ hỗ trợ).
+- [x] **T-03.25** `[FE]` Mở rộng Combobox Lĩnh vực: Tích hợp `getActiveSectors()` từ `master-data-client.ts`, hiển thị đầy đủ 10 Lĩnh vực TT17 kèm fallback an toàn.
+- [x] **T-03.26** `[FE]` Chuẩn hóa thẻ bài toán (Humanized Cards): Ẩn mã hồ sơ hash/ID thô (`DMD-202610-0FF52B`), hiển thị tên tiếng Việt của lĩnh vực, hiển thị định danh doanh nghiệp ẩn danh theo chuẩn PDPD masking.
+- [x] **T-03.27** `[FE]` Phân quyền nút bấm & Bảo vệ vai trò (Role Guards): Tích hợp `authClient` kiểm tra quyền khi bấm "Đăng Nhanh Bài Toán", dẫn hướng khách vãng lai hoặc mở modal cho Doanh nghiệp; gắn auth headers vào `QuickDemandModal.tsx`.
+- [x] **T-03.28** `[QC-TEST]` Kiểm thử hồi quy giao diện, kiểm chứng độ tương phản, kiểm tra bộ lọc và sự kiện nút bấm.
+
+---
+
+## Phase 9: Delta v3 — Chuẩn Hóa Toàn Diện Phiếu Khảo Sát Sâu DNNVV 7 Phần (A -> G)
+
+- [x] **T-03.29** `[BE]` `[PERSISTENCE]` Tạo EF Core Migration `AddDeepSurveyFullSpecification` bổ sung các cột pháp nhân và cột `jsonb survey_details` vào bảng `demand.demand_surveys`.
+- [x] **T-03.30** `[BE]` `[CONTRACT]` Cập nhật DTO `SubmitDeepSurveyRequest` và mapping logic trong `DemandController.cs` để lưu trữ đầy đủ 7 phần dữ liệu.
+- [x] **T-03.31** `[FE]` Xây dựng Stepper Wizard Navigation & LocalStorage Draft Persistence cho trang `/khao-sat-nhu-cau`.
+- [x] **T-03.32** `[FE]` Cài đặt Bước 1 & 2: Form Phần A (Thông tin DN đầy đủ) và Phần B (Bảng thiết bị động + Bảng 8 tiêu chí hiện trạng).
+- [x] **T-03.33** `[FE]` Cài đặt Bước 3 & 4: Form Phần C (Danh mục điểm nghẽn tối đa 5 điểm) và Phần D (Năng lực tiếp nhận nhân lực & TAR).
+- [x] **T-03.34** `[FE]` Cài đặt Bước 5: Form Phần E cho phép thêm/xóa nhiều bài toán kỹ thuật, nhúng bộ tính điểm `TniRealtimeCalculator` cho từng bài toán.
+- [x] **T-03.35** `[FE]` Cài đặt Bước 6 & 7: Form Phần F (Định hướng & Hỗ trợ) và Phần G (Trang Review tổng hợp, người ký xác nhận, PDPD Consent).
+- [x] **T-03.36** `[FE]` Tích hợp toàn trình nộp phiếu API `POST /api/v1/demands/surveys`, hiển thị mã phiếu `SUR-XXXXX` và điều hướng về Bàn làm việc Buyer.
+- [x] **T-03.37** `[TEST]` Viết bộ kiểm thử Frontend Vitest và Backend Integration Test kiểm tra toàn vẹn dữ liệu 7 phần.
+
+---
+
+## Phase 10: Delta v4 — Tự Động Hóa Định Danh, Tra Cứu MST & Tối Ưu Kênh Triển Lãm
+
+- [x] **T-03.38** `[BE]` Xây dựng API `GET /api/v1/enterprises/lookup-tax/{taxCode}` (Hybrid Lookup: Tra cứu CSDL nội bộ `enterprise.enterprises` trước, nếu không có fallback sang VietQR Business API `https://api.vietqr.io/v2/business/{taxCode}`, trích xuất tự động Tỉnh/Thành phố).
+- [x] **T-03.39** `[BE]` Nâng cấp `POST /api/v1/demands/surveys` trong `DemandController.cs`: Tự động gọi `IPersonService.ProvisionAsync` cấp tài khoản `PlatformRoles.Buyer` cho người nộp ẩn danh/chưa có tài khoản tại triển lãm, phản hồi thông tin tài khoản tạm thời.
+- [x] **T-03.40** `[FE]` Bổ sung nút bấm 🔍 Tra Cứu MST tại Bước 1 (Phần A) form `/khao-sat-nhu-cau`, tự động điền Tên DN, Tỉnh thành, Địa chỉ theo kết quả tra cứu kèm trạng thái loading và toast thông báo.
+- [x] **T-03.41** `[FE]` Cài đặt Smart Pre-fill cho Doanh nghiệp đã đăng nhập: Tự động gọi `fetchMyEnterpriseProfile()` khi phát hiện auth token hợp lệ, điền sẵn thông tin DN vào Bước 1 và hiển thị Banner UX thông báo.
+- [x] **T-03.42** `[FE]` Cập nhật Success View tại Bước 7: Phân biệt người dùng vãng lai tại triển lãm (hiển thị thông tin tài khoản được cấp tự động: username/email, mật khẩu tạm thời kèm nút Đăng Nhập) và người dùng đã đăng nhập (nút điều hướng về Bàn làm việc).
+- [x] **T-03.43** `[TEST]` Bổ sung bộ kiểm thử Frontend Vitest (`page.test.tsx`) kiểm chứng 3 kịch bản: Tra cứu MST tự động điền form, Doanh nghiệp đã đăng nhập tự động điền dữ liệu, Nộp thành công hiển thị tài khoản được cấp.
+
+---
+
+## Phase 11: Delta v5 — Hoàn Thiện Vòng Đời CRUD Bàn Làm Việc Bên Mua (Edit & Close Actions)
+
+- [x] **T-03.44** `[BE]` `[DOMAIN]` Bổ sung phương thức `Update(...)` và `Close()` vào Domain Entity `DemandItem.cs`, tự động tính lại điểm `TniScore` và `TniClassification` qua `TniCalculationEngine`.
+- [x] **T-03.45** `[BE]` `[API]` Xây dựng DTO `UpdateDemandItemRequest`, cài đặt endpoint `PUT /api/v1/buyer/demands/{id}` (kiểm tra guard chỉ sửa khi `PENDING` / `DRAFT`) và `POST /api/v1/buyer/demands/{id}/close` trong `DemandController.cs`.
+- [x] **T-03.46** `[FE]` Xây dựng component `EditDemandModal.tsx` (`src/components/demand/EditDemandModal.tsx`) nạp dữ liệu bài toán hiện tại, hỗ trợ điều chỉnh 4 chỉ số $K, L, N, O$ hiển thị màu Badge TNI thời gian thực, submit `PUT /api/v1/buyer/demands/{id}`.
+- [x] **T-03.47** `[FE]` Cập nhật `src/app/portal/buyer/demands/page.tsx`: Cột Thao tác hiển thị nút [Sửa] (khi `PENDING`), nút [Đóng bài toán] (khi chưa đóng), tích hợp `ConfirmModal` và tab bộ lọc bài toán `CLOSED`.
+- [x] **T-03.48** `[TEST]` Bổ sung kiểm thử Unit Test cho `DemandItem` methods và test cases giao diện kiểm chứng hành vi Sửa và Đóng bài toán.
+
+---
+
+## Phase 12: Delta v6 (CR-006) — Tái Cấu Trúc Thứ Tự Tab Khảo Sát & Ràng Buộc Validation
+
+- [x] **T-03.49** `[SPEC]` Ghi nhận Delta CR-006 vào `spec.md` và đồng bộ tài liệu kiến trúc.
+- [x] **T-03.50** `[FE]` Tái cấu trúc Stepper Navigation và Form Sections trong `SourceCode/frontend/src/app/khao-sat-nhu-cau/page.tsx`: Đưa Tab E (Nhu Cầu & TNI) lên Bước 2; xếp Tab B, C, D vào các Bước 3, 4, 5.
+- [x] **T-03.51** `[FE]` Cập nhật logic `validateStep`: Bắt buộc hoàn tất Bước 1 và Bước 2 (ít nhất 1 bài toán có nội dung); các Bước 3, 4, 5, 6 chuyển thành Optional (cho phép bỏ qua).
+- [x] **T-03.52** `[FE]` Hỗ trợ nộp nhanh khảo sát sau khi hoàn thành Bước 1 và Bước 2, cho phép chuyển thẳng sang Bước 7 để ký và nộp.
+- [x] **T-03.53** `[TEST]` Cập nhật và bổ sung Vitest trong `page.test.tsx` kiểm chứng thứ tự 7 bước mới, validation bắt buộc Bước 1 & 2, chuyển bước tùy chọn không bị chặn.
+
+---
+
+## Phase 13: Delta v7 (CR-2026-016) — Tự Động Nạp 100% Hồ Sơ Doanh Nghiệp & Đồng Bộ Demo Buyer
+
+- [x] **T-03.54** `[FE]` `[INTEGRATION]` Hoàn thiện cơ chế Auto-Prefill 100% trong `src/app/khao-sat-nhu-cau/page.tsx`: Nạp toàn bộ 11 trường thông tin pháp nhân và người liên hệ từ `fetchMyEnterpriseProfile()` khi có session; hiển thị Alert Banner UX trang trọng; tự động bypass validation Bước 1 cho phép chuyển ngay sang Bước 2.
+- [x] **T-03.55** `[FE]` `[COMPONENT]` Cài đặt cơ chế kiểm tra sai khác và hộp thoại xác nhận Đồng bộ ngược 2 chiều (Bi-directional Sync Modal) `BR-03-006`: Cho phép doanh nghiệp cập nhật các thay đổi tại Bước 1 vào hồ sơ gốc `enterprise.enterprises` khi nộp phiếu.
+- [x] **T-03.56** `[TEST]` Bổ sung Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` kiểm chứng: 100% dữ liệu pháp nhân được nạp đầy đủ khi đã đăng nhập, hiển thị Banner nạp hồ sơ, Bước 1 hợp lệ ngay lập tức và sẵn sàng chuyển Bước 2.
+- [x] **T-03.57** `[TEST]` `[E2E]` Viết kịch bản kiểm thử E2E Playwright `test_task03_buyer_prefill_and_demo_e2e.py`: Đăng nhập bằng `buyer.user@demo.nacentech.vn` (mật khẩu `Demo@2026`), mở `/khao-sat-nhu-cau`, xác nhận tự động điền đúng 100% thông tin CÔNG TY TNHH TRƯỜNG HOAN (MST `0100255428`, Hà Nội).
+
+
+- [x] `TASK-03-CR58` **[CR]** [P1] Test CR Tab 5 TNI — Kiem thu tao CR tu Dashboard
+- [x] `TASK-03-CR59` **[CR]** [P1] Sửa nội dung tab form nhập nhu cầu — Các tab khác của nhu cầu , ngoài tab nhu cầu và thồn tin doanh nghiệp, có thể ghộp vào thành tab bổ sung và k bắt buộc, cho doanh nghiệp k điền cũng được
+
+- [x] `TASK-03-CR60` **[CR]** [P1] (Người gửi: Trần Thị B (BA Lead)) Cải tiến giao diện hiển thị tổng mức đầu tư bài toán — Bổ sung tooltip giải thích cơ cấu vốn đầu tư công nghệ cho bài toán nhu cầu
+
+- [x] `TASK-03-CR61` **[CR]** [P2] (Người gửi: Tester) Test kết nối CR từ Web Portal — Kiểm tra proxy CR qua cổng 3000: Đã kiểm chứng POST /api/action/create_cr qua cổng 3000 -> 8420 thành công, ghi nhận chuẩn xác.
+
+---
+
+## Phase 14: Delta v8 (CR-2026-017 / TASK-03-CR59) — Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn
+
+- [x] **T-03.58** `[FE]` `[UI/UX]` Tái cấu trúc Stepper Navigation Bar từ 7 bước xuống 4 tabs tinh gọn (loại bỏ tiền tố `E.`, `A.`, `G.`): Tab 1 (Nhu Cầu & TNI), Tab 2 (Doanh Nghiệp), Tab 3 (Thông Tin Bổ Sung), Tab 4 (Xác Nhận); cập nhật thanh tiến độ theo công thức `(currentStep / 4) * 100%`, cho phép click tự do giữa 4 tabs.
+- [x] **T-03.59** `[FE]` `[COMPONENT]` Hợp nhất 4 phân mục B (Hiện trạng & 8 tiêu chí), C (Điểm nghẽn kỹ thuật), D (Năng lực TAR), F (Định hướng & Hỗ trợ) thành các khối chuyên đề rõ ràng trong Tab 3 (`currentStep === 3`), không làm đứt gãy UX và bảo toàn 100% các trường nhập liệu.
+- [x] **T-03.60** `[FE]` `[LOGIC]` Chuẩn hóa logic Navigation & Validation cho 4 bước: Validation bắt buộc tại Tab 1 (ít nhất 1 bài toán), Tab 2 (pháp nhân hợp lệ) và Tab 4 (ký tên & PDPD); Tab 3 hoàn toàn tùy chọn; bổ sung nút fast-track tại Tab 2 chuyển thẳng sang Tab 4; khi submit thất bại tự động focus/cuộn về đúng tab bị thiếu.
+- [x] **T-03.61** `[TEST]` Cập nhật bộ kiểm thử Unit Tests Vitest trong `src/app/khao-sat-nhu-cau/page.test.tsx` sang mô hình 4 tabs: kiểm tra tiêu đề và stepper 4 bước, kiểm thử validation Tab 1 & Tab 2, kiểm thử Tab 3 tùy chọn không chặn submit, kiểm thử fast-track từ Tab 2 sang Tab 4, kiểm thử free-click stepper, kiểm thử luồng submit toàn trình.
+- [x] **T-03.62** `[TEST]` `[E2E]` Cập nhật kịch bản kiểm thử E2E Playwright `test_task03_buyer_deep_survey_blackbox.py` tương thích hoàn toàn với luồng 4 tabs.
+
+---
+
+## Phase 15: Delta v9 (CR-2026-018) — Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal
+
+- [x] **T-03.63** `[FE]` `[HEADER]` Chuẩn hóa tiêu đề `/portal/buyer/demands` sang `Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`, thay badge `TASK-03` bằng `BÊN MUA CÔNG NGHỆ`.
+- [x] **T-03.64** `[FE]` `[PAGINATION]` Tích hợp phân trang `pageSize = 5` cho bảng danh sách bài toán, hỗ trợ chuyển trang, hiển thị tổng số và reset trang khi đổi tab lọc.
+- [x] **T-03.65** `[FE]` `[MODAL]` Nâng cấp `QuickDemandModal.tsx`: Thêm bộ chọn Target TRL (TRL 1-3, 4-6, 7-9), Checkbox Bảo mật ẩn danh (Confidential Mode), Hạn chót nhận đề xuất (Deadline) và file đính kèm RFP.
+- [x] **T-03.66** `[DOC]` `[WIREFRAME]` Đồng bộ Wireframe Basic Design `wireframe_quan_ly_nhu_cau_buyer.html` loại bỏ badge `TASK-03`, thêm phân trang và các trường TRL/Ẩn danh.
+- [x] **T-03.67** `[TEST]` `[QC]` Bổ sung Unit Tests kiểm chứng Header sạch dev badge, phân trang hoạt động và Modal có đầy đủ các trường mới; chạy Vitest 100% PASS (5/5 tests green).
+
+
+
+---
+
+## Phase 16: Delta v10 (CR-TASK-03-DELTA-01) — Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER
+
+- [x] **T-03.DEL-01** `[FE]` Cập nhật `handleOpenQuickDemand` tại `nhu-cau-cong-nghe/page.tsx` cho phép `PUBLIC_USER` & `USER`.
+- [x] **T-03.DEL-02** `[FE]` Cập nhật thông báo thân thiện cho Guest khi bấm đăng bài toán, dẫn hướng đăng ký/đăng nhập công chúng.
+- [x] **T-03.DEL-03** `[FE]` Cập nhật `portal/layout.tsx` bổ sung menu "Bài toán Đã Đăng" (`/portal/buyer/demands`) vào `publicNavItems`.
+- [x] **T-03.DEL-04** `[FE]` `[TEST]` Cập nhật và chạy Vitest Unit test (`nhu-cau-cong-nghe/page.test.tsx`, `portal/layout.test.tsx`).
+- [x] **T-03.DEL-05** `[QC]` Kịch bản kiểm thử 4 tầng Blackbox Zero-Mock trên CSDL PostgreSQL thật với tài khoản `public.user@demo.nacentech.vn`.
+
+
+---
+
+## Phase 17: Delta v11 (CR-2026-010) — Triệt Tiêu 100% Mock Số Tĩnh Tại Sàn Nhu Cầu & Tích Hợp `<Async>`
+
+- [x] **T-03.68** `[FE]` Refactor Hero Quick Metrics trong `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`:
+  - Loại bỏ hoàn toàn 3 khối số liệu tĩnh hardcode `"142"`, `"68.5 tỷ"`, `"24 Giờ"`.
+  - Tích hợp hook/fetch `portalClient.getStats()` để nạp động:
+    * Khối 1: `totalDemands` (Bài toán đang tìm).
+    * Khối 2: Tổng ngân sách mua (tính từ `totalEstimatedValueMillionVnd` hoặc tổng các bài toán thật, định dạng Tỷ / Triệu VNĐ).
+    * Khối 3: `totalSuccessfulConnections` (Lượt kết nối thành công & MOU).
+  - Bọc khối qua component `<Async>` chuẩn hóa 5 UX States (Loading skeleton pulse, Error retry, Empty 0, Success, Updating).
+  - Tiêu chí kiểm chứng:
+    - [x] Không còn bất kỳ chuỗi `"142"`, `"68.5"`, `"24 Giờ"` hardcode trong file.
+    - [x] Khi API chưa có dữ liệu, hiển thị trung thực `0` hoặc `"0 VNĐ"`.
+    - [x] Khi API gặp lỗi, hiển thị khối thông báo kèm nút `[Tải lại số liệu]`.
+- [x] **T-03.69** `[FE]` Đồng bộ bộ lọc ngành trên Sàn Tìm Mua sang dùng `getActiveSectors()` từ `master-data-client.ts`, đảm bảo chỉ hiển thị 10 Lĩnh vực chuẩn TT17 (`LV01..LV17`).
+  - Tiêu chí kiểm chứng:
+    - [x] Bộ lọc nạp động từ `/api/v1/master-data/sectors?activeOnly=true`.
+    - [x] Không có mã tiền tố lạ `SEC-*` hay viết tắt tiếng Anh.
+- [x] **T-03.70** `[TEST]` Bổ sung Unit Test Vitest trong `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.test.tsx`:
+  - Tiêu chí kiểm chứng:
+    - [x] Khẳng định số liệu Hero nạp động từ `portalClient.getStats()`.
+    - [x] Khẳng định trạng thái Loading, Empty và Error của Hero Metrics hoạt động chuẩn.
+    - [x] Không có fallback ngầm sang số dummy.
+
+
+---
+
+## Phase 18: Delta v13 (CR-TASK-03-DELTA-02) — Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User (CR-TASK-03-DELTA-02)
+
+> **Mã CR**: `CR-TASK-03-DELTA-02`  
+> **Căn cứ**: Quyết định PO `PO-DEC-20261030-03` & Đặc tả Kỹ thuật `spec.md` Mục 13 (Section Delta v1.2).  
+> **Mục tiêu**: Xóa bỏ hoàn toàn đơn hàng mồ côi (Zero Orphaned Orders), quản lý đơn đặt mua sản phẩm thương mại trên Bàn làm việc Bên Mua theo mô hình 2 Tabs độc lập, minh bạch hóa tiến trình qua Stepper 4 bước và dẫn hướng thông suốt từ trang chi tiết sản phẩm.
+
+- [x] **Task 6.1** `[BE/API]` Nâng cấp Client API `services/api/technology-offer.ts` & Xác thực Backend `DemandController.cs`:
+  - Mở rộng giao diện `CreateQuickDemandPayload` bổ sung các trường metadata: `offerId?: string`, `offerTitle?: string`, `offerCode?: string`, `isCommercialOrder?: boolean`.
+  - Cập nhật hàm `submitQuickDemand`: Tự động trích xuất JWT Access Token qua `authClient.getToken()` và đính kèm Header `Authorization: Bearer <token>` vào request gửi tới `/api/v1/demands/items`.
+  - Kiểm tra và đảm bảo endpoint `POST /api/v1/demands/items` tại `DemandController.cs` nhận diện chính xác `Actor.PersonId` để gán vào `demandItem.CreatedBy`, triệt tiêu hoàn toàn đơn hàng không có chủ sở hữu.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-02`.
+
+- [x] **Task 6.2** `[FE/Nav]` Cập nhật Sidebar Navigation `publicNavItems` trong `SourceCode/frontend/src/app/portal/layout.tsx`:
+  - Đổi nhãn menu trỏ tới `/portal/buyer/demands` thành **`"Đơn hàng & Yêu cầu mua"`** trong danh sách `publicNavItems` (dành cho `PUBLIC_USER` / `USER`).
+  - Đảm bảo icon `ShoppingBag` hiển thị chuẩn xác, active state đồng bộ khi truy cập các tab con của Bàn làm việc.
+  - Tiêu chí nghiệm thu: `AC-ORD-03`.
+
+- [x] **Task 6.3** `[FE/UI]` Xây dựng Component `OrderTrackingStepper` và Tái Cấu Trúc Bàn Làm Việc 2 Tabs trong `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`:
+  - Tạo mới component `OrderTrackingStepper.tsx` (`src/components/demand/OrderTrackingStepper.tsx`) thể hiện quy trình 4 bước:
+    * Bước 1: `SUBMITTED` (Đã gửi đơn / Chờ tiếp nhận)
+    * Bước 2: `PROCESSING` (Đang xử lý / Kiểm tra năng lực cung cấp)
+    * Bước 3: `NEGOTIATING` (Đang đàm phán hợp đồng / báo giá)
+    * Bước 4: `COMPLETED` (Hoàn tất giao dịch / Ký kết)
+    * Xử lý hiển thị trực quan các trạng thái ngoại lệ: `CANCELLED` (Đã hủy) và `REJECTED` (Từ chối tiếp nhận).
+  - Tái cấu trúc giao diện trang `/portal/buyer/demands` thành 2 Tabs cấp cao:
+    * **Tab 1 — "Đơn mua sản phẩm thương mại" (`commercial`)**: Danh sách đơn đặt mua thiết bị/sản phẩm thương phẩm, tích hợp hiển thị trạng thái bằng `OrderTrackingStepper`, hỗ trợ nút Xem chi tiết đơn và Hủy đơn khi đang ở trạng thái `SUBMITTED`.
+    * **Tab 2 — "Nhu cầu R&D / Bài toán công nghệ" (`demands`)**: Quản lý toàn bộ bài toán kỹ thuật chuyên sâu từ Khảo sát và Quick Demand, bảo toàn nguyên vẹn hàng 4 KPI Cards, điểm TNI, bộ lọc đa trạng thái và phân trang 5 bản ghi.
+  - Hỗ trợ chuyển tab thông qua URL query parameter (ví dụ: `/portal/buyer/demands?tab=commercial`).
+  - Tiêu chí nghiệm thu: `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.
+
+- [x] **Task 6.4** `[FE/Modal]` Cập nhật Quick Demand Modal trên `SourceCode/frontend/src/app/chao-ban-cong-nghe/[id]/page.tsx`:
+  - Trong sự kiện submit form: Đảm bảo truyền đầy đủ JWT Token từ `authClient` và các thông tin định danh sản phẩm (`offer.id`, `offer.title`, `offer.offerCode`).
+  - Tại màn hình thông báo gửi thành công (`connectSuccess === true`):
+    * Bổ sung nút CTA: **`"Theo dõi đơn hàng trong Workspace →"`** đặt cạnh nút "Hoàn tất & Đóng".
+    * Thiết lập hành vi click CTA: Điều hướng người dùng trực tiếp tới `/portal/buyer/demands?tab=commercial` để xem đơn hàng vừa tạo.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`.
+
+- [x] **Task 6.5** `[Test/Unit]` Viết Bộ Kiểm Thử Unit Test Vitest Cho Client API & Stepper Component:
+  - Tạo file kiểm thử `src/services/api/technology-offer.test.ts`:
+    * Kiểm chứng `submitQuickDemand` tự động gắn Bearer Token khi user đã đăng nhập.
+    * Kiểm chứng truyền đúng metadata sản phẩm (`offerId`, `offerTitle`, `offerCode`).
+    * Kiểm chứng xử lý mã lỗi HTTP 401 khi token không hợp lệ hoặc hết hạn.
+  - Tạo file kiểm thử `src/components/demand/OrderTrackingStepper.test.tsx`:
+    * Kiểm chứng hiển thị đúng 4 bước và nhãn tương ứng.
+    * Kiểm chứng bước hiện tại active, các bước trước có tick xanh hoàn thành.
+    * Kiểm chứng hiển thị trạng thái `CANCELLED` khi đơn bị hủy.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-04`.
+
+- [x] **Task 6.6** `[Test/E2E]` Kịch Bản Kiểm Thử E2E Tự Động Toàn Trình (Playwright):
+  - Xây dựng kịch bản kiểm thử luồng end-to-end:
+    1. Đăng nhập với tài khoản `PUBLIC_USER` (`public.user@demo.nacentech.vn`).
+    2. Truy cập trang chi tiết công nghệ `/chao-ban-cong-nghe/[id]` và mở modal đặt mua.
+    3. Điền thông tin và nộp đơn thành công.
+    4. Click nút CTA "Theo dõi đơn hàng trong Workspace", xác nhận chuyển hướng đúng `/portal/buyer/demands?tab=commercial`.
+    5. Kiểm tra đơn hàng mới xuất hiện tại Tab 1 với mã đơn chuẩn hóa, thông tin sản phẩm chính xác và Stepper hiển thị bước 1 `SUBMITTED`.
+    6. Kiểm tra chuyển sang Tab 2 dữ liệu bài toán R&D được cách ly độc lập, không bị ảnh hưởng.
+  - Tiêu chí nghiệm thu: `AC-ORD-01`, `AC-ORD-03`, `AC-ORD-04`, `AC-ORD-05`.
+
+- [x] `TASK-03-CR94` **[CR]** [P1] (Người gửi: LuongDang) Sử cho tôi tiêu đề — Sửa tiêu đề nội dung như comment ở ảnh [Đính kèm: ![screenshot_11h41m14_1.png](/static/uploads/TASK-03-CR94_1793508098_1_screenshot_11h41m14_1.png)]
+
+---
+
+## 7. DANH SÁCH CÔNG VIỆC THỰC THI CR-TASK-03-DELTA-01: VÒNG ĐỜI BÀI TOÁN & PDPD PREVIEW GUARD
+
+- [x] **Task 7.1** `[BE]` Nâng Cấp API Chi Tiết `GET /api/v1/public/demands/{id}` (`DemandController.cs`):
+  - Trích xuất định danh người gọi từ `Actor.PersonId` và `Actor.PlatformRole`.
+  - Bổ sung các trường vào DTO trả về:
+    * `status`: Trạng thái thực tế từ CSDL (`PENDING`, `VERIFIED`, `CONNECTED`, `CLOSED`).
+    * `isOwner`: `bool` — `true` nếu `Actor.PersonId == item.CreatedBy`.
+    * `isPendingReview`: `bool` — `true` nếu `item.Status == DemandItemStatuses.Pending`.
+    * `canViewDraft`: `bool` — `true` nếu là Chủ bài toán hoặc Cán bộ Sở/Admin (`PROVINCIAL_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`).
+    * `canSubmitOffer`: `bool` — `true` chỉ khi `item.Status == DemandItemStatuses.Verified`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-03`.
+
+- [x] **Task 7.2** `[FE]` Xóa Bỏ Hardcode Nhãn Trạng Thái & Render 4 Badge Chuẩn (`nhu-cau-cong-nghe/[id]/page.tsx`):
+  - Xóa bỏ việc gán cứng `{isCommercialOrder ? "ĐƠN MUA HÀNG THƯƠNG MẠI" : "ĐANG MỞ TÌM CUNG"}`.
+  - Xây dựng hàm ánh xạ trạng thái sang giao diện:
+    * `PENDING`: Badge vàng hổ phách `"CHỜ SỞ KH&CN THẨM ĐỊNH"`, phụ đề: *"Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết"*.
+    * `VERIFIED`: Badge xanh ngọc `"ĐANG MỞ TÌM CUNG"`, phụ đề: *"Đang mở tiếp nhận giải pháp công nghệ từ Viện/Trường/Doanh nghiệp"*.
+    * `CONNECTED`: Badge xanh dương `"ĐÃ KẾT NỐI CUNG - CẦU"`.
+    * `CLOSED`: Badge xám `"ĐÃ ĐÓNG HỒ SƠ"`.
+    * Nếu `isCommercialOrder`: Giữ nhãn `"ĐƠN MUA HÀNG THƯƠNG MẠI"`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`.
+
+- [x] **Task 7.3** `[FE]` Bổ Sung Banner Cảnh Báo Chờ Duyệt & Tạm Khóa Form Chào Giá Khi `PENDING` (`[id]/page.tsx`):
+  - Khi `item.status === 'PENDING'`, hiển thị Banner nổi bật ở đầu trang bài toán:
+    * Tiêu đề: **Hồ Sơ Nhu Cầu Đang Chờ Thẩm Định**.
+    * Nội dung: *"Bài toán công nghệ này đã được tiếp nhận thành công và đang được Cán bộ Sở Khoa học & Công nghệ thẩm định trước khi niêm yết chính thức lên Sàn."*
+  - Nếu `item.status === 'PENDING'` hoặc `canSubmitOffer === false`: Vô hiệu hóa hoặc ẩn form "Chào bán giải pháp" ở chân trang, thay bằng thông báo giải thích rõ ràng.
+  - Tiêu chí nghiệm thu: `AC-DMD-02`, `AC-DMD-03`.
+
+- [x] **Task 7.4** `[Test/BE]` Viết Kiểm Thử Unit / Integration Cho API Demand Chi Tiết:
+  - Tạo / Cập nhật file test kiểm chứng:
+    * Trả về đúng `status = 'PENDING'` khi tạo bài toán mới.
+    * Gắn cờ `isOwner = true` khi gọi API bằng token của người tạo.
+    * Gắn cờ `canViewDraft = true` đối với `PROVINCIAL_ADMIN` và `SUPER_ADMIN`.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-03`.
+
+- [x] **Task 7.5** `[Test/E2E & QC]` Kiểm Thử Tương Tác Sống & Thẩm Tra Trạng Thái Duyệt (Playwright):
+  - Kịch bản kiểm thử:
+    1. Đăng nhập tài khoản `public1` tạo bài toán nhanh.
+    2. Truy cập chi tiết bài toán: Xác nhận hiển thị Badge `CHỜ SỞ KH&CN THẨM ĐỊNH` và Banner cảnh báo; form chào giá bị khóa.
+    3. Đăng nhập tài khoản Cán bộ Sở Hà Nội (`hanoi.admin@demo.nacentech.vn`), vào `/gov/demands` bấm "Phê duyệt & Niêm yết".
+    4. Quay lại trang chi tiết bài toán F5: Xác nhận Badge chuyển sang `ĐANG MỞ TÌM CUNG` màu xanh lá và mở form chào giá.
+  - Tiêu chí nghiệm thu: `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04`.
+
+---
+
+## 8. DANH SÁCH CÔNG VIỆC THỰC THI CR-TASK-03-DELTA-02 (PHASE DELTA V15): CHUẨN HÓA CHỮ KÝ TAY CẢM ỨNG ĐIỆN TỬ (TOUCH DIGITAL SIGNATURE PAD SHARED COMPONENT)
+
+> **Mã CR**: `CR-TASK-03-DELTA-02`  
+> **Căn cứ**: Phê duyệt Gate 1 của PO ngày 04/11/2026, Wireframe HTML `25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html`, Luật GDĐT 20/2023/QH15, PDPD NĐ 13/2023/NĐ-CP.  
+> **Phiên bản mục tiêu**: `1.15.0`  
+> **Mục tiêu**: Chuẩn hóa Shared Component Bảng ký tay cảm ứng điện tử (Touch Digital Signature Pad), tích hợp validation bắt buộc ký (`BR-SIG-01`), chống chữ ký trống (`BR-SIG-02`), lưu trữ Base64 PNG Data URL và đảm bảo tính bất biến hồ sơ sau khi nộp (`BR-SIG-03`).
+
+- [x] **T-03.71 (Task 8.1)** `[FE]` Xây Dựng Bộ Shared Component `SignaturePadModal.tsx` & `SignatureBoxPreview.tsx` (`src/components/ui/signature-pad-modal.tsx`):
+  - Hiện thực HTML5 Canvas thuần (Zero external libraries), triệt tiêu rủi ro dependency conflict và tối ưu bundle.
+  - Chuẩn hóa độ nét Retina High-DPI thông qua tỷ lệ `window.devicePixelRatio`, scale buffer canvas tương ứng kích thước CSS (220px height, 100% width, max 570px).
+  - Hỗ trợ đa phương thức nhập liệu:
+    * Chuột máy tính: `mousedown`, `mousemove`, `mouseup`, `mouseleave`.
+    * Cảm ứng (Touch): `touchstart`, `touchmove`, `touchend`, `touchcancel` kèm thuộc tính CSS `touch-action: none` và lệnh `e.preventDefault()`, không làm giật/cuộn trang màn hình điện thoại/tablet.
+  - Định dạng nét mực: màu xanh đen `#0F172A`, độ dày `lineWidth = 2.5`, bo tròn `lineCap = 'round'`, `lineJoin = 'round'`.
+  - Quản trị 5 trạng thái UX: Empty (chưa ký), Drawing (đang vẽ), Signed (xác nhận xem trước), Cleared (xóa nét), Error (lỗi chưa ký).
+  - Cơ chế Anti-Blank Signature: Cờ `hasDrawn` và kiểm tra độ dài Data URL Base64; nếu chưa vẽ nét nào mà bấm xác nhận thì chặn lại và thông báo nhắc nhở.
+  - Xuất dữ liệu ảnh: `canvas.toDataURL('image/png')` trả về Base64 Data URL.
+  - Cung cấp các nút: `[Xóa nét / Ký lại]`, `[Hủy bỏ]`, `[Xác nhận & Sử dụng chữ ký]`.
+  - Tiêu chí kiểm chứng:
+    - [x] Mở modal render canvas sắc nét, không bị nhòe pixel trên màn hình Retina (DPR 2x).
+    - [x] Thao tác vẽ mượt bằng cả chuột và cảm ứng touch, không sinh lỗi cuộn trang ngoài ý muốn.
+    - [x] Nút xóa nét làm sạch canvas và reset cờ `hasDrawn = false`.
+    - [x] Chặn bấm xác nhận khi chưa có nét vẽ và xuất Base64 PNG hợp lệ khi đã ký.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `BR-SIG-02`, `AC-SIG-02`, `AC-SIG-03`.
+
+- [x] **T-03.72 (Task 8.2)** `[BE]` Mở Rộng API DTO `SubmitDeepSurveyRequest` & Entity `DemandSurvey` Tiếp Nhận `signatureDataUrl` (`DemandController.cs`, `DemandSurvey.cs`):
+  - Cập nhật Record DTO `SubmitDeepSurveyRequest` tại `SourceCode/backend/apps/api/V1Compat/DemandController.cs`:
+    * Bổ sung trường: `string? SignatureDataUrl = null` và `string? RepresentativeSignatureUrl = null`.
+  - Rào chắn Validation tại Controller (`BR-SIG-01`):
+    * Kiểm tra chuỗi Data URL không rỗng và bắt đầu bằng tiền tố `data:image/png;base64,` hoặc có độ dài tối thiểu đảm bảo tính hợp lệ của ảnh.
+    * Trả về HTTP 400 Bad Request kèm message rõ ràng nếu thiếu chữ ký hợp lệ.
+  - Cập nhật Domain Aggregate Root `DemandSurvey.cs`:
+    * Thêm thuộc tính `public string? RepresentativeSignatureUrl { get; private set; }`.
+    * Cập nhật Constructor / Factory method để tiếp nhận và gán giá trị chữ ký điện tử.
+  - CSDL Migration Schema (`THIET_KE_CSDL_DEMAND_VA_TNI.md`):
+    * Bổ sung script migration EF Core: `ALTER TABLE demand.demand_surveys ADD COLUMN IF NOT EXISTS representative_signature_url TEXT NULL;`.
+  - Tiêu chí kiểm chứng:
+    - [x] Gọi API `POST /api/v1/demands/surveys` kèm `signatureDataUrl` lưu thành công vào CSDL.
+    - [x] Gọi API thiếu trường chữ ký trả về HTTP 400 và thông báo lỗi tương ứng.
+    - [x] Khả năng tương thích ngược hoàn toàn với các phiếu khảo sát cũ (nullable column).
+  - Tiêu chí nghiệm thu: `REQ-SIG-03`, `BR-SIG-01`, `BR-SIG-03`.
+
+- [x] **T-03.73 (Task 8.3)** `[FE]` Tích Hợp Ô Chữ Ký Điện Tử Vào Bước Xác Nhận Form `/khao-sat-nhu-cau`, Rào Chắn Bắt Buộc Ký (`BR-SIG-01`), LocalStorage Draft & Ticket Preview:
+  - Tích hợp component `<SignatureBoxPreview />` vào Bước cam kết & xác nhận (`src/app/khao-sat-nhu-cau/page.tsx`).
+  - Giao diện hộp hiển thị:
+    * Khi chưa ký: Khung viền nét đứt màu xanh nhạt, icon bút ký, tiêu đề *"Bấm vào đây để ký tay / Chữ ký điện tử"* và phụ đề hướng dẫn.
+    * Khi đã ký: Hiển thị hình ảnh chữ ký sắc nét trên nền sáng chống lóa, gắn kèm Badge `✓ Đã ký điện tử` màu xanh lục, nút `[Ký lại]` và `[Xóa chữ ký]`.
+  - Cơ chế chặn nộp phiếu Validation Gate (`BR-SIG-01`):
+    * Khi bấm `[Kiểm Tra & Gửi Phiếu Khảo Sát]`, nếu chưa có chữ ký: ngăn chặn gửi, tự động cuộn mượt (smooth scroll) đến ô ký, hiển thị viền đỏ và Toast cảnh báo: *"Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!"*.
+  - Tích hợp Auto-Save & Khôi phục bản nháp (LocalStorage Draft):
+    * Lưu chuỗi Base64 chữ ký vào bản nháp cùng dữ liệu form.
+    * Khi tải lại bản nháp: khôi phục nguyên vẹn trạng thái chữ ký và hiển thị Preview, không bắt người dùng vẽ lại.
+  - Nhúng vào Modal Phiếu Tiếp Nhận Thành Công (`successModal`):
+    * Hiển thị chữ ký người đại diện đã ký trong phiếu tiếp nhận và hỗ trợ in A4 sắc nét (`window.print()`).
+  - Tiêu chí kiểm chứng:
+    - [x] Bấm vào ô mở modal bảng ký, sau khi ký xong hiển thị ảnh xem trước chính xác.
+    - [x] Bấm [Xóa chữ ký] xóa sạch dữ liệu và quay về khung chờ ký ban đầu.
+    - [x] Chặn gửi thành công và cuộn đến ô ký khi để trống chữ ký.
+    - [x] Khôi phục chữ ký thành công từ LocalStorage Draft sau khi refresh trang.
+    - [x] Chữ ký xuất hiện sắc nét trong modal thành công và bản in tiếp nhận.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `REQ-SIG-02`, `BR-SIG-01`, `AC-SIG-01`, `AC-SIG-04`, `AC-SIG-05`.
+
+- [x] **T-03.74 (Task 8.4)** `[FE]` Chuẩn Hóa Gói Dùng Chung Cho Form ĐMST `/khao-sat-dmst` & Sẵn Sàng Tái Sử Dụng:
+  - Đóng gói wrapper `<TouchSignatureField />` gói gọn state modal, preview box, error handling thành một form-field drop-in tiện lợi:
+    * Props: `value`, `onChange`, `label`, `required`, `errorMessage`, `disabled`.
+  - Đảm bảo mã nguồn tách rời hoàn toàn khỏi logic riêng của phiếu DNNVV, sẵn sàng cắm sang:
+    * Form Khảo sát Năng lực ĐMST `/khao-sat-dmst`.
+    * Form Ký Hợp đồng Thỏa thuận Deal Room (`TASK-04`).
+  - Tiêu chí kiểm chứng:
+    - [x] Component độc lập (standalone), không hardcode bất kỳ id hoặc state cục bộ của trang `/khao-sat-nhu-cau`.
+    - [x] Sẵn sàng import và sử dụng tại các trang form khác mà không cần cấu hình lại canvas.
+  - Tiêu chí nghiệm thu: `REQ-SIG-01`, `REQ-SIG-02`.
+
+- [x] **T-03.75 (Task 8.5)** `[TEST]` Bổ Sung Vitest Unit Tests Cho Component Chữ Ký & Validation Logic (`page.test.tsx`, `signature-pad-modal.test.tsx`):
+  - Xây dựng bộ test mới `src/components/ui/signature-pad-modal.test.tsx`:
+    * Test mở/đóng modal theo props `isOpen`.
+    * Test vẽ nét qua sự kiện chuột (`mousedown`, `mousemove`, `mouseup`).
+    * Test xóa nét canvas khi bấm nút [Xóa nét / Ký lại].
+    * Test cảnh báo chống chữ ký trống (Anti-blank check) khi bấm xác nhận khi chưa vẽ.
+    * Test xuất Base64 PNG qua callback `onConfirm`.
+  - Cập nhật bộ test `src/app/khao-sat-nhu-cau/page.test.tsx`:
+    * Test validation chặn nộp phiếu khi thiếu chữ ký (`BR-SIG-01`).
+    * Test render Hộp xem trước khi có dữ liệu chữ ký.
+    * Test lưu và tải bản nháp LocalStorage bao gồm trường chữ ký.
+  - Tiêu chí kiểm chứng:
+    - [x] Thực thi `npm test` với Vitest đạt 100% PASS trên tất cả các test cases mới.
+    - [x] Không gây hồi quy (Zero regression) cho các test cases hiện hữu.
+  - Tiêu chí nghiệm thu: `TEST-SIG-01`, `TEST-SIG-02`, `TEST-SIG-04`, `TEST-SIG-05`.
+
+- [x] **T-03.76 (Task 8.6)** `[TEST/E2E]` Bổ Sung Kịch Bản Kiểm Thử Tương Tác Sống & Playwright E2E (`TEST-SIG-01` -> `TEST-SIG-05`):
+  - Xây dựng kịch bản Playwright E2E kiểm chứng toàn trình luồng ký điện tử:
+    1. Kịch bản 1 (`TEST-SIG-01`): Điền đầy đủ form đến bước xác nhận, để trống ô ký và bấm Gửi $\rightarrow$ Bị chặn, scroll đến ô chữ ký, hiển thị thông báo lỗi.
+    2. Kịch bản 2 (`TEST-SIG-02`): Mở modal bảng ký, dùng mouse drag vẽ nét chữ ký, kiểm tra nét vẽ xuất hiện, bấm Xóa nét và kiểm tra canvas được làm sạch.
+    3. Kịch bản 3 (`TEST-SIG-03`): Kích hoạt chế độ cảm ứng di động (Mobile emulation / Touch gestures), vuốt ngón tay ký $\rightarrow$ Xác nhận không bị scroll trang, nét vẽ ghi nhận tọa độ chính xác.
+    4. Kịch bản 4 (`TEST-SIG-04`): Vẽ ký và bấm "Xác nhận & Sử dụng chữ ký" $\rightarrow$ Modal đóng, hiển thị ảnh chữ ký trong preview box, Badge Đã ký điện tử xuất hiện.
+    5. Kịch bản 5 (`TEST-SIG-05`): Lưu bản nháp, reload trang, bấm Tải lại bản nháp $\rightarrow$ Phục hồi 100% ảnh chữ ký trong Preview.
+    6. Kịch bản 6: Nộp phiếu thành công $\rightarrow$ Chữ ký hiển thị trong Modal tiếp nhận và dữ liệu gửi lên API chứa trường `signatureDataUrl`.
+  - Tiêu chí kiểm chứng:
+    - [x] Bộ kiểm thử Playwright chạy tự động vượt qua 100% các assertions.
+  - Tiêu chí nghiệm thu: `TEST-SIG-01` $\rightarrow$ `TEST-SIG-05`.
+
+
+
+
+---
+
+## Phase 19: BACLINK Refactor Delta (CR-BACLINK-005)
+
+- [x] `T-03.BL.01` **[BE]** Refactor `DemandController` & `DemandService`: gỡ `[AllowAnonymous]` và logic `PROVINCIAL_ADMIN` khỏi `/api/v1/gov/demands*` (trả `401/403/410`), chuyển duyệt nhu cầu 1 cấp cho `ADMIN` BACLINK (`/api/v1/admin/demands/{id}/verify`), và cho phép mọi tài khoản `ENTERPRISE` (`CreatedBy == Actor.PersonId` hoặc `OrganizationId == Actor.OrganizationId`) tạo/sửa/đóng nhu cầu không từ chối vì thiếu role `BUYER` riêng; giữ nguyên cấm fallback `tniScore || 75` (`BR-03-BL-01`, `BR-03-BL-02`):
+  - [x] Tệp: `SourceCode/backend/apps/api/V1Compat/DemandController.cs`, `SourceCode/backend/modules/demand/Application/DemandService.cs`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/NacenTech.Modules.Demand.Tests.csproj` và `dotnet test SourceCode/backend/tests/integration/NacenTech.Tests.Integration.csproj --filter "FullyQualifiedName~ShopAndDemandRoleMutationTests"`.
+- [x] `T-03.BL.02` **[FE]** Chuyển đổi Sàn Nhu Cầu công khai (`/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`) và Khảo sát nhu cầu (`/khao-sat-nhu-cau`, `/khao-sat-doanh-nghiep`) sang **Bảng Nhu cầu Mua, Đặt hàng Gia công & Tìm nhà cung ứng Bắc Ninh**: lọc theo 8 ngành `IND_*` & Địa bàn/KCN Bắc Ninh (từ `master-data-client.ts`), nhãn cơ quan bảo chứng mặc định `Hiệp hội BACLINK`, Zero-Mock `<Async>` (`REQ-03-BL-01`, `BR-03-BL-01`):
+  - [x] Tệp: `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.tsx`, `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx`, `SourceCode/frontend/src/app/khao-sat-nhu-cau/page.tsx`, `SourceCode/frontend/src/app/khao-sat-doanh-nghiep/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/nhu-cau-cong-nghe/page.test.tsx src/app/nhu-cau-cong-nghe/[id]/page.test.tsx src/app/khao-sat-nhu-cau/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-03.BL.03` **[FE]** Cập nhật Workspace `/portal/buyer/demands` (`QuickDemandModal`, `EditDemandModal`) vận hành mượt mà dưới `user.role = 'ENTERPRISE'` khi `activeRole = 'BUYER'` trên `RoleSwitcher`, dùng danh mục `IND_*` & Địa bàn/KCN Bắc Ninh (`REQ-03-BL-02`, `BR-03-BL-02`):
+  - [x] Tệp: `SourceCode/frontend/src/app/portal/buyer/demands/page.tsx`.
+  - [x] Kiểm chứng: `cd SourceCode/frontend && npx vitest run src/app/portal/buyer/demands/page.test.tsx && npx tsc --noEmit`.
+- [x] `T-03.BL.04` **[TEST]** Cập nhật & bổ sung kiểm thử xUnit + Vitest xác thực: khóa `/api/v1/gov/demands*`, `ADMIN` duyệt 1 cấp, `ENTERPRISE` Dual-Mode (`activeRole = BUYER`) CRUD nhu cầu đầy đủ & IDOR cross-org bị chặn 403, bộ lọc `IND_*` & KCN Bắc Ninh (`AC-03-BL-01`..`AC-03-BL-03`):
+  - [x] Tệp: `SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/DemandApprovalLifecycleAndPrivacyTests.cs`, `SourceCode/backend/tests/NacenTech.Modules.Demand.Tests/DemandItemLifecycleTests.cs`, `SourceCode/backend/tests/integration/ShopAndDemandRoleMutationTests.cs`, `SourceCode/frontend/src/app/nhu-cau-cong-nghe/page.test.tsx`, `SourceCode/frontend/src/app/portal/buyer/demands/page.test.tsx`.
+  - [x] Kiểm chứng: `dotnet test SourceCode/backend/NacenTech.slnx --filter "FullyQualifiedName~DemandApprovalLifecycleAndPrivacyTests|DemandItemLifecycleTests|ShopAndDemandRoleMutationTests"` và `cd SourceCode/frontend && npx vitest run src/app/nhu-cau-cong-nghe/page.test.tsx src/app/nhu-cau-cong-nghe/[id]/page.test.tsx src/app/portal/buyer/demands/page.test.tsx && npx tsc --noEmit`.

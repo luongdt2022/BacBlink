@@ -1,0 +1,309 @@
+# Đặc Tả Yêu Cầu Kỹ Thuật (Feature Specification)
+# TASK-09: ĐÁNH GIÁ TRÌNH ĐỘ & NĂNG LỰC CÔNG NGHỆ SẢN XUẤT (TT17)
+
+> **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
+> **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
+> **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
+> **Trạng thái**: ⚪ Retired on Web UI in BACLINK Slim Edition (`CR-BACLINK-007` / `PO-DEC-BACLINK-06`)  
+> **Version**: 1.8.0 (Bumped from 1.7.0 via CR-BACLINK-007)  
+> **Last Updated**: 2026-11-18  
+> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md), [CR-BACLINK-006](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md), [CR-BACLINK-007](../TASK-00_PLATFORM_FOUNDATION_VA_COMMON/deltas/CR-BACLINK-007_slim_bacninh_purge_surveys_gov_remnants.md) (`PO-DEC-BACLINK-06`: Gỡ bỏ hoàn toàn các giao diện/dịch vụ Phiếu khảo sát DNNVV, Phiếu ĐMST 43 câu & Phiếu đánh giá TT17 khỏi bản rút gọn Bắc Ninh; bảo toàn non-destructive domain schema ở tầng nền)  
+> **Độ ưu tiên**: Out-of-Scope UI trong Bản rút gọn BACLINK Bắc Ninh (`REQ-BL07-NO-SURVEY-001`)
+
+---
+
+## 1. TỔNG QUAN & MỤC TIÊU NGHIỆP VỤ (EXECUTIVE SUMMARY)
+
+### 1.1. Bối Cảnh
+Thông tư 17/2019/TT-BKHCN quy định phương pháp đánh giá trình độ và năng lực công nghệ sản xuất thông qua hệ thống **26 tiêu chí** phân thành **5 nhóm T-E-O-R-I** (Thang 100 điểm). Phân hệ `TASK-09` số hóa toàn trình từ việc doanh nghiệp kê khai trực tuyến, tự động tính điểm, tính hệ số đồng bộ $T_{ĐB}$, vẽ biểu đồ mạng nhện (Radar Chart), chuẩn đoán điểm nghẽn công nghệ và liên thông sang phân hệ tìm mua giải pháp (`TASK-03`).
+
+### 1.2. Mục Tiêu Nghiệp Vụ
+1. **Số hóa Phụ lục I**: Cung cấp Form Wizard 6 bước tương ứng với Mục A $\rightarrow$ Mục E của Thông tư 17, hỗ trợ chuỗi số liệu tài chính 3 năm và danh mục thiết bị động.
+2. **Realtime Calculator Engine**: Tính toán tức thời điểm số 26 tiêu chí, tổng điểm $\tau$ và hệ số đồng bộ $T_{ĐB}$ ngay khi người dùng nhập liệu.
+3. **Phân cấp 4 Mức Trình Độ Công Nghệ (Điều 9)**:
+   - **Lạc hậu**: $\tau < 35$ và $T_{ĐB} < 0,30$.
+   - **Trung bình**: $35 \le \tau < 60$ và $T_{ĐB} \ge 0,30$.
+   - **Trung bình tiên tiến**: $60 \le \tau < 75$ và $T_{ĐB} \ge 0,50$.
+   - **Tiên tiến**: $\tau \ge 75$ và $T_{ĐB} \ge 0,65$.
+   - *Lệch pha (Không thỏa mãn đồng thời)*: Trạng thái *"Cần thẩm định chuyên gia"*.
+4. **Lưu trữ Bất Biến (Yearly Snapshot)**: Mỗi lần nộp hồ sơ đánh giá đóng gói thành một bản chụp bất biến theo năm (`ADR-0013`) phục vụ thanh tra và lưu vết.
+5. **Cổng Thẩm Định Cấp 2 (`/gov`)**: Lãnh đạo Sở KH&CN và Hội đồng chuyên gia thẩm định minh chứng và phê duyệt Báo cáo chính thức (Phụ lục IV).
+
+---
+
+## 2. TÁC NHÂN & MA TRẬN PHÂN QUYỀN (ACTORS & 3D SCOPED RBAC)
+
+| Tác Nhân | Vai Trò Hệ Thống | Phạm Vi Quyền Hạn | Hành Động Cho Phép |
+| :--- | :--- | :---: | :--- |
+| **Doanh Nghiệp Sản Xuất** | `ENTERPRISE` / `PUBLIC_USER` | `OWNER` | Tạo mới, Lưu nháp (Draft), Xem Realtime Score, Nộp hồ sơ (Submit Snapshot), Xem báo cáo Phụ lục IV của DN mình. |
+| **Chuyên Gia Đánh Giá** | `VERIFIED_EXPERT` | `SECTOR` / `PROVINCE` | Xem hồ sơ được phân công, đối soát minh chứng, chấm điểm phản biện độc lập, gửi nhận xét. |
+| **Cán Bộ Sở KH&CN** | `PROVINCIAL_ADMIN` / `CLUSTER_ADMIN` | `PROVINCE` | Quản lý hàng đợi hồ sơ địa bàn, yêu cầu doanh nghiệp giải trình, ký duyệt cấp chứng nhận Phụ lục IV. |
+| **Quản Trị Viên Trung Ương** | `SUPER_ADMIN` / `OPERATOR_ADMIN` | `GLOBAL` | Toàn quyền kiểm tra, cấu hình tham số ngành, thanh tra và thu hồi chứng nhận vi phạm. |
+
+---
+
+## 3. DANH SÁCH YÊU CẦU CHỨC NĂNG (FUNCTIONAL REQUIREMENTS)
+
+- **`REQ-09-001` (Dashboard Lịch Sử Kỳ Đánh Giá)**: Hiển thị danh sách các kỳ đánh giá theo năm (2024, 2025, 2026), kết quả xếp loại, radar chart mini và trạng thái hồ sơ.
+- **`REQ-09-002` (Form Wizard Kê Khai Phụ Lục I)**: Thiết kế 6 bước nhập liệu chia 2 cột:
+  - *Bước 1 (Mục A)*: Thông tin DN, năm đánh giá, tổng nguồn vốn, lao động $M$, mã ngành chế biến chế tạo C.10 $\rightarrow$ C.32.
+  - *Bước 2 (Mục B - Nhóm T)*: Hiện trạng công nghệ & thiết bị (TC01–TC07, tối đa 30 điểm). Danh mục máy móc động, khấu hao $K_{kh}$, tỷ lệ tự động hóa.
+  - *Bước 3 (Mục C - Nhóm E)*: Hiệu quả khai thác (TC08–TC12, tối đa 20 điểm). Chuỗi số liệu 3 năm ($G_{sp}, G_{dt}, M_{tt}$), tiêu hao năng lượng.
+  - *Bước 4 (Mục D - Nhóm O)*: Năng lực tổ chức & quản lý (TC13–TC17, tối đa 19 điểm). ISO, ERP/MES, chuyển đổi số.
+  - *Bước 5 (Mục Đ - Nhóm R)*: Nghiên cứu & phát triển (TC18–TC22, tối đa 17 điểm). Kinh phí R&D, nhân lực $M_{r\&d}$, phòng thí nghiệm.
+  - *Bước 6 (Mục E - Nhóm I)*: Đổi mới sáng tạo (TC23–TC26, tối đa 14 điểm). Bằng SHTT, sản phẩm mới, liên kết Viện/Trường.
+- **`REQ-09-003` (Sticky Realtime Calculator)**: Sidebar bên phải tự động tính toán điểm 26 tiêu chí, tổng điểm $\tau$, hệ số $T_{ĐB}$ và cập nhật Radar Chart ngay khi người dùng nhập dữ liệu.
+- **`REQ-09-004` (Lưu Nháp Tự Động - Auto-Save Draft)**: Cơ chế debounce 500ms lưu dữ liệu an toàn vào CSDL PostgreSQL qua cấu trúc Hybrid JSONB.
+- **`REQ-09-005` (Báo Cáo Phân Tích & Chuẩn Đoán Điểm Nghẽn)**:
+  - Trình bày phiếu chấm điểm Phụ lục II.
+  - Biểu đồ mạng nhện Radar Chart so sánh điểm DN với chuẩn trung bình ngành.
+  - Tự động bóc tách các tiêu chí yếu nhất (dưới 40% điểm) thành danh sách "Điểm Nghẽn Công Nghệ".
+  - Nút bấm liên thông: *"Đẩy điểm nghẽn sang Sàn Nhu Cầu Tìm Mua Công Nghệ (TASK-03)"*.
+- **`REQ-09-006` (Cổng Thẩm Định Cấp 2 Của Sở KH&CN)**:
+  - Hàng đợi hồ sơ đánh giá của tỉnh/thành (`/gov/assessments/tt17`).
+  - Giao diện đối soát số liệu tự khai vs minh chứng đính kèm.
+  - Điều chỉnh điểm có lưu vết Audit Trail và phê duyệt ban hành Báo cáo chính thức Phụ lục IV.
+- **`REQ-09-007` (Khảo Sát Public Intake & Tự Động Tạo Tài Khoản - Auto-Provisioning)**:
+  - Cho phép người dùng vãng lai hoặc Doanh nghiệp mở form kê khai trực tiếp tại `/assessments/tt17/wizard` mà không cần đăng nhập trước.
+  - Form thu thập bắt buộc tại Mục A: Tên DN, Mã số thuế (MST), Người đại diện liên hệ, Email, Số điện thoại.
+  - Tại trang Hub `/assessments/tt17`: Nếu chưa đăng nhập hoặc chưa có bản đánh giá, hiển thị Hero Banner Khảo Sát + nút CTA lớn kêu gọi tự chẩn đoán công nghệ (Zero Mock Leak - không hiển thị điểm số của doanh nghiệp mẫu).
+  - Khi bấm *"Nộp Hồ Sơ Đánh Giá"*: Hệ thống tự động kiểm tra MST; nếu chưa có tài khoản sẽ tự động tạo hồ sơ Doanh nghiệp và cấp tài khoản `ENTERPRISE`, gắn kết quả đánh giá và chuyển sang màn hình Báo cáo Phụ lục IV.
+- **`REQ-09-008` (Tự Động Đồng Bộ Từ CSDL & Tra Cứu MST Qua API - Pre-fill & Tax Lookup)**:
+  - Khi người dùng đã có phiên đăng nhập (`ENTERPRISE`, `BUYER`, `SELLER`): Wizard tự động gọi `fetchMyEnterpriseProfile()` để điền sẵn toàn bộ Mục A và hiển thị banner thông báo xanh ngọc.
+  - Tích hợp nút *"Tra cứu MST"* cạnh ô nhập Mã số thuế và sự kiện phím tắt `Enter`: Gọi API `lookupTaxCode(taxCode)` tra cứu dữ liệu Cổng VietQR / CSDL Quốc gia, tự động điền Tên DN, Tỉnh thành, Địa chỉ nhà máy và thông báo kết quả qua Toast.
+- **`REQ-09-009` (Modal Chúc Mừng & Xác Nhận Cấp Tài Khoản Tự Động)**:
+  - Khi khách vãng lai nộp bài đánh giá thành công (`autoProvisioned = true`), Wizard hiển thị Modal chúc mừng trang trọng chứa Mã hồ sơ khảo sát, Hộp thông báo màu hổ phách ghi rõ Tên đăng nhập (Email), Mật khẩu tạm thời, Nút *"Đăng Nhập Ngay Vào Hệ Thống"* và Nút *"Xem Báo Cáo Đánh Giá Phụ Lục IV"*.
+- **`REQ-09-010` (Tái Cấu Trúc Giao Diện Wizard 6 Bước Theo "Phiếu Thu Thập Thực Tế")**:
+  - Tái cấu trúc 6 bước kê khai bám sát 1:1 `Phiếu thu thập` trong file Excel SSOT 19.10:
+    - *Bước 1 (Mục A - Định danh & Phân ngành)*: Tự động tra cứu MST, chọn 1 trong 23 mã ngành C.10 $\rightarrow$ C.32 (tự động nạp bộ hệ số $K_{chuẩn 1 \rightarrow 4}$), quy mô vốn và lao động.
+    - *Bước 2 (Mục B - Máy móc, Thiết bị & Chuyển giao)*: Danh mục 03 dây chuyền chính, Nguyên giá $G_{bđ}$, Giá trị còn lại $G_{sx}$, Đầu tư mở rộng $G_{tbm1}$, Thay thế bảo dưỡng $G_{tbm2}$, Thiết bị số hóa $G_{sh}$, Checkbox loại chuyển giao công nghệ. Có Tooltip hướng dẫn lấy số liệu từ Mã 211 Bảng cân đối kế toán & Danh mục TSCĐ.
+    - *Bước 3 (Mục C - Hoạt động SXKD 3 Năm)*: Component bảng lưới Financial Matrix Grid nhập chuỗi số liệu 3 năm ($G_{sp}, G_{dt}, G_{cp}, P_{tt}, P$), Chi phí điện/than/xăng dầu $G_{nl}$, Chi phí nguyên vật liệu $G_{nvl}$, Checkbox chuẩn chất lượng SP (ISO/TCVN) và sáng kiến cải tiến Kaizen.
+    - *Bước 4 (Mục D - Nhân lực & Quản trị Môi trường)*: Cơ cấu lao động ($M, M_{tt}, M_{bc}, M_{ql}$), Chi phí đào tạo $G_{đthl}$, Checkbox 6 hệ thống quản lý (MES, ERP, PLM, PDM, PPS, SCM), SCADA/MDC, Chứng chỉ ISO 9001/14001, xử lý chất thải.
+    - *Bước 5 (Mục Đ - CNTT & Năng lực R&D)*: Hạ tầng CNTT, Chi phí phần mềm/CNTT $G_{tt}$, Cơ sở R&D, Nhân lực R&D $M_{r\&d}$, Chi phí R&D $G_{R\&D}$, Quỹ phát triển KH&CN.
+    - *Bước 6 (Mục E - Đổi mới Sáng tạo & Chuyển đổi số 4.0)*: Doanh thu SP mới, Văn bằng SHTT sáng chế/GPHI, Hợp tác Viện/Trường, Chiến lược 4.0, Checkbox 11 công nghệ 4.0 (Cloud, Robot, AR/VR, IoT, Big Data, Blockchain, In 3D...) và mức độ triển khai.
+- **`REQ-09-011` (Bảng Master Data Định Mức 23 Ngành Chế Biến Chế Tạo - `assessment.industry_benchmarks`)**:
+  - Lưu trữ 23 mã ngành VSIC (C.10 $\rightarrow$ C.32) cùng 4 hệ số định mức trung bình:
+    * $K_{chuẩn 1}$: Hệ số tự động hóa trung bình (triệu đồng/lao động).
+    * $K_{chuẩn 2}$: Hệ số chi phí năng lượng trung bình ($G_{nl} / G_{dt}$).
+    * $K_{chuẩn 3}$: Hệ số chi phí nguyên vật liệu trung bình ($G_{nvl} / G_{dt}$).
+    * $K_{chuẩn 4}$: Năng suất lao động trung bình (triệu đồng/người/năm).
+  - Cung cấp API `GET /api/v1/assessments/tt17/benchmarks` trả về danh mục 23 ngành và hệ số benchmark để Frontend tính live score đồng bộ 100% với Backend.
+- **`REQ-SURVEY-DOC-001` (Tải Mẫu Phiếu Thu Thập TT17 Trắng Dạng Word .docx Chuẩn A4)**:
+  - Cung cấp nút tải biểu mẫu chuẩn văn bản hành chính khổ A4 phục vụ in ấn mang đi khảo sát thực địa tại các tỉnh/thành phố và doanh nghiệp.
+  - Cấu trúc đầy đủ các bảng biểu Mục A đến Mục E theo Thông tư 17/2019/TT-BKHCN, chừa dòng trống kẻ chấm để ghi tay, có hướng dẫn trích lục tài chính từ BCTC.
+- **`REQ-SURVEY-DOC-002` (Tải Mẫu Phiếu Khảo Sát Nhu Cầu DNNVV Trắng Dạng Word .docx Chuẩn A4)**:
+  - Cung cấp nút tải biểu mẫu khảo sát hiện trạng, khó khăn và nhu cầu đổi mới sáng tạo, chuyển đổi số của Doanh nghiệp nhỏ và vừa theo Luật Hỗ trợ DNNVV.
+- **`REQ-SURVEY-DOC-003` (Danh Sách Quản Lý Bản Ghi Phiếu Đã Điền Tại `/admin/assessments/records`)**:
+  - Xây dựng giao diện danh sách tập trung toàn quốc các bản ghi phiếu khảo sát & đánh giá của doanh nghiệp.
+  - Tích hợp bộ lọc 34 Tỉnh/Thành phố trọng điểm ĐMST (`province`), loại phiếu (`surveyType`), trạng thái (`status`), và ô tìm kiếm tức thời theo MST / Tên DN.
+- **`REQ-SURVEY-DOC-004` (Xuất File Word .docx Từng Phiếu Có Dữ Liệu Điền Sẵn Của Doanh Nghiệp)**:
+  - Cung cấp nút hành động *"Xuất file Word"* tại mỗi dòng bản ghi trong danh sách quản trị.
+  - Tự động nạp dữ liệu thực tế từ CSDL, điền đầy đủ thông tin định danh pháp nhân, danh mục dây chuyền thiết bị, số liệu 3 năm, kết quả điểm 26 tiêu chí TT17, hệ số $T_{ĐB}$ và xếp loại phục vụ in ấn lưu trữ hồ sơ công vụ.
+
+---
+
+## 4. QUY TẮC NGHIỆP VỤ BẤT BIẾN (BUSINESS RULES)
+
+- **`BR-09-001 (Ràng buộc chuỗi 3 năm)`**: Các chỉ tiêu tài chính và sản xuất ($G_{sp}, G_{dt}, M_{tt}$) bắt buộc phải nhập đủ số liệu dương ($\ge 0$) cho 3 năm liền kề trước năm đánh giá.
+- **`BR-09-002 (Phân nhánh quy mô TC20)`**: Tiêu chí TC20 (Kinh phí R&D) bắt buộc phân nhánh theo Tổng nguồn vốn BCTC và Tổng số lao động $M$ theo quy định Thông tư 17.
+- **`BR-09-003 (Công thức hệ số đồng bộ)`**:
+  $$T_{ĐB} = \left(\frac{T}{30}\right)^{0,30} \times \left(\frac{E}{20}\right)^{0,20} \times \left(\frac{O}{19}\right)^{0,19} \times \left(\frac{R}{17}\right)^{0,17} \times \left(\frac{I}{14}\right)^{0,14}$$
+  Nếu bất kỳ nhóm điểm nào bằng 0, hệ số đồng bộ $T_{ĐB} = 0$.
+- **`BR-09-004 (Xếp loại kép có điều kiện)`**: Chỉ xếp loại khi thỏa mãn đồng thời cả 2 điều kiện $\tau$ và $T_{ĐB}$. Trường hợp lệch pha phải gán nhãn *"Cần thẩm định chuyên gia"*.
+- **`BR-09-005 (Tính bất biến của Snapshot)`**: Khi hồ sơ chuyển sang trạng thái `SUBMITTED`, toàn bộ dữ liệu khảo sát và điểm số được đóng băng thành bản chụp cố định của năm đánh giá, không bị ảnh hưởng nếu thông tin pháp nhân thay đổi.
+- **`BR-09-006 (Cô lập dữ liệu địa bàn)`**: Cán bộ Sở KH&CN chỉ được thẩm định hồ sơ của doanh nghiệp có cơ sở sản xuất trên địa bàn tỉnh mình (`ScopeId`). Mọi truy cập chéo địa bàn bị chặn HTTP 403 Forbidden.
+- **`BR-09-007 (Auto-Provisioning khi Nộp bài Khảo sát vãng lai)`**: Khi người dùng chưa đăng nhập nộp hồ sơ đánh giá với MST và Email hợp lệ:
+  1. Kiểm tra CSDL `enterprise_profiles`: Nếu MST chưa tồn tại, tự động tạo mới `EnterpriseProfile`.
+  2. Tạo mới tài khoản người dùng với role `ENTERPRISE` liên kết với Email và Enterprise này.
+  3. Gắn `enterprise_id` vào bản đánh giá `tt17_evaluations`, đóng băng trạng thái `SUBMITTED` và cấp quyền truy cập.
+- **`BR-09-008 (Tính toán Tự động Năng suất Lao động TC08 & Zero-Mock Engine)`**: Tuyệt đối không gán cứng giá trị cho TC08 (`s08 = 4.0`); hệ thống bắt buộc tính toán tự động tốc độ tăng năng suất lao động bình quân từ chuỗi tài chính 3 năm, đồng bộ 100% giữa Frontend và Backend Engine.
+- **`BR-09-009 (Bộ Quy Tắc Phòng Vệ Mẫu Số Bằng 0 & Phân Nhánh An Toàn - Defensive Division Rules)`**:
+  1. Nếu $G_{bđ} = 0 \rightarrow K_{kh} = 0\%$ (chấm 1 điểm).
+  2. Nếu $M_{tt} = 0 \rightarrow K_{tđh} = 0$ (chấm 1 điểm), $K_{ns} = 0$ (chấm 1 điểm).
+  3. Nếu $G_{dt} = 0 \rightarrow K_{cđ} = 0, K_{nl} = 0, K_{nvl} = 0, K_{tt} = 0, K_{R\&D} = 0$.
+  4. Tuyệt đối không sinh lỗi `NaN` hoặc `Infinity` trên giao diện người dùng; hiển thị cảnh báo hướng dẫn người dùng nhập doanh thu để hệ thống tính toán các chỉ số kinh tế.
+- **`BR-SURVEY-DOC-01 (Định dạng file Word .docx xuất ra hợp lệ & thẩm mỹ)`**:
+  * Định dạng file xuất bắt buộc là `.docx` (Office OpenXML) hợp lệ, mở mượt mà trên MS Word, LibreOffice, Google Docs, không gặp lỗi XML hoặc corrupt file.
+  * Bộ mã Unicode font chữ tiêu chuẩn (Times New Roman / Calibri), cỡ chữ 12-13pt.
+  * Khổ giấy A4 dọc, căn lề chuẩn văn bản hành chính Việt Nam (Trên/Dưới 20mm, Trái 30mm, Phải 15-20mm), bảng biểu có lặp lại tiêu đề dòng khi ngắt trang (`tblHeader`).
+- **`BR-SURVEY-DOC-02 (Đảm bảo toàn vẹn dữ liệu cá nhân & pháp nhân Zero-Mock)`**:
+  * File Word xuất ra chứa đúng 100% dữ liệu thực tế do Doanh nghiệp kê khai hoặc Cán bộ Sở KH&CN thẩm định đã lưu trong CSDL.
+  * Tuyệt đối không sinh dữ liệu giả (Zero-Mock Data Leakage). Trường dữ liệu trống hiển thị `"---"` hoặc dòng kẻ chấm `"................"` để phục vụ ghi chép.
+  * Tuân thủ quy định bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (PDPD), chỉ cho phép các vai trò quản trị có thẩm quyền thực hiện thao tác kết xuất.
+
+---
+
+## 5. YÊU CẦU DỮ LIỆU & SCHEMA CSDL (HYBRID JSONB ADR-0013)
+
+### Bảng 1: `assessment.tt17_evaluations`
+- `id`: UUID (Primary Key)
+- `enterprise_id`: UUID (Khóa ngoại tham chiếu `enterprise.profiles`)
+- `assessment_year`: INT (Năm đánh giá, ví dụ: 2026)
+- `status`: VARCHAR(30) (`DRAFT`, `SUBMITTED`, `IN_REVIEW`, `CHANGES_REQUESTED`, `APPROVED`)
+- `scope_type`: VARCHAR(20) (`PROVINCE`)
+- `scope_id`: VARCHAR(10) (Mã tỉnh/thành: `HN`, `HP`, `HCM`...)
+- `survey_data_json`: JSONB (Lưu trữ toàn bộ thông tin kê khai Phiếu thu thập: máy móc, chuỗi tài chính 3 năm, điện/năng lượng, nguyên vật liệu, cơ cấu lao động, chứng chỉ, CNTT, R&D, CĐS)
+- `scores_json`: JSONB (Chi tiết điểm 26 tiêu chí, điểm 5 nhóm T-E-O-R-I, tổng điểm $\tau$, hệ số $T_{ĐB}$, xếp loại)
+- `reviewer_id`: UUID (Nullable - Cán bộ thẩm định)
+- `review_notes`: TEXT (Nhận xét của Hội đồng thẩm định)
+- `audit_trail_json`: JSONB (Lịch sử điều chỉnh điểm)
+- `created_at`, `updated_at`, `submitted_at`, `approved_at`: TIMESTAMPTZ
+- **Unique Constraint**: `(enterprise_id, assessment_year)` — Mỗi doanh nghiệp chỉ có 1 bản đánh giá chính thức cho mỗi năm.
+
+### Bảng 2: `assessment.industry_benchmarks` (Master Data Định Mức 23 Ngành)
+- `industry_code`: VARCHAR(10) (Primary Key, ví dụ: `C.10`, `C.11` ... `C.32`)
+- `industry_name`: VARCHAR(255) (Tên ngành công nghiệp chế biến chế tạo)
+- `k_chuan_1`: NUMERIC(10,2) (Hệ số tự động hóa trung bình - triệu đồng/lao động)
+- `k_chuan_2`: NUMERIC(6,4) (Hệ số chi phí năng lượng trung bình)
+- `k_chuan_3`: NUMERIC(6,4) (Hệ số chi phí nguyên vật liệu trung bình)
+- `k_chuan_4`: NUMERIC(10,2) (Năng suất lao động trung bình - triệu đồng/người/năm)
+- `created_at`, `updated_at`: TIMESTAMPTZ
+
+---
+
+## 6. GIAO DIỆN & TRẢI NGHIỆM NGƯỜI DÙNG (UI SPECIFICATION)
+
+### `UI-SURVEY-DOC-001`: Menu Item Sidebar & Bố Cục Trang Quản Trị `/admin/assessments/records` Chuẩn 5 UX States Qua `<Async>`
+
+1. **Điều Hướng Sidebar Quản Trị (Admin Navigation)**:
+   - **Vị trí tích hợp**: Thuộc **Mục 1: TRUNG TÂM ĐIỀU HÀNH** trên Sidebar Cổng Quản trị Admin.
+   - **Tên hiển thị (Label)**: `"Danh sách Phiếu Thu thập & Đánh giá DN"`
+   - **Đường dẫn (Route)**: `/admin/assessments/records`
+   - **Huy hiệu (Badge)**: `"Bản ghi DN"`
+   - **Icon**: `FileSpreadsheet` hoặc `ClipboardList`
+   - **Active State**: Nền Deep Teal, font chữ đậm khi truy cập route này.
+
+2. **Bố Cục Giao Diện Trang `/admin/assessments/records`**:
+   - **Khu vực Header & Actions**:
+     * Tiêu đề: *"Quản Lý Bản Ghi Phiếu Thu Thập TT17 & Nhu Cầu ĐMST"*.
+     * Hai nút hành động tải template trắng:
+       - Nút 1: `[Tải Mẫu Phiếu TT17 (A4 .docx)]`
+       - Nút 2: `[Tải Mẫu Nhu Cầu DNNVV (A4 .docx)]`
+   - **Thanh Công Cụ Bộ Lọc (Filter Toolbar)**:
+     * Dropdown lọc theo 34 Tỉnh/Thành phố trọng điểm ĐMST (`province`).
+     * Dropdown lọc theo Loại phiếu (`surveyType`: Tất cả, TT17, Nhu cầu DNNVV).
+     * Dropdown lọc theo Trạng thái (`status`: DRAFT, SUBMITTED, IN_REVIEW, APPROVED).
+     * Ô tìm kiếm tức thời (Search Input) theo MST hoặc Tên Doanh nghiệp.
+   - **Bảng Danh Sách Bản Ghi Chuẩn 5 UX States Qua Component Wrapper `<Async>`**:
+     * **State 1 (Loading)**: Render 5-7 dòng Skeleton Table với hiệu ứng shimmer màu xám nhạt, các nút thao tác disabled.
+     * **State 2 (Empty)**: Minh họa SVG chiếc hộp rỗng kèm thông báo *"Không tìm thấy bản ghi phiếu nào phù hợp với bộ lọc"* và nút *"Đặt lại bộ lọc"*.
+     * **State 3 (Error)**: Khung Alert cảnh báo đỏ hiển thị thông báo lỗi mạng kèm nút *"Thử lại"* (`retry()`).
+     * **State 4 (Success)**: Bảng dữ liệu hoàn chỉnh hiển thị các cột (Mã phiếu, Tên DN, MST, Tỉnh/Thành, Loại phiếu, Ngày cập nhật, Điểm/Xếp loại, Trạng thái, Thao tác), phân trang 10/25/50 bản ghi, nút *"Xuất file Word"* (Icon `Download`) hoạt động tức thì.
+     * **State 5 (Updating / Exporting)**: Spinner xoay nhẹ tại nút bấm, tạm thời vô hiệu hóa double-click trong khi tệp Word đang được sinh từ server.
+
+---
+
+## 7. HỢP ĐỒNG API CONTRACTS & DỮ LIỆU DELTA
+
+- **`API-SURVEY-DOC-001`**: `GET /api/v1/assessments/templates/blank-docx?type={tt17|demand}`
+  - Tải về tệp Word trắng (.docx) chuẩn A4 phục vụ in ấn khảo sát thực địa.
+- **`API-SURVEY-DOC-002`**: `GET /api/v1/assessments/records`
+  - Truy vấn danh sách bản ghi phiếu thu thập & đánh giá (hỗ trợ phân trang, lọc theo tỉnh/thành, loại phiếu, tìm kiếm MST / Tên DN).
+- **`API-SURVEY-DOC-003`**: `GET /api/v1/assessments/records/{id}/export-docx?type={tt17|demand}`
+  - Xuất tệp Word (.docx) bản ghi đã điền sẵn 100% dữ liệu thực tế của doanh nghiệp để in ấn lưu trữ hồ sơ công vụ.
+
+---
+
+## 8. LỊCH SỬ THAY ĐỔI & CHANGE REQUESTS LEDGER (DELTA TRACKING)
+
+| Version | Ngày | Mã Change Request | Quyết Định PO Căn Cứ | Tóm Tắt Nội Dung Thay Đổi | Trạng Thái |
+| :---: | :---: | :---: | :---: | :--- | :---: |
+| `1.0.0` | 2026-09-25 | Baseline | - | Ban hành đặc tả kiến trúc ban đầu theo Thông tư 17/2019/TT-BKHCN. | Shipped |
+| `1.1.0` | 2026-10-12 | `CR-2026-009` | `PO-DEC-20261012-08` | Bổ sung Public Intake Form, Auto-Provisioning tài khoản DN vãng lai. | Shipped |
+| `1.2.0` | 2026-10-15 | `CR-2026-010` | `PO-DEC-20261012-09` | Đồng bộ Form Wizard 6 bước tương thích Form Nhu cầu, Tra cứu MST qua API. | Shipped |
+| `1.3.0` | 2026-10-25 | `CR-2026-015` | `PO-DEC-20261025-01` | Cập nhật bộ định mức 23 ngành chế biến chế tạo và bộ tính Defensive Math. | Shipped |
+| **`1.4.0`** | **2026-11-03** | [**`CR-2026-021`**](file:///Users/luongdt/Library/CloudStorage/GoogleDrive-luongdt.wi@gmail.com/My%20Drive/NacenTechProject/SourceCode/specs/TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-2026-021_admin_survey_records_and_doc_export.md) | `PO-DEC-20261103-01` | **Quản trị hồ sơ phiếu thu thập TT17 & nhu cầu ĐMST tại `/admin/assessments/records`, tải mẫu trắng Word A4 phục vụ thực địa và xuất file Word từng phiếu đã điền.** | **Approved** |
+
+
+
+
+---
+
+## Spec Delta v5 (CR-2026-026): Bộ Tam Hợp Phiếu Khảo Sát & Đánh Giá Doanh Nghiệp Thực Địa
+
+> **Mã CR**: `CR-2026-026`  
+> **Căn cứ**: Quyết định Điều hành `PO-DEC-20261104-02` (Mục 30 `Specification/BASIC_DESIGN_NACENTECH.md`) & Delta Ledger [`deltas/CR-2026-026.md`](./deltas/CR-2026-026.md).  
+> **Target Version**: `1.5.0`  
+
+### 9.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-09-SURVEY3-001` [Cụm 3 Nút Header Tải Template Word A4 Thực Địa]**:
+  * Nút 1: `[Tải mẫu Đánh giá TT17 (.docx)]` trỏ tới `/templates/surveys/phieu_thu_thap_tt17.docx`.
+  * Nút 2: `[Tải mẫu Khảo sát ĐMST (.docx)]` trỏ tới `/templates/surveys/phieu_khao_sat_dmst_43_cau_mau_trang.docx`.
+  * Nút 3: `[Tải mẫu Nhu cầu DNNVV (.docx)]` trỏ tới `/templates/surveys/phieu_khao_sat_nhu_cau_dnnvv_mau_trang.docx`.
+- **`REQ-09-SURVEY3-002` [Dropdown Loại Phiếu 4 Nhánh Tường Minh]**:
+  * Giá trị: `ALL` (Tất cả), `TT17` (Phiếu TT17 - 26 tiêu chí), `INNOVATION` (Phiếu ĐMST - 43 câu), `SME_DEMAND` (Phiếu Nhu cầu DNNVV & TNI).
+- **`REQ-09-SURVEY3-003` [Bộ Lọc Phân Loại Động Theo Loại Phiếu]**:
+  * Khi chọn `TT17`: Lọc theo Xếp loại TT17 (Tiên tiến, Khá, Trung bình, Lạc hậu).
+  * Khi chọn `INNOVATION`: Lọc theo Phân tầng ĐMST (Dẫn đầu, Đang phát triển, Tiềm năng, Chưa đánh giá).
+  * Khi chọn `SME_DEMAND`: Lọc theo Mức độ cấp thiết TNI (Rất cao, Cao, Trung bình, Thấp).
+
+### 9.2 Quy Tắc Nghiệp Vụ Bất Biến (Business Rules)
+- **`BR-09-SURVEY3-01` [An Toàn & Chuẩn Mực Tệp Văn Bản Hành Chính A4]**:
+  * Cả 3 file Word `.docx` tải về phải mở được trơn tru, không lỗi XML, font chữ Unicode Times New Roman chuẩn Nghị định 30/2020/NĐ-CP về công tác văn thư.
+- **`BR-09-SURVEY3-02` [Kỷ Luật Dữ Liệu Thực Tế Zero-Mock]**:
+  * Dữ liệu bản ghi khi chuyển đổi loại phiếu phải kết nối trực tiếp CSDL thật, không sử dụng mảng tĩnh trong khối catch.
+
+---
+
+### Bổ sung vào Bảng Lịch Sử Thay Đổi (Delta Tracking):
+| **`1.5.0`** | **2026-11-04** | [**`CR-2026-026`**](./deltas/CR-2026-026.md) | `PO-DEC-20261104-02` | **Chuẩn hóa Bộ Tam Hợp 3 Phiếu khảo sát thực địa (TT17, ĐMST 43 câu, Nhu cầu DNNVV) tại `/admin/assessments/records`, cụm 3 nút tải mẫu Word và bộ lọc phân loại động.** | **Approved by PO** |
+| **`1.6.0`** | **2026-11-04** | [**`CR-2026-027`**](./deltas/CR-2026-027.md) | `PO-DEC-20261104-01` | **Chuẩn hóa toàn diện dữ liệu bản ghi Phiếu Nhu cầu DNNVV: DTO trả items, đồng bộ TNI, Modal 7 phần chi tiết và xuất Word (.docx) động có dữ liệu DN thật.** | **Approved by PO** |
+
+---
+
+## Spec Delta v6 (CR-2026-027): Chuẩn Hóa Dữ Liệu Bản Ghi Phiếu Nhu Cầu DNNVV — Modal 7 Phần & Xuất Word (.docx) Động
+
+> **Mã CR**: `CR-2026-027`  
+> **Căn cứ**: Quyết định Điều hành `PO-DEC-20261104-01` (Mục 11 `Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/SPEC_PHIEU_KHAO_SAT_NHU_CAU_CONG_NGHE_DNNVV.md`) & Delta Ledger [`deltas/CR-2026-027.md`](./deltas/CR-2026-027.md).  
+> **Target Version**: `1.6.0`  
+
+### 10.1 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-09-SURVEY-RECORD-001` [Backend DTO Items & TNI Synchronization]**:
+  * API `GET /api/v1/gov/demands/surveys` và `GET /api/v1/demands/surveys` trả về mảng `items` gồm: `id`, `itemCode`, `stageName`, `technicalProblem`, `desiredSolution`, `expectedGoal`, `budgetRange`, `urgencyScore`, `impactScore`, `investmentCapacity`, `adoptionReadiness`, `tniScore`.
+  * Tự động đồng bộ `tniScore` của bản ghi cha từ `items.Max(i => i.TniScore)` khi `s.TniScore == null`, chấm dứt tình trạng "Chờ tính TNI".
+- **`REQ-09-SURVEY-RECORD-002` [Modal Chi Tiết 7 Khối Thông Tin]**:
+  * Modal `inspectingDemandItem` parse an toàn `surveyDetails` và hiển thị 7 khối thông tin:
+    1. Bài toán kỹ thuật, giải pháp, ngân sách, mục tiêu, điểm TNI 4 chiều và điểm tổng.
+    2. Thông tin pháp nhân và người liên hệ.
+    3. Hiện trạng thiết bị máy móc chủ lực và 8 tiêu chí trình độ công nghệ.
+    4. Khâu sản xuất khó nhất, nguyên nhân và mức độ điểm nghẽn.
+    5. Thống kê 6 nhóm nhân lực kỹ thuật và 9 tiêu chí năng lực hấp thụ.
+    6. Định hướng công nghệ tiên tiến 2026–2030 và nhu cầu hỗ trợ.
+    7. Chữ ký điện tử người đại diện và dấu thời gian.
+- **`REQ-09-SURVEY-RECORD-003` [Nút Xuất Word Động Cho Từng Bản Ghi]**:
+  * Đổi nhãn nút từng dòng thành `Xuất Word (.docx)`.
+  * Khi click, gọi generator `exportDemandSmeDocx` nạp 100% dữ liệu thực tế từ database sinh file `.docx` A4 tải về máy người dùng.
+
+### 10.2 Quy Tắc Nghiệp Vụ Bất Biến (Business Rules)
+- **`BR-09-SURVEY-RECORD-01` [Tính Toàn Vẹn File Word & Zero Corrupt XML]**:
+  * File Word xuất ra phải hợp lệ OpenXML, font Unicode tiếng Việt, kích thước $\ge 15\text{ KB}$, không corrupt cấu trúc.
+- **`BR-09-SURVEY-RECORD-02` [Kỷ Luật Zero-Mock]**:
+  * Dữ liệu trong modal và trong file Word phải lấy từ PostgreSQL thật, không mock cứng.
+
+
+
+---
+
+## Spec Delta v7 (CR-BACLINK-006): Đánh Giá Năng Lực Nhà Máy & Chuyển Đổi Số BACLINK (Mapping Trọng Số `IND_*` & Template `.docx`)
+
+> **Mã CR**: `CR-BACLINK-006`  
+> **Căn cứ**: [`deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md`](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (`Status: APPROVED`); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 4.1, 6, 9.1, 9.2 — `PO-DEC-BACLINK-04`); [`open-questions.md`](../../docs/open-questions.md) (**Q2**).  
+> **Target Version**: `1.7.0`  
+> **Trạng thái**: `In Implementation (CR-BACLINK-006 Approved)`
+
+### 11.1. Yêu Cầu Chức Năng Bổ Sung (`REQ-09-BL-01`, `REQ-09-BL-02`)
+- **`REQ-09-BL-01` [Tái Định Vị Giao Diện Đánh Giá Năng Lực Nhà Máy & CĐS BACLINK]**:
+  * Các route `/assessments/tt17`, `/assessments/tt17/wizard`, `/assessments/tt17/[id]`, `/admin/assessments/tt17`, `/admin/assessments/records` sử dụng danh xưng **Đánh giá Năng lực Nhà máy & Chuyển đổi số BACLINK**, bảo toàn nguyên vẹn bộ 26 tiêu chí T-E-O-R-I, Radar Chart, hệ số đồng bộ $T_{ĐB}$ và Yearly Snapshot.
+- **`REQ-09-BL-02` [Cập Nhật Template Xuất Word `.docx` Sang Thương Hiệu BACLINK]**:
+  * Cập nhật tiêu đề, cơ quan chủ quản, chân trang và biểu mẫu xuất Word `.docx` trong `survey-docx-exporter.ts`, `tt17-docx-template-filler.ts` và các mẫu tải về tại `/admin/assessments/records` sang **Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)** chuẩn A4 OpenXML Unicode ($\ge 15\text{ KB}$, không lỗi XML).
+
+### 11.2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-09-BL-01`, `BR-09-BL-02`)
+- **`BR-09-BL-01` [Bảng Ánh Xạ Trọng Số Từ 8 Ngành `IND_*` Trong `Tt17ScoringEngine` (Q2)]**:
+  * Giữ nguyên engine `Tt17ScoringEngine` (`Benchmarks` `C.10`–`C.32`), bổ sung bảng ánh xạ mặc định từ 8 mã ngành `IND_*` sang bộ trọng số công nghiệp tương ứng: `IND_ELEC` $\rightarrow$ `C.26`, `IND_MECH` $\rightarrow$ `C.25`, `IND_AUTO` $\rightarrow$ `C.28`, `IND_PLAS` $\rightarrow$ `C.22`, `IND_MAT` $\rightarrow$ `C.24`, `IND_IT` $\rightarrow$ `C.26`, `IND_GREEN` $\rightarrow$ `C.32`, `IND_LOG` $\rightarrow$ `C.29`, kèm fallback bộ trọng số cân bằng chuẩn BACLINK (`KChuan1=250, KChuan2=0.07, KChuan3=0.55, KChuan4=150`) để tính điểm tự động 100% không lỗi.
+- **`BR-09-BL-02` [Khóa `/gov/assessments/tt17*` Anonymous & Duyệt 1 Cấp `ADMIN`]**:
+  * Xóa `[AllowAnonymous]` khỏi `GET /api/v1|v2/gov/assessments/tt17` và `/dashboard` trong `AssessmentsController.cs` (trả `401/403/410`); chuyển nghiệm thu về 1 cấp `ADMIN` BACLINK; `NormalizeScopeId` bỏ mặc định `"HN"` sang `"GLOBAL"` / địa bàn Bắc Ninh.
+
+### 11.3. Tiêu Chuẩn Chấp Thuận (`AC-09-BL-01` .. `AC-09-BL-03`)
+- **`AC-09-BL-01`**: Gọi `Tt17ScoringEngine.Calculate` với bất kỳ mã ngành nào trong 8 mã `IND_ELEC`..`IND_LOG` đều ánh xạ chính xác sang bộ trọng số tương ứng (hoặc fallback cân bằng BACLINK) và trả đủ 26 tiêu chí, $\tau$, $T_{ĐB}$ không lỗi.
+- **`AC-09-BL-02`**: Xuất file `.docx` từ `survey-docx-exporter.ts` và `tt17-docx-template-filler.ts` hiển thị pháp nhân **Hiệp hội BACLINK**, mở hợp lệ chuẩn OpenXML ($\ge 15\text{ KB}$), 0 chuỗi `NacenTech`/`Bộ KH&CN`.
+- **`AC-09-BL-03`**: Request ẩn danh hoặc non-ADMIN gọi `/api/v1|v2/gov/assessments/tt17*` bị từ chối (`401`/`403`/`410`); UI đánh giá hoạt động mượt cho `ENTERPRISE` và `ADMIN`.

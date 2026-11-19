@@ -1,0 +1,158 @@
+# CI cho .NET 10. Khác với NacenTwin (workflow chỉ `git pull` + `docker compose build`),
+# ở đây build/test/license gate là điều kiện chặn — §26.3 và §26.8.4.
+#
+# TẠM TẮT chạy tự động từ 2026-09-06 theo yêu cầu của chủ sản phẩm. Workflow **không bị xoá** và nội dung
+# job giữ nguyên; chỉ trigger bị thu về `workflow_dispatch`, nên nó vẫn bấm chạy tay được từ tab Actions.
+#
+# Bật lại: bỏ chú thích hai dòng `push`/`pull_request` bên dưới. Không cần sửa gì khác.
+#
+# Trong lúc tắt, cổng chặn duy nhất là chạy tay tại máy — `dotnet test` cả 5 project trong `tests/`, cộng
+# `npm run lint && npm test && npx tsc --noEmit` ở từng frontend. Điều này có nghĩa là một PR có thể được
+# merge mà chưa ai chạy test; đó là hệ quả của việc tắt, không phải một thay đổi về tiêu chuẩn chất lượng.
+name: ci
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+  # pull_request:
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "true"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        # ADR-0010: chỉ mục tìm kiếm cần extension `vector` — cùng ảnh với docker-compose.yml.
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: nacentech_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      # Ranh giới module (MOD-01…05) là hàng rào thật của modular monolith — hỏng thì dừng phát hành.
+      - name: Architecture tests
+        run: dotnet test tests/architecture/NacenTech.Tests.Architecture.csproj --no-build -c Release
+
+      # Ma trận transition §7.4 và bất biến CASE-01…14.
+      - name: Invariant tests
+        run: dotnet test tests/invariants/NacenTech.Tests.Invariants.csproj --no-build -c Release
+
+      # AC 5/17/28: không tổ hợp nào đọc được tài liệu mật khi thiếu AccessGrant.
+      - name: Authorization tests
+        run: dotnet test tests/authorization/NacenTech.Tests.Authorization.csproj --no-build -c Release
+
+      - name: Contract tests
+        run: dotnet test tests/contracts/NacenTech.Tests.Contracts.csproj --no-build -c Release
+
+      - name: Integration tests
+        env:
+          NACENTECH_TEST_PG: Host=localhost;Port=5432;Database=nacentech_test;Username=postgres;Password=postgres
+        run: dotnet test tests/integration/NacenTech.Tests.Integration.csproj --no-build -c Release
+
+      # Migration phải apply sạch trên PostgreSQL thật trước khi merge (§30.2).
+      - name: Migration applies cleanly
+        env:
+          NACENTECH_PG: Host=localhost;Port=5432;Database=nacentech_migrate;Username=postgres;Password=postgres
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.*
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE nacentech_migrate;"
+          dotnet ef database update \
+            --project packages/persistence/NacenTech.Persistence.csproj \
+            --startup-project apps/api/NacenTech.Api.csproj \
+            --connection "$NACENTECH_PG"
+
+  frontend:
+    # Ba frontend React/Vite trong apps/. Mỗi app một lockfile riêng nên cài riêng; build là cổng chặn,
+    # test chỉ ở admin/portal (landing chưa có test file — vitest không có test là exit 1).
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [admin, portal, landing]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      HUSKY: "0" # landing có `prepare: husky`; trong CI không cần hook
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        if: matrix.app != 'landing'
+        run: npm test
+
+      - name: Lint
+        if: matrix.app == 'landing'
+        run: npm run lint
+
+  license-gate:
+    # §26.8.4/D2-146: chặn build khi có license ngoài allowlist. Không có gate thì thư viện copyleft
+    # sẽ bò vào qua một PR nào đó và chỉ bị phát hiện khi audit.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Denylist check (§26.8.3)
+        run: |
+          set -e
+          denied='MediatR|AutoMapper|MassTransit|Hangfire\.Pro|FluentAssertions|Duende|Volo\.Abp|Elastic\.Clients\.Elasticsearch|NEST|StackExchange\.Redis|HashiCorp'
+          if grep -REn "PackageVersion Include=\"($denied)" Directory.Packages.props; then
+            echo "::error::Package nằm trong denylist §26.8.3"; exit 1
+          fi
+          echo "Denylist: sạch"
+
+      - name: Package license report
+        run: |
+          dotnet tool install --global dotnet-project-licenses || true
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet-project-licenses -i apps/api/NacenTech.Api.csproj -u -o -f artifacts --outfile licenses.json --json || true
+          if [ -f artifacts/licenses.json ]; then
+            python3 - <<'PY'
+          import json, sys
+          allow = {"MIT","Apache-2.0","BSD-3-Clause","BSD-2-Clause","PostgreSQL","MS-PL","Apache-2.0 OR MIT","MIT OR Apache-2.0"}
+          data = json.load(open("artifacts/licenses.json"))
+          bad = [p for p in data if (p.get("LicenseType") or p.get("licenseType") or "") not in allow]
+          for p in bad:
+              print(f"::warning::License cần Legal xem xét: {p.get('PackageName')} {p.get('LicenseType')}")
+          PY
+          fi

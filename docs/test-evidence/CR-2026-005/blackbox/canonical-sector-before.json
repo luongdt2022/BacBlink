@@ -1,0 +1,21 @@
+{
+  "id": "7bd2054f-3ca2-4a11-849d-8bd92451cabe",
+  "kind": "SECTOR",
+  "name": "Chế biến thực phẩm – đồ uống",
+  "is_active": true,
+  "version": 1,
+  "created_at": "2026-10-06T10:42:16.625023+00:00",
+  "updated_at": "2026-10-06T10:42:16.625023+00:00",
+  "legacy_source_system": null,
+  "legacy_source_table": null,
+  "legacy_id": null,
+  "legacy_source_hash": null,
+  "legacy_migrated_at": null,
+  "legacy_mapping_version": null,
+  "legacy_batch_id": null,
+  "code": "LV05",
+  "metadata": {
+    "tt17Code": "C.10, C.11",
+    "matrixPairsCount": 8
+  }
+}

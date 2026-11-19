@@ -1,0 +1,119 @@
+# CD — Deploy to Server
+#
+# Trigger : every push (or merge) to the `master` branch
+# Runner  : self-hosted GitHub Actions runner installed on the target server
+# Purpose : automate the full deploy cycle — git pull → docker build → container restart
+#
+# Runner setup (one-time, on server):
+#   GitHub repo → Settings → Actions → Runners → "New self-hosted runner"
+#   Follow Linux instructions; ensure the runner user has docker socket access
+#   and read/write access to REPO_DIR below.
+#
+name: CD — Deploy to Server
+
+on:
+  push:
+    branches: [master]
+
+# Cancel any in-progress deploy when a newer push arrives for the same branch.
+# This prevents two concurrent deploys from racing (e.g., two docker stop/run cycles).
+concurrency:
+  group: cd-master
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy dmst-rag
+    runs-on: self-hosted
+
+    env:
+      REPO_DIR: /home/sotatek/projects/dmst/dmst-rag
+      IMAGE_NAME: dmst-rag:latest
+      CONTAINER_NAME: dmst-rag
+      HOST_PORT: "8000"
+      CONTAINER_PORT: "8000"
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Step 1 — Stash local changes on the server (e.g., .env, symlinks)
+      # Restored at the end so server-side config files are not lost.
+      # -----------------------------------------------------------------------
+      - name: Stash local changes
+        working-directory: ${{ env.REPO_DIR }}
+        run: |
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            echo "Local changes detected — stashing..."
+            git stash push -m "cd-stash-$(date +%s)"
+            echo "STASHED=true" >> $GITHUB_ENV
+          else
+            echo "Working tree is clean — no stash needed."
+            echo "STASHED=false" >> $GITHUB_ENV
+          fi
+
+      # -----------------------------------------------------------------------
+      # Step 2 — Ensure we are on the master branch
+      # -----------------------------------------------------------------------
+      - name: Checkout master
+        working-directory: ${{ env.REPO_DIR }}
+        run: git checkout master
+
+      # -----------------------------------------------------------------------
+      # Step 3 — Pull latest code from remote
+      # -----------------------------------------------------------------------
+      - name: Pull latest code
+        working-directory: ${{ env.REPO_DIR }}
+        run: git pull origin master
+
+      # -----------------------------------------------------------------------
+      # Step 4 — Build Docker image
+      # NOTE: stop/remove of the old container happens AFTER this step.
+      # If the build fails here, the old container keeps running (no downtime).
+      # -----------------------------------------------------------------------
+      - name: Build Docker image
+        working-directory: ${{ env.REPO_DIR }}
+        run: docker build -t "$IMAGE_NAME" .
+
+      # -----------------------------------------------------------------------
+      # Step 5 — Stop old container (|| true: safe on first deploy / if stopped)
+      # -----------------------------------------------------------------------
+      - name: Stop old container
+        run: docker stop "$CONTAINER_NAME" || true
+
+      # -----------------------------------------------------------------------
+      # Step 6 — Remove old container (|| true: safe if container does not exist)
+      # -----------------------------------------------------------------------
+      - name: Remove old container
+        run: docker rm "$CONTAINER_NAME" || true
+
+      # -----------------------------------------------------------------------
+      # Step 7 — Start new container from the freshly built image
+      # -----------------------------------------------------------------------
+      - name: Start new container
+        working-directory: ${{ env.REPO_DIR }}
+        run: |
+          ENV_ARGS=()
+          if [[ -f "$REPO_DIR/.env" ]]; then
+            echo "Loading environment variables from $REPO_DIR/.env..."
+            ENV_ARGS=(--env-file "$REPO_DIR/.env")
+          fi
+          docker run -d \
+            --name "$CONTAINER_NAME" \
+            --restart unless-stopped \
+            -p "$HOST_PORT:$CONTAINER_PORT" \
+            "${ENV_ARGS[@]}" \
+            "$IMAGE_NAME"
+
+      # -----------------------------------------------------------------------
+      # Step 8 — Restore stashed changes (only if we stashed in Step 1)
+      # Failure here is non-fatal: warns instead of failing the workflow.
+      # -----------------------------------------------------------------------
+      - name: Restore stashed changes
+        if: env.STASHED == 'true'
+        working-directory: ${{ env.REPO_DIR }}
+        run: git stash pop || echo "WARNING git stash pop failed - check 'git stash list' manually"
+
+      # -----------------------------------------------------------------------
+      # Step 9 — Confirm container is running
+      # -----------------------------------------------------------------------
+      - name: Verify container is running
+        run: docker ps -f "name=$CONTAINER_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

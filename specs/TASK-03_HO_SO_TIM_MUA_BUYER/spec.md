@@ -1,0 +1,1028 @@
+# Đặc Tả Kỹ Thuật (Spec Kit): TASK-03 — Hồ Sơ Tìm Mua & Nhu Cầu Chuyển Giao Công Nghệ (Buyer)
+
+**Epic**: TASK-03_HO_SO_TIM_MUA_BUYER  
+**Version**: 1.16.0  
+**Status**: In Implementation (CR-BACLINK-005 Approved)  
+**Last Updated**: 2026-11-17  
+**Baseline Hash**: `a1b2c3d`  
+**Ánh Xạ Kỹ Thuật**: Clean Architecture Modular Monolith, Lean 4-Step Wizard, Order Tracking Stepper  
+
+> **Mã phân hệ**: `TASK-03_HO_SO_TIM_MUA_BUYER`  
+> **Căn cứ nguồn**: Sheet `T.mua SP` (356 dòng), Sheet `tìm mua 7.10` (109 dòng), Quyết định PO `PO-DEC-20261008-01` & `PO-DEC-20261008-03`  
+> **Phê duyệt phạm vi**: 6 Màn hình & 5 Luồng công việc (Chốt bởi PO ngày 10/10/2026)  
+> **Cơ chế liên kết**: Ánh xạ 1:1 với `Specification/02_BASIC_DESIGN/TASK-03_HO_SO_TIM_MUA_BUYER/`  
+> **Hiến pháp áp dụng**: `specs/SPEC_MANAGEMENT_CONSTITUTION.md`
+
+---
+
+## 1. TỔNG QUAN HỆ THỐNG & MỤC TIÊU (OVERVIEW)
+
+TASK-03 là phân hệ thu thập, quản trị và số hóa **Nhu cầu Đổi mới Công nghệ / Bài toán Kỹ thuật** từ các doanh nghiệp, hợp tác xã (Bên Mua / Buyer). Phân hệ đóng vai trò tạo nguồn dữ liệu đầu vào chuẩn hóa (Demand Tickets) phục vụ động cơ Matching Cung–Cầu (`TASK-08`) và mạng lưới tư vấn chuyên gia (`TASK-05`).
+
+### Nguyên tắc bất biến (Core Invariants):
+1. **Tách bạch dữ liệu thời điểm**: Dữ liệu khảo sát (khoảng doanh thu, khoảng lao động, điểm nghẽn tại thời điểm) không được phép ghi đè lên dữ liệu pháp nhân Master Profile (`TASK-02`).
+2. **SSOT Tính toán TNI tại Backend**: Điểm Technology Need Index (TNI) được tính toán và kiểm soát tại Domain Service của Backend, Client chỉ hiển thị preview và không được phép ghi đè.
+3. **Bảo vệ dữ liệu nhạy cảm (PDPD NĐ 13/2023/NĐ-CP)**: Số điện thoại, Email, Ngân sách cụ thể và Tài liệu hiện trạng kỹ thuật được ẩn danh hoàn toàn trên sàn công khai; chỉ mở khi có sự chấp thuận kết nối 2 chiều (Opt-in Handshake).
+
+---
+
+## 2. DANH MỤC 6 MÀN HÌNH (SCREENS SPECIFICATION)
+
+### SC-03-01: Phiếu Khảo Sát Sâu Nhu Cầu Đổi Mới Công Nghệ DNNVV (`/khao-sat-nhu-cau`)
+- **Tác nhân**: Doanh nghiệp, Hợp tác xã (Công khai hoặc Đã đăng nhập).
+- **Cấu trúc 7 phần**:
+  - **Phần A (Thông tin doanh nghiệp)**: Tên DN, MST, địa chỉ, người liên hệ, ngành hoạt động, quy mô lao động dạng khoảng, doanh thu 3 năm dạng khoảng.
+  - **Phần B (Hiện trạng công nghệ)**: Danh mục máy móc/dây chuyền, năm đầu tư, nguồn gốc xuất xứ, tự đánh giá 8 tiêu chí hiện trạng (1–5).
+  - **Phần C (Điểm nghẽn kỹ thuật)**: Chọn tối đa 5 điểm nghẽn nghiêm trọng nhất kèm mức độ 1–5.
+  - **Phần D (Năng lực tiếp nhận - TAR)**: Đánh giá nhân lực kỹ thuật, năng lực vận hành và hấp thụ chuyển giao.
+  - **Phần E (Dòng nhu cầu & TNI Calculator)**:
+    - Nhập bài toán, công đoạn, mục tiêu kỳ vọng.
+    - Chọn mã Lĩnh vực (`LV01–LV18`), mã Nhóm CN (`CN01–CN48`), mã Nhu cầu (`NC01–NC25`), khoảng ngân sách (7 mức).
+    - Bộ 4 thanh trượt/radio: $K$ (Cấp thiết 35%), $L$ (Tác động 30%), $N$ (Khả năng tài chính 20%), $O$ (Sẵn sàng tiếp nhận 15%).
+    - **Widget Realtime TNI**: Tự động tính điểm TNI (0–100) và đổi màu Badge (Đỏ/Cam/Vàng/Xám) tức thời.
+  - **Phần F (Công nghệ mới & Hỗ trợ)**: Tự động hóa, chuyển đổi số, công nghệ xanh; nhu cầu hỗ trợ từ Nhà nước.
+  - **Phần G (Xác nhận & Cam kết)**: Người khai, ngày nộp, cam kết bảo mật.
+- **5 UX States**: Empty, Loading, Success, Error, Submitting.
+
+### SC-03-02: Bàn Làm Việc Quản Trị Nhu Cầu Bên Mua (`/portal/buyer/demands`)
+- **Tác nhân**: Đại diện Doanh nghiệp / Chủ hồ sơ mua đã đăng nhập (`BUYER_REPRESENTATIVE`).
+- **Thành phần**:
+  - Hàng KPI Cards: Bài toán đang mở, Điểm TNI trung bình, Nguồn cung tiềm năng đã ghép, Chuyên gia Sở chỉ định.
+  - Bảng quản trị Demand Tickets: Mã ticket, tên bài toán, lĩnh vực, ngân sách, badge TNI, trạng thái hồ sơ.
+  - Lối tắt: Mở Radar Matching sang `TASK-08` hoặc Đăng bài toán mới.
+
+### SC-03-03: Modal Tạo Nhanh Bài Toán Nhu Cầu (`QuickDemandModal`)
+- **Tác nhân**: Doanh nghiệp đã đăng nhập cần đăng lẻ 1 bài toán kỹ thuật mới.
+- **Thành phần**:
+  - Tiêu đề bài toán & Công đoạn sản xuất.
+  - Mô tả vấn đề & Mục tiêu kỳ vọng.
+  - Chọn danh mục 3 tầng: `LV01–LV18`, `CN01–CN48`, `NC01–NC25`.
+  - Chọn khoảng ngân sách (7 mức) và thời gian mong muốn.
+  - Đánh giá nhanh 4 tham số $K, L, N, O$ thang điểm 1–5 để sinh điểm TNI.
+
+### SC-03-04: Danh Mục & Chi Tiết Nhu Cầu Tìm Mua Công Khai (`/nhu-cau-cong-nghe` & `/[id]`)
+- **Tác nhân**: Khách vãng lai, Bên Bán (Seller), Chuyên gia KH&CN.
+- **Bảo mật PDPD**:
+  - Hiển thị bài toán, ngành nghề, mục tiêu kỳ vọng, địa bàn triển khai và badge TNI.
+  - Ẩn hoàn toàn SĐT, Email, Tên người phụ trách, Ngân sách chi tiết và File hiện trạng.
+  - Nút "Gửi Đề Xuất Giải Pháp" kích hoạt luồng đề nghị kết nối.
+
+### SC-03-05: Cổng Cán Bộ Thẩm Định & Phân Luồng Nhu Cầu (`/gov/demands`)
+- **Tác nhân**: Cán bộ Sở KH&CN (`PROVINCIAL_ADMIN`), Quản trị viên (`SUPER_ADMIN`).
+- **Thành phần**:
+  - Danh sách hồ sơ khảo sát chờ duyệt (`SUBMITTED`).
+  - Đối soát mã số thuế với CSDL Master 304 DN (`TASK-02`).
+  - Thao tác: Duyệt niêm yết công khai (`VERIFIED`), Yêu cầu bổ sung, hoặc Chỉ định chuyên gia tư vấn 1-1 (SLA 24h đối với $TNI \ge 80$).
+
+### SC-03-06: Form Đăng Ký Tham Quan Triển Lãm & Gửi Nhu Cầu Hội Chợ (`/trien-lam/dang-ky-tham-quan`)
+- **Tác nhân**: Khách tham quan hội chợ (ICE Cung Việt Xô, VIMEXPO, AUTOEXPO).
+- **Thành phần**: Thông tin cá nhân/doanh nghiệp, ngành nghề quan tâm, mục đích tham quan (B2B, tìm nhà cung cấp, tìm hiểu công nghệ mới).
+
+---
+
+## 3. DANH MỤC 5 LUỒNG CÔNG VIỆC (WORKFLOWS SPECIFICATION)
+
+### WF-01: Khảo Sát Sâu Toàn Diện & Phân Rã Demand Tickets
+1. Doanh nghiệp điền phiếu khảo sát 7 phần tại `SC-03-01`.
+2. Frontend tính nhẩm TNI thời gian thực để người dùng nắm được mức độ ưu tiên.
+3. Bấm nộp phiếu $\rightarrow$ API `POST /api/v1/demands/surveys`.
+4. Backend lưu `demand_surveys` (trạng thái `SUBMITTED`) và phân rã các dòng nhu cầu thành $1..n$ `demand_items` gắn kèm điểm TNI do Backend tính toán.
+
+### WF-02: Đăng Bài Toán Nhanh & Tính Điểm TNI Chuẩn Hóa
+1. Doanh nghiệp mở `QuickDemandModal` tại `SC-03-02`.
+2. Điền thông số bài toán, chọn danh mục và chấm điểm 4 tham số $K, L, N, O$.
+3. API `POST /api/v1/demands/items` $\rightarrow$ Validate $1 \le K, L, N, O \le 5$.
+4. Domain Service tính $\text{TNI} = \text{ROUND}((35K + 30L + 20N + 15O)/5, 0)$ và lưu `demand_items`.
+
+### WF-03: Thẩm Định, Sàng Lọc & Phân Luồng Triage (Sở KH&CN)
+1. Cán bộ Sở mở `SC-03-05` xem danh sách hồ sơ mới.
+2. Kiểm tra tính xác thực của doanh nghiệp và bài toán.
+3. Bấm duyệt $\rightarrow$ Chuyển trạng thái sang `VERIFIED`, cho phép niêm yết công khai trên `SC-03-04`.
+4. Nếu bài toán có $TNI \ge 80$, hệ thống kích hoạt cảnh báo SLA 24h để cán bộ chỉ định chuyên gia tư vấn 1-1.
+
+### WF-04: Khám Phá Công Khai & Bảo Mật Dữ Liệu Nhạy Cảm (PDPD Handshake)
+1. Bên Bán (Seller) tìm kiếm bài toán trên sàn công khai `SC-03-04`.
+2. Seller bấm "Gửi Đề Xuất Giải Pháp" $\rightarrow$ Tạo bản ghi đề nghị kết nối.
+3. Bên Mua nhận thông báo trong `SC-03-02`.
+4. Bên Mua bấm "Chấp thuận kết nối" (Opt-in) $\rightarrow$ Hệ thống mới mở khóa SĐT, Email và Tài liệu hiện trạng cho Seller (Bàn giao sang `TASK-08`).
+
+### WF-05: Thu Thập & Chuyển Đổi Nhu Cầu Tại Triển Lãm (Expo Ingestion)
+1. Khách tham quan điền form tại `SC-03-06`.
+2. Hệ thống lưu hồ sơ khảo sát sơ bộ dạng `EXPO`.
+3. Cán bộ quản trị xuất danh sách và hỗ trợ doanh nghiệp kích hoạt tài khoản chính thức.
+
+---
+
+## 4. QUY TẮC NGHIỆP VỤ BẮT BUỘC (BUSINESS RULES)
+
+- **BR-TNI-01 (Công thức toán học)**:
+  $$\text{TNI} = \text{ROUND}\left(\frac{K \times 35 + L \times 30 + N \times 20 + O \times 15}{5}, 0\right)$$
+- **BR-TNI-02 (Thang xếp loại 4 mức)**:
+  - $\ge 80$: `VERY_HIGH` (Nhu cầu rất cao — Ưu tiên đặc biệt / Tư vấn 1-1).
+  - $65–79$: `HIGH` (Nhu cầu cao — Ghép nối đợt 1).
+  - $50–64$: `MEDIUM` (Nhu cầu trung bình — Gợi ý sàn).
+  - $< 50$: `LOW` (Nhu cầu thấp — Lưu hồ sơ).
+- **BR-TNI-03 (SSOT Backend)**: Client không được phép gửi trường `tni_score` lên server. Backend luôn tự tính và gán giá trị.
+- **BR-TNI-04 (Ràng buộc đầu vào)**: $1 \le K, L, N, O \le 5$. Nếu giá trị nằm ngoài khoảng, Backend trả về lỗi `400 Bad Request` kèm ProblemDetails.
+- **BR-03-001 (Cách ly dữ liệu khoảng)**: Doanh thu và lao động ở khảo sát là dạng khoảng (Range/Enum), không được phép ghi đè lên các trường số liệu chính xác của `TASK-02`.
+- **BR-03-002 (Vòng đời trạng thái)**: `DRAFT` $\rightarrow$ `SUBMITTED` $\rightarrow$ `VERIFIED` $\rightarrow$ `CLOSED`. Chỉ hồ sơ `VERIFIED` mới được hiển thị trên sàn công khai.
+- **BR-03-003 (Bảo vệ PII)**: Public API chỉ trả về `is_public_listed = true` với SĐT, Email và Ngân sách chi tiết đã được Masking / Ẩn.
+
+---
+
+## 5. TIÊU CHÍ NGHIỆM THU ĐẦU CUỐI (ACCEPTANCE CRITERIA)
+
+1. **AC-01**: Cả 6 màn hình render mượt mà, đầy đủ 5 trạng thái UX qua component `<Async>`.
+2. **AC-02**: Widget Realtime TNI trên cả 2 màn hình khai báo tính chính xác 100% công thức định lượng $K, L, N, O$.
+3. **AC-03**: Backend Unit Test bao phủ 100% các ca biên của `TniCalculationEngine` (min = 20, max = 100, invalid < 1 hoặc > 5 bị từ chối).
+4. **AC-04**: Public API che giấu 100% thông tin PII nhạy cảm theo đúng chuẩn PDPD.
+5. **AC-05**: Bộ test Playwright E2E Black-box kiểm thử thông suốt 5 luồng công việc đạt 100% Green.
+
+---
+
+## Spec Delta v2: Cải Tiến Giao Diện & Trải Nghiệm Sàn Nhu Cầu Công Khai (SC-03-04)
+
+> **Căn cứ thay đổi**: Đánh giá thực nghiệm giao diện `localhost:3000/nhu-cau-cong-nghe` ngày 12/10/2026, đối soát 1:1 với `wireframe_san_nhu_cau_cong_nghe.html` và chỉ đạo trực tiếp từ PO.
+
+### 1. Bối cảnh & Mục tiêu
+- **Khắc phục lỗi tương phản WCAG AA**: Nền banner `bg-brand-700` và ảnh nền vi mạch làm mờ tịt tiêu đề H1 và văn bản giới thiệu. Bổ sung overlay gradient tối màu và ép định dạng chữ trắng tương phản cao.
+- **Chuẩn hóa thông tin hiển thị (Zero Technical Jargon on UI)**:
+  - Ẩn hoàn toàn các mã hồ sơ kỹ thuật ngẫu nhiên/hash (ví dụ `DMD-202610-0FF52B`) khỏi vị trí tiêu đề chính của Card.
+  - Thay thế mã phân loại thô (`LV08`, `LV07`) bằng tên tiếng Việt chính thức của 10 Lĩnh vực công nghệ Thông tư 17.
+  - Bổ sung định danh Doanh nghiệp ẩn danh theo chuẩn PDPD Nghị định 13/2023/NĐ-CP (ví dụ: `[Doanh nghiệp Cơ khí - Hải Phòng] (PDPD Masked)`).
+- **Mở rộng Combobox Lĩnh vực**: Nạp đầy đủ 10 Lĩnh vực TT17 từ API `/api/v1/sectors` (thay thế 3 option hardcode cũ).
+- **Phân quyền nút bấm theo vai trò (Role-Based Action Boundaries)**:
+  - Nút "Đăng Nhanh Bài Toán": Kiểm tra phiên đăng nhập `BUYER` / `INNOVATION_ENTITY`. Nếu khách vãng lai, hiển thị dẫn hướng đăng nhập hoặc gợi ý điền form khảo sát.
+  - Nút "Chi tiết & Chào giải pháp": Đảm bảo dẫn hướng thông suốt cho `SELLER` và `EXPERT`.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-01 -> FR-Delta-04)
+- **FR-Delta-01 [Dynamic Quick Metrics & Zero-Mock]**: Hero Banner hiển thị khối Quick Metrics nạp động thời gian thực từ CSDL PostgreSQL thông qua API (`totalDemands`: Tổng số bài toán nhu cầu `PUBLISHED`; `totalBudget`: Tổng ngân sách dự kiến của các bài toán công khai; `slaSupport`: Cam kết thời gian kết nối của nền tảng). Bắt buộc bọc qua component chuẩn `<Async>` hỗ trợ 5 UX States. Xóa bỏ vĩnh viễn các số tĩnh ảo tưởng (`142 bài toán`, `68.5 tỷ`).
+- **FR-Delta-02 [Taxonomy SSOT Filter]**: Combobox Bộ lọc Lĩnh vực nạp động 100% từ Runtime API duy nhất `GET /api/v1/master-data/sectors?activeOnly=true` (10 Lĩnh vực TT17 chuẩn `LV01..LV17`). Tuyệt đối cấm dùng mảng tự chế 18 ngành hoặc mã khuyết.
+- **FR-Delta-03**: Bổ sung bộ lọc Ngân sách đầu tư (5 mức) và bộ lọc Mức độ cấp thiết TNI.
+- **FR-Delta-04**: Thẻ Card hiển thị đầy đủ thông tin nghiệp vụ: Tên lĩnh vực tiếng Việt, Ngân sách chuẩn hóa, Nhãn doanh nghiệp PDPD masked, nút Bookmark và CTA nộp giải pháp.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung
+- **BR-Delta-01 (PDPD Masking Presentation)**: Sàn công khai tuyệt đối không hiển thị mã hash nội bộ, MST, SĐT, Email của Doanh nghiệp. Chỉ hiển thị định danh dạng `[Loại hình - Lĩnh vực - Địa bàn] (PDPD Masked)`.
+- **BR-Delta-02 (Role Action Guard)**: Khách vãng lai chưa xác thực khi thực hiện thao tác tạo bài toán nhanh phải được chuyển hướng đăng nhập văn minh hoặc hướng dẫn sử dụng Phiếu khảo sát công khai.
+
+---
+
+## Spec Delta v3: Chuẩn Hóa Toàn Diện Phiếu Khảo Sát Sâu Nhu Cầu DNNVV 7 Phần (SC-03-01)
+
+> **Căn cứ thay đổi**: Quyết định PO phê duyệt Scope ngày 12/10/2026, đối soát 1:1 với Hồ sơ Thiết kế cơ sở gốc `SPEC_PHIEU_KHAO_SAT_NHU_CAU_CONG_NGHE_DNNVV.md` và `wireframe_phieu_khao_sat_dnnvv.html` (158KB).
+
+### 1. Bối cảnh & Mục tiêu
+- Thay thế bản nguyên mẫu rút gọn (MVP stub) bằng **Form Wizard 7 bước (A $\rightarrow$ G)** đạt chuẩn 100% trường dữ liệu nghiệp vụ:
+  - **Phần A**: Thông tin pháp nhân và quy mô doanh nghiệp toàn diện (Tên, MST, Tỉnh/TP, Địa chỉ, Nhà máy khảo sát, Người liên hệ, Chức vụ, SĐT, Email, Ngành KD chính, Sản phẩm chủ lực, Quy mô lao động, Doanh thu 3 năm dạng khoảng).
+  - **Phần B**: Hiện trạng thiết bị & Dây chuyền sản xuất (Bảng động nhiều thiết bị kèm công đoạn, năm, xuất xứ, khấu hao) và **Bảng Tự đánh giá 8 tiêu chí hiện trạng** thang điểm 1–5 (Cơ giới hóa, Đồng bộ, Hao phí năng lượng, Phụ thuộc thợ, Tỷ lệ lỗi, Số hóa MES/ERP, An toàn môi trường, Tự sửa chữa).
+  - **Phần C**: Vấn đề & Điểm nghẽn công nghệ (Chọn tối đa 5 điểm nghẽn kèm mức độ nghiêm trọng 1–5, công đoạn khó nhất, nguyên nhân chủ yếu).
+  - **Phần D**: Năng lực tiếp nhận & Hấp thụ công nghệ (Thống kê 6 nhóm nhân lực kỹ thuật, năng lực quản lý công nghệ, khả năng tự hấp thụ thang 1–5).
+  - **Phần E**: Dòng nhu cầu & Bài toán kỹ thuật (Cho phép thêm $1..n$ Demand Tickets động, nguồn vốn, hình thức chuyển giao, nhúng bộ tính điểm TNI 4 chiều $K, L, N, O$ tự động cập nhật thời gian thực).
+  - **Phần F**: Định hướng công nghệ mới & Nhu cầu hỗ trợ chung (Tự động hóa, Chuyển đổi số, Công nghệ xanh, mức độ cần hỗ trợ 1–5, đối tác mong muốn).
+  - **Phần G**: Rà soát, Xác nhận & Đồng ý xử lý dữ liệu PDPD (Chế độ xem trước toàn văn, Họ tên người đại diện, Chức vụ, Cam kết Nghị định 13/2023/NĐ-CP).
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-05 -> FR-Delta-08)
+- **FR-Delta-05 (Multi-Step Wizard & Draft Persistence)**: Giao diện form chia làm 7 bước với Stepper trực quan, hỗ trợ nút "Quay lại", "Tiếp tục" kèm validation riêng từng bước, tự động lưu và khôi phục bản nháp vào `localStorage`.
+- **FR-Delta-06 (Dynamic Equipment & 8-Criteria Evaluation Table)**: Hỗ trợ thêm/sửa/xóa dòng thiết bị ở Phần B; bảng chấm điểm 8 tiêu chí hiện trạng radio 1–5 tự động tính điểm trung bình hiện trạng.
+- **FR-Delta-07 (Multiple Demand Items & Per-Item TNI Engine)**: Phần E cho phép thêm nhiều dòng bài toán kỹ thuật; mỗi bài toán sở hữu riêng bộ thanh trượt/chấm điểm 4 tham số $K, L, N, O$ và hiển thị điểm TNI cùng Badge phân loại.
+- **FR-Delta-08 (Rich Data Payload Submission)**: Tích hợp API nộp phiếu, lưu trữ toàn vẹn 7 phần dữ liệu vào CSDL PostgreSQL, trả về mã phiếu `SUR-YYYYMMDD-XXXXX` và danh sách mã Demand Tickets khởi tạo.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung
+- **BR-Delta-03 (Max 5 Bottlenecks Invariant)**: Doanh nghiệp chỉ được chọn tối đa 5 điểm nghẽn kỹ thuật tại Phần C. Hệ thống tự động disable các checkbox còn lại khi đã đủ 5 lựa chọn.
+- **BR-Delta-04 (Zero Data Loss on Step Transition)**: Dữ liệu đã nhập ở bất kỳ bước nào trong Wizard không bị mất khi chuyển đổi qua lại giữa các bước hoặc tải lại trang.
+- **BR-Delta-05 (PDPD Consent Mandatory Gate)**: Nút "Nộp Phiếu Khảo Sát" ở Phần G chỉ được kích hoạt khi người dùng đã tích chọn đồng ý cam kết xử lý dữ liệu theo Nghị định 13/2023/NĐ-CP.
+
+---
+
+## Spec Delta v4: Mở Rộng Kênh Triển Lãm & Tự Động Hóa Định Danh Doanh Nghiệp (PO-DEC-20261012-01)
+
+> **Căn cứ thay đổi**: Quyết định PO-DEC-20261012-01 ngày 12/10/2026 về mở rộng kênh thu thập nhu cầu tại Triển lãm Doanh nghiệp / Hội chợ Techmart, tối ưu trải nghiệm nhập liệu và tự động cấp quyền truy cập.
+
+### 1. Bối cảnh & Mục tiêu
+- **Phục vụ chiến dịch Triển lãm Doanh nghiệp & Techmart**: Cung cấp đường dẫn công khai / QR Code để khách tham quan quét và điền phiếu nhanh trên thiết bị di động.
+- **Giảm ma sát nhập liệu**: Tự động tra cứu MST và tự động nạp hồ sơ có sẵn để rút ngắn thời gian hoàn thành Bước 1 xuống dưới 3 giây.
+- **Giữ chân khách hàng sau sự kiện**: Tự động tạo tài khoản Bên Mua (`BUYER`) ngay khi nộp phiếu để doanh nghiệp đăng nhập theo dõi tiến độ matching và nhận tư vấn chuyên gia.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-09 -> FR-Delta-11)
+- **FR-Delta-09 (Tax Code Auto-Lookup & Pre-fill)**:
+  - Khi người dùng nhập đủ 10 hoặc 13 số MST (hoặc bấm biểu tượng 🔍 **"Tra cứu"** cạnh ô MST), hệ thống tự động gọi API tra cứu pháp nhân `GET /api/v1/enterprises/lookup-tax/{taxCode}`.
+  - Tự động điền: Tên doanh nghiệp chính thức, Tỉnh/thành phố, Địa chỉ chi tiết trụ sở.
+  - Hiển thị spinner loading 0.5s và thông báo toast kết quả tra cứu.
+- **FR-Delta-10 (Smart Profile Pre-fill for Authenticated Enterprises)**:
+  - Khi người dùng đã đăng nhập mở form `/khao-sat-nhu-cau`, hệ thống tự động kiểm tra phiên và gọi `GET /api/v1/portal/enterprise/profile`.
+  - Tự động điền toàn bộ 100% dữ liệu đã có vào Bước 1 (Tên DN, MST, Tỉnh/thành, Địa chỉ, Người liên hệ, Chức vụ, SĐT, Email, Loại hình, Ngành nghề, Quy mô, Doanh thu).
+  - Hiển thị Banner UX chào mừng thông báo dữ liệu đã được nạp sẵn từ hồ sơ cá nhân.
+- **FR-Delta-11 (Exhibition On-the-Fly Account Auto-Provisioning)**:
+  - Khi khách nộp phiếu ẩn danh tại triển lãm, API `POST /api/v1/demands/surveys` tự động kiểm tra `ContactEmail` trong bảng `identity.Persons`.
+  - Nếu chưa có tài khoản: Tự động khởi tạo tài khoản mới với vai trò `BUYER`, sinh token kích hoạt / mật khẩu và gửi email chào mừng.
+  - Tự động gán `PersonId` vừa tạo làm chủ sở hữu phiếu khảo sát `DemandSurvey` và các bài toán `DemandItem`.
+  - Màn hình kết quả (Success View) thông báo tài khoản đã được cấp tự động kèm nút "Đăng nhập ngay để theo dõi tiến độ".
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung (BR-Delta-06 -> BR-Delta-08)
+- **BR-Delta-06 (Hybrid Tax Lookup Fallback)**: Cơ chế tra cứu MST ưu tiên tìm trong CSDL nội bộ NacenTech (304 DN) trước; nếu không có mới gọi API VietQR Business Open API. Nếu cả 2 không có hoặc mạng lỗi, hệ thống không chặn form, cho phép người dùng nhập tay bình thường.
+- **BR-Delta-07 (Idempotent Account Provisioning)**: Nếu email liên hệ hoặc MST đã tồn tại trong hệ thống Identity, hệ thống không tạo tài khoản trùng lặp mà tự động gán liên kết phiếu khảo sát vào tài khoản hiện hữu.
+- **BR-Delta-08 (PDPD Privacy & Welcome Notification)**: Tài khoản tự tạo tại triển lãm được gửi email chào mừng kèm link thiết lập mật khẩu; thông tin SĐT/Email tiếp tục được ẩn danh trên sàn công khai theo chuẩn PDPD NĐ 13/2023/NĐ-CP.
+
+---
+
+## Spec Delta v5: Hoàn Thiện Vòng Đời CRUD & Quản Trị Bài Toán Bên Mua (Edit & Close Actions)
+
+> **Căn cứ thay đổi**: Rà soát Kiến trúc 48 màn hình ngày 13/10/2026 về điểm nghẽn thiếu hành vi Chỉnh sửa và Đóng bài toán trên Bàn làm việc Bên Mua (`/portal/buyer/demands`).
+
+### 1. Bối cảnh & Mục tiêu
+- **Hoàn thiện vòng đời dữ liệu 5 bước**: Cung cấp đầy đủ các thao tác `[CREATE]`, `[READ]`, `[UPDATE]`, `[CLOSE/STATUS]` cho đại diện Bên Mua.
+- **Cho phép sửa đổi bài toán chưa duyệt**: Giúp doanh nghiệp kịp thời bổ sung, điều chỉnh thông số kỹ thuật, công đoạn, ngân sách hoặc mức độ cấp thiết khi bài toán còn ở trạng thái `PENDING`.
+- **Hỗ trợ đóng/rút bài toán**: Cho phép doanh nghiệp đóng bài toán khi đã kết nối thành công với nhà cung cấp hoặc thay đổi kế hoạch sản xuất kinh doanh.
+
+### 2. Yêu cầu Chức năng Mới (FR-Delta-12 -> FR-Delta-14)
+- **FR-Delta-12 (Edit Pending Demand Item)**:
+  - Cột "Thao tác" trên Bàn làm việc Bên Mua (`/portal/buyer/demands`) hiển thị nút **[Chỉnh sửa]** (Icon Edit) đối với các bài toán có trạng thái `PENDING`.
+  - Bấm nút mở `EditDemandModal` nạp sẵn toàn bộ dữ liệu hiện tại (Công đoạn, Bài toán, Giải pháp mong muốn, Mục tiêu, Lĩnh vực, Nhóm CN, Loại nhu cầu, Ngân sách, 4 chỉ số $K, L, N, O$).
+  - Gửi dữ liệu cập nhật qua API `PUT /api/v1/buyer/demands/{id}`.
+- **FR-Delta-13 (Realtime TNI Recalculation on Edit)**:
+  - Trên Modal chỉnh sửa, khi người dùng trượt 4 thanh $K, L, N, O$, giao diện tự động tính nhẩm và cập nhật màu Badge TNI.
+  - Khi lưu, Domain Service của Backend tự động tính toán lại $TNI = \text{ROUND}((35K + 30L + 20N + 15O)/5, 0)$ và cập nhật `TniScore`, `TniClassification`, `UpdatedAt`.
+- **FR-Delta-14 (Close / Withdraw Demand Item)**:
+  - Cột "Thao tác" hiển thị nút **[Đóng bài toán]** (Icon Archive/XCircle).
+  - Mở `ConfirmModal` yêu cầu xác nhận với nội dung: *"Bạn có chắc chắn muốn đóng bài toán này? Bài toán sẽ được rút khỏi sàn công khai."*
+  - Gửi yêu cầu qua API `POST /api/v1/buyer/demands/{id}/close`.
+  - Bảng danh sách cập nhật ngay trạng thái `CLOSED` và tab bộ lọc có thể lọc bài toán đã đóng.
+
+### 3. Quy tắc Nghiệp vụ Bổ Sung (BR-Delta-09 -> BR-Delta-10)
+- **BR-Delta-09 (Immutable Locked State for Verified Demands)**: Bài toán khi đã được Sở duyệt niêm yết (`VERIFIED`) hoặc đã đóng (`CLOSED`) thì nút [Chỉnh sửa] sẽ bị ẩn hoặc disabled. Doanh nghiệp chỉ có thể đóng bài toán chứ không thể sửa đổi thông số kỹ thuật đã thẩm định.
+- **BR-Delta-10 (Soft Close Invariant)**: Hành động đóng bài toán chỉ cập nhật `Status = 'CLOSED'` và gỡ niêm yết công khai (`IsPublicListed = false`). Tuyệt đối cấm xóa cứng (Hard Delete) bản ghi khỏi CSDL nhằm phục vụ lưu trữ lịch sử và thống kê phân tích.
+
+---
+
+## Spec Delta v6 (CR-006): Tái Cấu Trúc Thứ Tự Tab Khảo Sát & Chuẩn Hóa Ràng Buộc Validation
+
+> **Căn cứ**: Yêu cầu thay đổi `CR-006 [TASK-03]` từ Backlog ngày 17/10/2026.  
+> **Mục tiêu**: Giảm thiểu ma sát (Friction) cho doanh nghiệp khi tham gia khảo sát nhu cầu, ưu tiên thu thập ngay bài toán công nghệ sau thông tin pháp nhân.
+
+### 1. Cấu Trúc 7 Bước Mới (Reordered Stepper Structure)
+1. **Bước 1 (Phần A — Thông tin chung doanh nghiệp)**: Tên DN, MST, Tỉnh/Thành phố, Địa chỉ, Người liên hệ, SĐT, Email. **[BẮT BUỘC / MANDATORY]**
+2. **Bước 2 (Phần E — Nhu Cầu Đổi Mới Công Nghệ & TNI Calculator)**: Đưa từ Bước 5 lên Bước 2. Nhập bài toán kỹ thuật, công đoạn, mục tiêu kỳ vọng, phân loại danh mục (Lĩnh vực, Nhóm CN, Loại nhu cầu), ngân sách và tự chấm 4 chỉ số $K, L, N, O$ tính điểm TNI. Yêu cầu có ít nhất 1 bài toán. **[BẮT BUỘC / MANDATORY]**
+3. **Bước 3 (Phần B — Hiện trạng công nghệ & 8 Tiêu chí)**: Danh mục máy móc, xuất xứ, năm đầu tư và tự chấm 8 tiêu chí hiện trạng. **[TÙY CHỌN / OPTIONAL]**
+4. **Bước 4 (Phần C — Điểm nghẽn sản xuất)**: Điểm nghẽn kỹ thuật và công đoạn khó nhất. **[TÙY CHỌN / OPTIONAL]**
+5. **Bước 5 (Phần D — Năng lực tiếp nhận công nghệ TAR)**: Nhân lực kỹ thuật và mức độ sẵn sàng hấp thụ công nghệ. **[TÙY CHỌN / OPTIONAL]**
+6. **Bước 6 (Phần F — Định hướng công nghệ & Đề xuất hỗ trợ)**: Tự động hóa, chuyển đổi số, công nghệ xanh và nhu cầu hỗ trợ. **[TÙY CHỌN / OPTIONAL]**
+7. **Bước 7 (Phần G — Ký xác nhận & Cam kết bảo mật PDPD)**: Họ tên người đại diện xác nhận và đồng thuận PDPD. **[BẮT BUỘC KHI NỘP / MANDATORY ON SUBMIT]**
+
+### 2. Quy Tắc Validation (BR-Delta-11)
+- **BR-Delta-11 (Mandatory Core + Optional Extension)**:
+  - Chỉ bắt buộc dữ liệu tại Bước 1 (Thông tin liên hệ & pháp nhân) và Bước 2 (Tối thiểu 1 bài toán kỹ thuật có đầy đủ vấn đề & mục tiêu).
+  - Các Bước 3, 4, 5, 6 hoàn toàn là dữ liệu mở rộng tùy chọn. Người dùng có thể nhấn "Tiếp tục" qua các bước này mà không bị chặn lỗi kể cả khi không điền bất kỳ trường nào.
+  - Người dùng sau khi hoàn tất Bước 1 và Bước 2 có thể điều hướng thẳng đến Bước 7 để ký xác nhận và nộp phiếu ngay lập tức.
+
+---
+
+## Spec Delta v7 (CR-2026-016): Bắt Buộc Tự Động Điền 100% Thông Tin Hồ Sơ Doanh Nghiệp Đã Đăng Nhập & Liên Kết Tài Khoản Demo Buyer
+
+> **Mã thay đổi**: `CR-2026-016`  
+> **Căn cứ thay đổi**: 
+> 1. Quyết định PO về Nguyên tắc Bất biến Tự động điền dữ liệu (Auto-Prefill Invariant) và Định danh tài khoản Demo.
+> 2. Triết lý Barbara Minto Pyramid: Loại bỏ ma sát nhập liệu, tối ưu hóa hành trình người dùng (User Journey) từ tài khoản đã xác thực đến việc gửi bài toán kỹ thuật.
+> 3. Kế thừa Bản sắc Doanh nghiệp Thống nhất SSOT (`TASK-02_HO_SO_CHU_THE_VA_DN_DMST`).
+
+### 9.1 User Stories Cho Bên Mua Đã Xác Thực
+
+- **Là** một Đại diện Doanh nghiệp đã đăng nhập vào hệ thống Nacentwin, **Tôi muốn** khi mở Form Khảo sát Nhu cầu Công nghệ (`/khao-sat-nhu-cau`), toàn bộ thông tin pháp nhân và người liên hệ đã được nạp sẵn 100% vào Bước 1 (Phần A) **Để** tôi có thể tiến thẳng vào Bước 2 kê khai bài toán kỹ thuật mà không phải gõ lại bất kỳ thông tin cơ bản nào.
+  - *Acceptance Scenario:* Given người dùng đã đăng nhập với tài khoản doanh nghiệp có hồ sơ hợp lệ tại `enterprise.enterprises`, When truy cập `/khao-sat-nhu-cau`, Then Bước 1 tự động hiển thị đầy đủ Tên DN, MST, Tỉnh/thành, Địa chỉ, Người liên hệ, SĐT, Email, Ngành nghề, Quy mô và Doanh thu kèm biểu trưng "Dữ liệu nạp từ Hồ sơ Doanh nghiệp".
+
+### 9.2 Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+
+- **`FR-Delta-15` [Tự Động Nạp Toàn Diện 100% Dữ Liệu Hồ Sơ Doanh Nghiệp Vào Form Khảo Sát (`SC-03-01`)]**:
+  - Khi trang `/khao-sat-nhu-cau` được nạp, hệ thống kiểm tra phiên đăng nhập:
+    - Nếu đã đăng nhập (`isAuthenticated = true`) và có liên kết với doanh nghiệp: Hệ thống gọi API `GET /api/v1/portal/enterprise/profile` hoặc lấy thông tin từ Claims/Context của người dùng.
+    - Tự động điền toàn bộ 100% các trường thông tin Bước 1 (Phần A):
+      1. Tên doanh nghiệp (`enterprise_name`)
+      2. Mã số thuế (`tax_code`)
+      3. Tỉnh/Thành phố (`province_city`)
+      4. Địa chỉ trụ sở chính (`headquarters_address`)
+      5. Họ tên người liên hệ (`contact_person_name`)
+      6. Chức vụ người liên hệ (`contact_person_role`)
+      7. Số điện thoại (`contact_phone`)
+      8. Email (`contact_email`)
+      9. Ngành hoạt động chính (`main_sector_name`)
+      10. Quy mô lao động (`employee_scale_range`)
+      11. Dải doanh thu (`revenue_range`)
+    - Hiển thị Alert Banner trang trọng: *"Dữ liệu pháp nhân & liên hệ đã được tự động nạp từ Hồ sơ Doanh nghiệp của bạn. Bạn có thể nhấn Tiếp tục để điền bài toán kỹ thuật."*
+    - Tự động đánh dấu Bước 1 là Hợp lệ (Valid), cho phép người dùng click trực tiếp vào Bước 2 (hoặc Stepper Bước 2) ngay lập tức.
+- **`FR-Delta-16` [Liên Kết Dữ Liệu Demo Buyer Tài Khoản Trường Hoan]**:
+  - Đối với tài khoản kiểm thử tiêu chuẩn `buyer.user@demo.nacentech.vn`: Khi mở form khảo sát, hệ thống tự động nạp chính xác thông tin pháp nhân của **CÔNG TY TNHH TRƯỜNG HOAN** (MST: `0100255428`, Hà Nội).
+
+### 9.3 Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+
+- **`BR-03-005` [Quy Tắc Bất Biến Tự Động Nạp Hồ Sơ Doanh Nghiệp Đã Đăng Nhập (Auto-Prefill Invariant)]**:
+  *(Quy tắc bổ sung bắt buộc từ PO)*
+  - Bất kỳ tài khoản Doanh nghiệp nào đã đăng nhập khi mở Form Khảo sát Nhu cầu Công nghệ DNNVV (`SC-03-01`) **bắt buộc phải được tự động nạp 100% thông tin Doanh nghiệp và Người liên hệ** từ hồ sơ đã liên kết trong CSDL `enterprise.enterprises`.
+  - Tuyệt đối CẤM hiển thị Form trắng hoặc bắt buộc người dùng gõ lại MST, Tên doanh nghiệp, Tỉnh/thành hay SĐT/Email khi phiên đăng nhập đã hợp lệ.
+  - Trường hợp tài khoản mới chưa cập nhật đầy đủ hồ sơ, hệ thống nạp các trường đã có và chỉ yêu cầu điền bổ sung các trường còn khuyết.
+- **`BR-03-006` [Đồng Bộ Ngược Hồ Sơ Pháp Nhân Khi Có Thay Đổi (Bi-directional Sync Invariant)]**:
+  - Nếu Doanh nghiệp đã đăng nhập chủ động chỉnh sửa thông tin pháp nhân hoặc người liên hệ tại Bước 1 của Form Khảo sát và hoàn tất nộp phiếu: Hệ thống hiển thị hộp thoại xác nhận đồng bộ: *"Bạn có muốn cập nhật các thay đổi này vào Hồ sơ Doanh nghiệp chính thức không?"*. Nếu đồng ý, bản ghi tại `enterprise.enterprises` được cập nhật đồng thời, đảm bảo tính toàn vẹn SSOT.
+
+### 9.4 Tiêu Chí Nghiệm Thu Bổ Sung (Acceptance Criteria)
+
+- **`AC-03-06` (AC-PREFILL-01 — Tự Động Nạp 100% Khi Đã Đăng Nhập)**:
+  - Given người dùng đã đăng nhập với tài khoản Doanh nghiệp hợp lệ,
+  - When truy cập vào đường dẫn `/khao-sat-nhu-cau`,
+  - Then Bước 1 (Phần A) hiển thị 100% dữ liệu pháp nhân đã điền sẵn, không có bất kỳ ô bắt buộc nào bị bỏ trống, và nút "Tiếp tục sang Bước 2" sẵn sàng kích hoạt.
+- **`AC-03-07` (AC-PREFILL-02 — Kiểm Thử Với Tài Khoản Demo Buyer)**:
+  - Given đăng nhập với tài khoản `buyer.user@demo.nacentech.vn` (Mật khẩu: `Demo@2026`),
+  - When mở trang `/khao-sat-nhu-cau`,
+  - Then ô MST hiển thị đúng `0100255428`, ô Tên Doanh nghiệp hiển thị đúng `CÔNG TY TNHH TRƯỜNG HOAN`, Tỉnh/thành phố hiển thị đúng `Hà Nội`.
+
+
+
+---
+
+## Spec Delta v8 (CR-2026-017 / TASK-03-CR59): Tái Cấu Trúc Form Khảo Sát Nhu Cầu 4 Tab Tinh Gọn (Lean 4-Step Wizard)
+
+> **Mã thay đổi**: `CR-2026-017` / `SPEC-DELTA-V2-TASK03`  
+> **Căn cứ thay đổi**: 
+> 1. Chỉ đạo của PO/PM về tối ưu hóa tỷ lệ hoàn tất (Form Conversion Rate) phiếu khảo sát nhu cầu chuyển giao công nghệ.
+> 2. Khung phân tích Michael Porter: Định vị trọng tâm giá trị vào **Nhu cầu công nghệ thực tế (Demand Tickets)** và **Năng lực tài chính/pháp nhân**, loại bỏ sự cồng kềnh hành chính của quy trình 7 bước dàn trải.
+> 3. Nguyên lý Kim tự tháp Barbara Minto (Pyramid Principle): Gom cụm thông tin theo nhóm chủ đề logic (Gộp B, C, D, F thành cụm Hiện trạng & Năng lực mở rộng), tạo cấu trúc 4 bước rõ ràng: **Nhu Cầu $\rightarrow$ Doanh Nghiệp $\rightarrow$ Thông Tin Bổ Sung $\rightarrow$ Xác Nhận**.
+
+### 10.1 Bối Cảnh & Căn Cứ Thay Đổi
+
+- **Thực trạng**: Phiếu khảo sát sâu DNNVV (`SC-03-01`) theo thiết kế cũ trải dài trên 7 bước riêng biệt (A, E, B, C, D, F, G). Quy trình 7 bước tạo ra rào cản tâm lý lớn cho doanh nghiệp vừa và nhỏ (SMEs), làm tăng tỷ lệ bỏ cuộc giữa chừng (drop-off rate) và khiến trải nghiệm người dùng trở nên nặng nề.
+- **Giải pháp tinh gọn**: Rút gọn cấu trúc Stepper từ **7 tab xuống 4 tab**, loại bỏ các ký tự đánh mục rời rạc (`E.`, `A.`, `G.`) trên thanh Stepper để mạch đánh số 1–4 trực quan, phân định dứt khoát giữa **Phần Bắt Buộc Cốt Lõi (Mandatory Core)** và **Phần Bổ Sung Tùy Chọn (Optional Extension)**:
+  - **Tab 1 [Bắt buộc]**: `Nhu Cầu & Thuật Toán TNI` — Thu thập ngay bài toán kỹ thuật, mục tiêu kỳ vọng và bộ 4 tham số $K, L, N, O$ để tính điểm TNI thời gian thực.
+  - **Tab 2 [Bắt buộc]**: `Thông Tin Doanh Nghiệp` — Thu thập thông tin định danh pháp nhân, người liên hệ, hỗ trợ Auto-Lookup MST và Smart Pre-fill 100% hồ sơ đã đăng nhập.
+  - **Tab 3 [Tùy chọn]**: `Thông Tin Bổ Sung / Hiện Trạng & Năng Lực` — Hợp nhất 4 phân mục sâu:
+    1. *Phân mục B*: Hiện trạng máy móc thiết bị & Tự chấm 8 tiêu chí.
+    2. *Phân mục C*: Nhận diện điểm nghẽn kỹ thuật & Công đoạn khó nhất.
+    3. *Phân mục D*: Năng lực tiếp nhận công nghệ (TAR) & Đội ngũ nhân lực kỹ thuật.
+    4. *Phân mục F*: Định hướng đổi mới sáng tạo 3 năm tới & Đề xuất hỗ trợ từ Nhà nước.
+  - **Tab 4 [Bắt buộc]**: `Rà Soát & Xác Nhận PDPD` — Bảng tổng hợp tóm tắt toàn bộ thông tin khảo sát, thông tin người ký và cam kết bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP.
+
+---
+
+### 10.2 Ma Trận Tác Động Đa Bề Mặt (Cross-Surface Impact Matrix)
+
+| Bề Mặt / Màn Hình | File Path | Hiện Trạng (7 Bước) | Thay Đổi Cần Làm (4 Tabs Tinh Gọn) |
+| :--- | :--- | :--- | :--- |
+| **SC-03-01: Form Khảo Sát Sâu** | `frontend/src/app/khao-sat-nhu-cau/page.tsx` | Stepper 7 bước (`currentStep` từ 1..7). Tiến độ tính theo `(currentStep / 7) * 100%`. Có 7 khối điều kiện rendering riêng. | - Tái cấu trúc thành 4 bước (`currentStep` từ 1..4).<br>- Tiến độ tính theo `(currentStep / 4) * 100%`.<br>- Gom 4 phân mục B, C, D, F vào Tab 3 thành các card phân nhóm mạch lạc.<br>- Cho phép click tự do vào bất kỳ Tab nào trên Stepper.<br>- Tab 2 có lối tắt "Bỏ qua bước tùy chọn & Đến nộp phiếu" nhảy thẳng sang Tab 4. |
+| **Frontend Test Suite** | `frontend/src/app/khao-sat-nhu-cau/page.test.tsx` | 12 Vitest tests kiểm thử luồng 7 bước (`Bước 1/7..7/7`, nút `Tiếp tục Bước 2..7`). | - Cập nhật assertions tương thích với Stepper 4 bước (`Bước 1/4..4/4`).<br>- Cập nhật luồng chuyển bước (Next từ 1 $\rightarrow$ 2 $\rightarrow$ 3 $\rightarrow$ 4 và Skip từ 2 $\rightarrow$ 4).<br>- Bổ sung test kiểm chứng Tab 3 chứa đủ 4 phân mục B, C, D, F và không chặn submit khi để trống. |
+| **E2E & QC Gate Verification** | `tests/qc_gate4_independent_verification.py` | Kiểm tra hành vi prefill và chuyển tiếp từ form khảo sát. | Bảo toàn các bộ định vị input và luồng điều hướng hợp lệ của Bước 1 & Bước 2. |
+| **Backend API Contract** | `backend/apps/api/V1Compat/DemandController.cs` | Endpoint `POST /api/v1/demands/surveys` nhận DTO `SubmitDeepSurveyRequest` đầy đủ các trường của 7 phân mục. | **Giữ nguyên 100% không đổi**: Payload DTO đã có cấu trúc phẳng và hỗ trợ đầy đủ các trường tùy chọn của phân mục B, C, D, F. Không phát sinh breaking changes tại Backend/CSDL. |
+
+---
+
+### 10.3 Yêu Cầu Chức Năng Mới (FR-NEW-03-01)
+
+- **`FR-NEW-03-01` [Tái Cấu Trúc Form Khảo Sát Nhu Cầu Thành 4 Tab Tinh Gọn]**:
+  1. **Cấu Trúc Stepper 4 Bước**:
+     - Stepper hiển thị chính xác 4 tab (đã loại bỏ tiền tố chữ cái `E.`, `A.`, `G.`):
+       * **Tab 1**: `Nhu Cầu & TNI` (Bắt buộc)
+       * **Tab 2**: `Doanh Nghiệp` (Bắt buộc)
+       * **Tab 3**: `Thông Tin Bổ Sung` (Tùy chọn)
+       * **Tab 4**: `Xác Nhận` (Bắt buộc)
+     - Thanh chỉ báo hoàn thành tính theo tỷ lệ phần trăm: `(currentStep / 4) * 100%` (25%, 50%, 75%, 100%).
+  2. **Chi Tiết Nội Dung Từng Tab**:
+     - **Tab 1 (`currentStep === 1`)**:
+       * Kế thừa toàn bộ giao diện Danh mục bài toán kỹ thuật (Demand Tickets) và Widget Realtime TNI Calculator ($K, L, N, O$).
+       * Cho phép Thêm bài toán mới, Xóa bài toán (giữ lại tối thiểu 1).
+     - **Tab 2 (`currentStep === 2`)**:
+       * Kế thừa toàn bộ khối Thông tin Doanh nghiệp & Quy mô sản xuất.
+       * Tích hợp tính năng Tra cứu tự động MST (`lookup-tax`) và Tự động nạp 100% hồ sơ Doanh nghiệp đã đăng nhập (`isPrefilledFromSession`).
+       * Hiển thị nút bấm lối tắt hành động kép: **"Tiếp tục Bước 3 (Điền thông tin bổ sung)"** và **"Bỏ qua bước tùy chọn & Đến nộp phiếu"** (Chuyển thẳng sang Tab 4).
+     - **Tab 3 (`currentStep === 3`)**:
+       * Khối giao diện hợp nhất (Unified Supplementary Container) hiển thị tuần tự 4 phân mục dưới dạng các thẻ nghiệp vụ chuyên đề có nhãn "Tùy chọn":
+         - **Phân mục B**: Danh mục thiết bị, dây chuyền chủ lực & Bảng tự đánh giá 8 tiêu chí hiện trạng (1–5).
+         - **Phân mục C**: Bảng nhận diện điểm nghẽn kỹ thuật (tối đa 5 điểm) & Công đoạn khó nhất, nguyên nhân chính.
+         - **Phân mục D**: Thống kê đội ngũ nhân lực kỹ thuật, cơ chế R&D hiện có & Năng lực hấp thụ công nghệ (TAR).
+         - **Phân mục F**: Nhu cầu tiếp cận công nghệ tiên tiến trong 3 năm tới & Nhu cầu đề xuất hỗ trợ từ Nhà nước.
+       * Tại cuối Tab 3, cung cấp 2 nút điều hướng: **"Quay lại Bước 2"** và **"Tiếp tục sang Bước 4 (Rà soát & Nộp phiếu)"**.
+     - **Tab 4 (`currentStep === 4`)**:
+       * Bản tóm tắt phiếu khảo sát (Summary Review): Hiển thị số lượng bài toán kỹ thuật đã kê khai, tên doanh nghiệp, MST, trạng thái thông tin bổ sung (Đã điền / Để trống).
+       * Họ tên người ký xác nhận, Chức vụ người ký, Ngày lập phiếu.
+       * Checkbox cam kết tính xác thực & Chấp thuận điều khoản bảo vệ dữ liệu cá nhân (PDPD NĐ 13/2023/NĐ-CP).
+       * Nút nộp phiếu: **"Hoàn Tất & Nộp Khảo Sát"**.
+
+---
+
+### 10.4 Quy Tắc Nghiệp Vụ Bổ Sung (BR-NEW-03-01)
+
+- **`BR-NEW-03-01` [Quy Tắc Vận Hành Stepper 4 Bước, Tùy Chọn Mở Rộng & Validation Phân Tầng]**:
+  1. **Quy Tắc Điều Hướng Tự Do (Free-click Tab Navigation Invariant)**:
+     - Người dùng có quyền click trực tiếp vào bất kỳ tab nào (1, 2, 3 hoặc 4) trên thanh Stepper Navigation ở bất kỳ thời điểm nào để xem trước cấu trúc hoặc bổ sung thông tin mà không bị hệ thống chặn chuyển view.
+  2. **Quy Tắc Ràng Buộc Tuần Tự (Step-by-Step Guard Invariant)**:
+     - Khi người dùng sử dụng nút **"Tiếp tục"** ở chân trang:
+       * *Từ Bước 1 sang Bước 2*: Bắt buộc người dùng phải nhập tối thiểu 1 bài toán kỹ thuật hợp lệ (có công đoạn, vấn đề kỹ thuật và mục tiêu kỳ vọng). Nếu chưa điền, hệ thống giữ nguyên tại Bước 1 và cuộn đến vị trí trường lỗi.
+       * *Từ Bước 2 sang Bước 3*: Bắt buộc người dùng phải điền đầy đủ các thông tin pháp nhân cốt lõi (Tên doanh nghiệp, MST, Tỉnh/thành phố, Họ tên người liên hệ, SĐT, Email).
+       * *Từ Bước 3 sang Bước 4*: **Tuyệt đối KHÔNG chặn**. Người dùng có thể nhấn "Tiếp tục sang Bước 4" kể cả khi không điền bất kỳ thông tin nào trong cả 4 phân mục B, C, D, F.
+  3. **Quy Tắc Lối Tắt Fast-Track (Skip Optional Step Invariant)**:
+     - Tại Bước 2, sau khi đã hoàn tất thông tin doanh nghiệp, người dùng được cung cấp nút **"Bỏ qua bước tùy chọn & Đến nộp phiếu"** để đi thẳng đến Bước 4 (Tab G) mà không cần phải duyệt qua Bước 3.
+  4. **Quy Tắc Thẩm Định Nghiệm Thu Khi Nộp Phiếu (Final Submission Gatekeeping Invariant)**:
+     - Khi người dùng bấm **"Hoàn Tất & Nộp Khảo Sát"** tại Bước 4, hệ thống kích hoạt cơ chế Validation toàn diện 3 tầng:
+       * *Tầng 1 (Bài toán - Bước 1)*: Có ít nhất 1 bài toán hợp lệ. Nếu vi phạm $\rightarrow$ Báo lỗi và điều hướng về Bước 1.
+       * *Tầng 2 (Doanh nghiệp - Bước 2)*: Đầy đủ Tên DN, MST, Tỉnh/thành, Người liên hệ, SĐT, Email hợp lệ. Nếu vi phạm $\rightarrow$ Báo lỗi và điều hướng về Bước 2.
+       * *Tầng 3 (Xác nhận - Bước 4)*: Đã nhập Họ tên người ký, Chức vụ và đã tick chọn checkbox đồng thuận PDPD.
+     - Dữ liệu tại Bước 3 (B, C, D, F) hoàn toàn không bắt buộc; các trường không điền sẽ được gửi dưới dạng `null` hoặc mảng rỗng `[]` lên API, backend tiếp nhận an toàn và không gây lỗi validation.
+
+---
+
+### 10.5 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-NEW-03-01` [Cấu Trúc 4 Tab & Stepper Navigation Bar]**:
+  - **Given** người dùng truy cập vào trang `/khao-sat-nhu-cau`,
+  - **When** trang tải hoàn tất,
+  - **Then** Stepper Navigation Bar hiển thị chính xác 4 nút tab:
+    1. `Nhu Cầu & TNI` (Bước 1/4)
+    2. `Doanh Nghiệp` (Bước 2/4)
+    3. `Thông Tin Bổ Sung` (Bước 3/4)
+    4. `Xác Nhận` (Bước 4/4)
+  - **And** chỉ số tiến độ hiển thị đúng `Bước 1/4: Nhu Cầu & Thuật Toán TNI (Bắt buộc)` kèm thanh tiến độ 25%.
+
+- **`AC-NEW-03-02` [Validation Chuyển Bước Tại Tab 1]**:
+  - **Given** người dùng đang ở Tab 1 với form bài toán để trống,
+  - **When** người dùng bấm nút "Tiếp tục Bước 2",
+  - **Then** hệ thống không chuyển bước, giữ nguyên tại Tab 1 và hiển thị cảnh báo yêu cầu điền đầy đủ thông tin bài toán kỹ thuật.
+  - **When** người dùng điền đầy đủ Công đoạn, Mô tả vấn đề, Mục tiêu kỳ vọng và bấm lại "Tiếp tục Bước 2",
+  - **Then** hệ thống chuyển thành công sang Tab 2 (Doanh Nghiệp).
+
+- **`AC-NEW-03-03` [Validation Chuyển Bước & Lối Tắt Fast-Track Tại Tab 2]**:
+  - **Given** người dùng đang ở Tab 2 với các trường thông tin doanh nghiệp chưa điền,
+  - **When** bấm "Tiếp tục Bước 3",
+  - **Then** hệ thống báo lỗi các trường bắt buộc (Tên DN, MST, Tỉnh/thành, Đại diện, SĐT, Email) và không cho chuyển bước.
+  - **When** thông tin doanh nghiệp đã được nạp đầy đủ (bằng tay hoặc qua Auto-Prefill),
+  - **Then** người dùng có thể bấm "Tiếp tục Bước 3" để sang Tab 3, HOẶC bấm "Bỏ qua bước tùy chọn & Đến nộp phiếu" để nhảy thẳng sang Tab 4 (Xác Nhận).
+
+- **`AC-NEW-03-04` [Tab 3 Hợp Nhất 4 Phân Mục Tùy Chọn & Không Bị Chặn]**:
+  - **Given** người dùng chuyển vào Tab 3,
+  - **When** quan sát giao diện,
+  - **Then** Tab 3 hiển thị đầy đủ 4 phân mục:
+    * Phân mục B: Thiết bị & 8 tiêu chí hiện trạng
+    * Phân mục C: Điểm nghẽn sản xuất
+    * Phân mục D: Năng lực tiếp nhận TAR
+    * Phân mục F: Định hướng công nghệ & Hỗ trợ
+  - **When** người dùng không điền bất kỳ thông tin nào trong Tab 3 và bấm nút "Tiếp tục sang Bước 4",
+  - **Then** hệ thống cho phép chuyển mượt mà sang Tab 4 mà không hiển thị bất kỳ lỗi nào.
+
+- **`AC-NEW-03-05` [Tab 4 Rà Soát, Cam Kết PDPD & Nộp Phiếu Thành Công]**:
+  - **Given** người dùng đã hoàn thành hợp lệ Tab 1 và Tab 2, đang ở Tab 4,
+  - **When** bấm "Hoàn Tất & Nộp Khảo Sát" nhưng chưa nhập người ký hoặc chưa tick cam kết PDPD,
+  - **Then** hệ thống hiển thị thông báo lỗi yêu cầu hoàn tất xác nhận.
+  - **When** người dùng nhập đầy đủ Người ký, Chức vụ và tick chọn cam kết bảo mật PDPD, sau đó bấm "Hoàn Tất & Nộp Khảo Sát",
+  - **Then** hệ thống gửi yêu cầu `POST /api/v1/demands/surveys` thành công, chuyển sang màn hình Success View hiển thị mã phiếu `SUR-XXXXX` và mã bài toán `DMD-XXXXX`.
+
+- **`AC-NEW-03-06` [Điều Hướng Tự Do Bằng Click Stepper (Free-Click Navigation)]**:
+  - **Given** người dùng ở bất kỳ bước nào trong 4 tab,
+  - **When** người dùng click chuột trực tiếp vào nút Tab 3 trên thanh Stepper Navigation,
+  - **Then** giao diện chuyển ngay sang hiển thị nội dung Tab 3 mà không đòi hỏi dữ liệu của các tab trước đó phải được submit.
+
+---
+
+## Spec Delta v9 (CR-2026-018): Làm Mịn Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ & Nâng Cấp Modal Tạo Bài Toán
+
+**Căn cứ phê duyệt:** Chỉ đạo của PO tại phiên làm việc ngày 23/10/2026; Triệt tiêu dev badge rác kỹ thuật, bổ sung phân trang bàn làm việc và các trường nghiệp vụ quan trọng cho bài toán công nghệ (Target TRL, Ẩn danh bảo mật, Thời hạn, File RFP).
+
+### 11.1 Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+
+- **REQ-BUYER-DMD-001 (Zero Dev Badges & Standardized Title)**:
+  - Loại bỏ hoàn toàn badge `TASK-03` trên sub-header của `/portal/buyer/demands`.
+  - Chuẩn hóa tiêu đề chính thành **`Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`** với badge nghiệp vụ **`BÊN MUA CÔNG NGHỆ`**.
+
+- **REQ-BUYER-DMD-002 (Data Grid Pagination)**:
+  - Bàn làm việc MUST hỗ trợ phân trang cho danh sách bài toán với kích thước trang chuẩn (`pageSize = 5` hoặc `10`).
+  - Cung cấp thanh điều khiển phân trang: nút `Trang trước`, danh sách nút số trang `[1] [2]...`, nút `Trang sau`, và nhãn thông tin `Hiển thị X - Y trong tổng số Z bài toán`.
+  - Đảm bảo khi chuyển tab lọc trạng thái (Tất cả, Đang mở, Chờ duyệt, Đã đóng, Đang theo dõi), trang hiện tại được tự động reset về trang 1.
+
+- **REQ-BUYER-DMD-003 (QuickDemandModal Advanced Fields - Target TRL & Confidentiality)**:
+  - Modal tạo bài toán nhanh `QuickDemandModal` MUST bổ sung 4 trường nghiệp vụ thiết yếu:
+    1. **Target TRL Range (Dải TRL mong muốn tiếp nhận)**: Lựa chọn 3 phân khúc:
+       - `TRL 1–3`: Nghiên cứu cơ bản / Proof of Concept (Lab)
+       - `TRL 4–6`: Thử nghiệm Pilot / Mô hình thực nghiệm (Default)
+       - `TRL 7–9`: Công nghệ hoàn thiện / Sẵn sàng thương mại hóa
+    2. **Chế độ bảo mật danh tính (Confidential Mode)**: Checkbox `isConfidential` cho phép doanh nghiệp đăng bài toán ẩn danh, chỉ công khai điểm nghẽn kỹ thuật nhằm bảo vệ bí mật kinh doanh.
+    3. **Thời hạn nhận đề xuất giải pháp (Deadline)**: Trường chọn ngày `deadlineDate`.
+    4. **Đính kèm hồ sơ kỹ thuật (RFP / Technical Specs)**: Hỗ trợ đính kèm tệp tài liệu `rfpFileName`.
+
+### 11.2 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **AC-DELTA-DMD-01 (Zero Dev Badge)**: Không còn xuất hiện badge `TASK-03` trên giao diện người dùng `/portal/buyer/demands`. Tiêu đề hiển thị chuẩn hóa `Bàn Làm Việc Bài Toán Đổi Mới Công Nghệ`.
+- **AC-DELTA-DMD-02 (Pagination Control)**: Khi danh sách bài toán vượt quá `pageSize`, hệ thống chia trang chính xác và cho phép bấm chuyển giữa các trang mượt mà.
+- **AC-DELTA-DMD-03 (Quick Demand Modal Advanced Fields)**: Mở modal đăng bài toán, người dùng có thể chọn dải TRL mong muốn, tick chọn chế độ bảo mật ẩn danh và nhập thời hạn đề xuất.
+- **AC-DELTA-DMD-04 (Zero Regression)**: Toàn bộ các test suite hiện có của module Buyer Demands chạy pass 100%.
+
+
+
+---
+
+## Spec Delta v10 (CR-TASK-03-DELTA-01): Mở Quyền Đăng Nhu Cầu Cho PUBLIC_USER
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-01` & Yêu cầu thay đổi `CR-TASK-03-DELTA-01` ngày 30/10/2026.  
+> **Mục tiêu**: Phá vỡ rào cản pháp nhân, cho phép cá nhân, kỹ sư, nhà sáng chế độc lập và thành viên đại chúng (`PUBLIC_USER` / `USER`) đóng góp bài toán công nghệ từ thực tiễn sản xuất vào kho dữ liệu nhu cầu Quốc gia.
+
+### 12.1 Yêu Cầu Kỹ Thuật Nghiệp Vụ (Requirements Specification)
+
+- **`REQ-BUYER-DMD-004` [Mở Quyền Truy Cập & Kích Hoạt QuickDemandModal Cho PUBLIC_USER & USER]**:
+  1. Hệ thống MUST cho phép người dùng mang vai trò `PUBLIC_USER` hoặc `USER` (đã đăng nhập, chưa nâng hạng pháp nhân) được phép mở và thao tác trên component `QuickDemandModal`.
+  2. Điểm kích hoạt (Entry Points) hỗ trợ cho `PUBLIC_USER`:
+     - Nút CTA **"Đăng bài toán nhanh"** trên Banner Hành động nhanh tại Bàn làm việc `/portal`.
+     - Nút **"Đăng bài toán kỹ thuật"** trên thanh công cụ của Sàn Nhu cầu Công nghệ `/nhu-cau-cong-nghe`.
+  3. Form `QuickDemandModal` khi được mở bởi `PUBLIC_USER`:
+     - Tự động ẩn hoặc chuyển trường Mã số thuế (MST) / Tên doanh nghiệp thành trường không bắt buộc (Optional).
+     - Cho phép người dùng nhập trực tiếp thông tin người đề xuất (Họ tên, SĐT, Email - tự động nạp từ phiên đăng nhập).
+     - Thu thập đủ các trường kỹ thuật cốt lõi: Tiêu đề bài toán, Công đoạn sản xuất, Vấn đề kỹ thuật gặp phải, Mục tiêu kỳ vọng, Dải TRL mong muốn (`TRL 1-3`, `TRL 4-6`, `TRL 7-9`), Thời hạn đề xuất, và 4 tham số TNI ($K, L, N, O$).
+
+- **`BR-DMD-PUBLIC-01` [Quy Tắc Tiếp Nhận & Thẩm Định Bài Toán Từ Thành Viên Đại Chúng]**:
+  1. **Trạng Thái Khởi Tạo Mặc Định (Default PENDING Status)**:
+     - Mọi bài toán kỹ thuật được gửi từ vai trò `PUBLIC_USER` hoặc `USER` khi lưu vào CSDL (`demand_items`) MUST có trạng thái khởi tạo `status = 'PENDING'`.
+     - Tuyệt đối KHÔNG niêm yết công khai trực tiếp lên sàn `/nhu-cau-cong-nghe` khi chưa qua quy trình thẩm định.
+  2. **Quy Trình Thẩm Định & Phân Luồng (Triage & Verification Workflow)**:
+     - Hồ sơ bài toán tự động được gắn `approval_type = 'DEMAND'` và đẩy vào Hàng đợi tiếp nhận `/gov/demands` của Sở KH&CN địa phương (dựa trên địa bàn người dùng khai báo hoặc mặc định Sở KH&CN đầu mối).
+     - Cán bộ thẩm tra (`PROVINCE_OFFICER`) và Lãnh đạo Sở (`PROVINCE_LEADER` / `PROVINCIAL_ADMIN`) hoặc Admin Sàn (`OPERATOR_ADMIN`, `SUPER_ADMIN`) có thẩm quyền rà soát nội dung:
+       * Loại bỏ các bài toán spam, nội dung quảng cáo sai quy định hoặc không mang tính kỹ thuật.
+       * Chuẩn hóa từ khóa phân loại ngành (`LV01–LV18`, `CN01–CN48`).
+       * Phê duyệt bài toán chuyển trạng thái `status = 'VERIFIED'` để niêm yết công khai lên sàn và kích hoạt Radar Ghép Nối AI.
+  3. **Tuân Thủ Bảo Vệ Dữ Liệu Cá Nhân (PDPD Compliance - NĐ 13/2023/NĐ-CP)**:
+     - Toàn bộ thông tin cá nhân của người đề xuất (Họ tên, Số điện thoại cá nhân, Địa chỉ Email cá nhân) MUST được mã hóa và ẩn danh (Masking) trên toàn bộ các bề mặt công khai.
+     - Bên Bán hoặc Chuyên gia chỉ có thể xem nội dung bài toán kỹ thuật, mục tiêu và điểm TNI; chỉ được tiếp cận thông tin liên hệ khi người đề xuất bài toán chủ động bấm "Chấp thuận kết nối" (Opt-in Handshake).
+  4. **Miễn Trừ Thủ Tục Pháp Nhân (No Corporate Tax ID Requirement)**:
+     - Tuyệt đối KHÔNG chặn nộp bài toán nếu người dùng để trống Mã số thuế (MST) hoặc Giấy phép ĐKKD.
+     - Bản ghi liên kết trực tiếp với mã định danh cá nhân: `created_by = current_user.id`, `scope_type = 'GLOBAL'`, `institution_id = null`.
+
+### 12.2 Ma Trận Phân Quyền 10 Roles Cho Chức Năng Đăng Bài Toán Nhu Cầu Nhanh
+
+| STT | Mã Vai Trò (Role Code) | Tên Phân Quyền Vai Trò | Quyền Mở `QuickDemandModal` | Quyền Submit Bài Toán | Ràng Buộc MST Doanh Nghiệp | Trạng Thái Bản Ghi Mới | Hàng Đợi Thẩm Định |
+| :---: | :--- | :--- | :---: | :---: | :---: | :---: | :--- |
+| 1 | `SUPER_ADMIN` | Quản trị viên Tối cao Trung ương | Có | Có | Không | `VERIFIED` | Bỏ qua kiểm duyệt (Direct Verified) |
+| 2 | `OPERATOR_ADMIN` | Quản trị viên Vận hành Sàn | Có | Có | Không | `VERIFIED` | Bỏ qua kiểm duyệt (Hỗ trợ nhập liệu) |
+| 3 | `PROVINCIAL_ADMIN` | Lãnh đạo / QTV Sở KH&CN Tỉnh | Có | Có | Không | `VERIFIED` | Bài toán đặt hàng KH&CN cấp Tỉnh |
+| 4 | `PROVINCE_OFFICER` | Chuyên viên Thẩm tra Sở KH&CN | Có | Có | Không | `PENDING` | Chờ Lãnh đạo Sở phê duyệt |
+| 5 | `ENTERPRISE` | Doanh nghiệp ĐMST (Đã xác minh MST) | Có | Có | Bắt buộc | `PENDING` | Ưu tiên đối soát CSDL 304 DN |
+| 6 | `BUYER` | Bên Mua Công nghệ Chính Thức | Có | Có | Bắt buộc | `PENDING` | Kích hoạt Deal Room & Radar AI sau duyệt |
+| 7 | `SELLER` | Bên Bán Công nghệ (Chủ Gian Hàng) | Có | Có | Không | `PENDING` | Tìm kiếm công nghệ bổ trợ R&D |
+| 8 | `VERIFIED_EXPERT` | Chuyên gia KH&CN đã được Sở cấp thẻ | Có | Có | Không | `PENDING` | Bài toán R&D / Đề tài thử nghiệm |
+| 9 | `INNOVATION_ENTITY` | Viện nghiên cứu, Trường Đại học, HTX | Có | Có | Tùy chọn | `PENDING` | Nhu cầu chuyển giao công nghệ liên ngành |
+| 10 | `PUBLIC_USER` / `USER` | **Thành viên đại chúng / Kỹ sư cá nhân** | **CÓ (MỚI)** | **CÓ (MỚI)** | **KHÔNG BẮT BUỘC** | **`PENDING`** | **Bắt buộc qua Thẩm định Sở/Sàn (PDPD Protected)** |
+
+### 12.3 Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-DELTA-DMD-05` [Mở Modal & Đăng Bài Toán Thành Công Bởi PUBLIC_USER]**:
+  - **Given** người dùng đăng nhập tài khoản có vai trò `PUBLIC_USER` (hoặc `USER`),
+  - **When** bấm nút "Đăng bài toán nhanh" tại Bàn làm việc `/portal` hoặc Sàn `/nhu-cau-cong-nghe`,
+  - **Then** modal `QuickDemandModal` mở ra mà không yêu cầu nhập Mã số thuế,
+  - **When** người dùng nhập đầy đủ Tiêu đề, Mô tả vấn đề, Mục tiêu, chọn dải TRL và chấm điểm 4 tham số $K, L, N, O$, sau đó bấm "Gửi bài toán",
+  - **Then** hệ thống gửi yêu cầu `POST /api/v1/demands/items` thành công,
+  - **And** bản ghi được khởi tạo với trạng thái `PENDING`, hiển thị thông báo "Bài toán kỹ thuật của bạn đã được tiếp nhận và đang chờ Sở KH&CN / Ban quản trị thẩm định".
+
+- **`AC-DELTA-DMD-06` [Chặn Hiển Thị Công Khai Cho Đến Khi Thẩm Định]**:
+  - **Given** bài toán được tạo bởi `PUBLIC_USER` đang ở trạng thái `PENDING`,
+  - **When** người dùng vãng lai hoặc Seller truy cập Sàn `/nhu-cau-cong-nghe`,
+  - **Then** bài toán này KHÔNG xuất hiện trên danh sách công khai.
+  - **When** Cán bộ Sở KH&CN (`PROVINCIAL_ADMIN`) đăng nhập vào `/gov/demands` và duyệt bài toán sang `VERIFIED`,
+  - **Then** bài toán xuất hiện công khai trên `/nhu-cau-cong-nghe` với thông tin cá nhân đã được Masking theo chuẩn PDPD.
+
+- **`AC-DELTA-DMD-07` [Zero Regression RBAC & Backward Compatibility]**:
+  - **Given** các tài khoản mang vai trò `BUYER`, `ENTERPRISE`, `SELLER`, `VERIFIED_EXPERT`, `SUPER_ADMIN`,
+  - **When** thực hiện tạo bài toán qua `QuickDemandModal` hoặc Khảo sát chuyên sâu `/khao-sat-nhu-cau`,
+  - **Then** hành vi, luồng dữ liệu và validation của các vai trò này hoạt động đúng theo đặc tả gốc, không phát sinh lỗi hồi quy.
+
+---
+
+## Spec Delta v11 (CR-2026-010): Chuẩn Hóa Zero-Mock Số Liệu Sàn Tìm Mua & Taxonomy SSOT
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & Yêu cầu thay đổi [`CR-2026-010`](../../docs/change-requests/CR-2026-010-marketplace-metrics-and-taxonomy.md).
+
+### 1. Bối cảnh & Mục tiêu
+- **Xóa bỏ số liệu tĩnh**: Gỡ bỏ vĩnh viễn 3 khối số liệu tĩnh hardcoded `"142 bài toán"`, `"68.5 tỷ"`, `"24 giờ"` trên Hero Banner Sàn Tìm Mua (`app/nhu-cau-cong-nghe/page.tsx`).
+- **Nạp động thời gian thực từ API thật**:
+  - `totalDemands`: Đếm tổng số bài toán nhu cầu có trạng thái `PUBLISHED` từ schema `demand`.
+  - `totalBudget`: Tính tổng giá trị ngân sách dự kiến của các bài toán công khai.
+  - `slaSupport`: Cam kết thời gian kết nối hỗ trợ của nền tảng.
+- **5 UX States qua `<Async>`**: Bắt buộc mọi khối số liệu thống kê và danh sách bài toán xử lý qua component chuẩn `<Async>`. Không bao giờ fallback số giả khi mất kết nối mạng.
+- **Đồng bộ Taxonomy 10 Lĩnh vực TT17**: Combobox bộ lọc Lĩnh vực nạp động 100% từ `GET /api/v1/master-data/sectors?activeOnly=true`. Nghiêm cấm mảng tự chế 18 ngành hoặc mã khuyết.
+
+### 2. Tiêu chí Đo Lường Hoàn Thành (Success Criteria)
+- **`SC-DELTA-DMD-08`**: 100% số liệu hiển thị trên Hero Banner của Sàn Tìm Mua lấy từ API backend thật, khớp chính xác từng đơn vị với CSDL PostgreSQL.
+- **`SC-DELTA-DMD-09`**: Khi CSDL chưa có bài toán nào, hệ thống hiển thị trung thực con số `0` bài toán kèm lời mời đăng bài, không hiển thị bất kỳ số giả định nào.
+- **`SC-DELTA-DMD-10`**: Bộ lọc Lĩnh vực hiển thị đúng 10 Lĩnh vực chuẩn TT17, lọc chính xác các bài toán thuộc mã `LV` được chọn.
+
+---
+
+## Spec Delta v12 (CR-2026-10-30): Chuẩn Hóa Thuật Ngữ TT17 "Nhu Cầu Công Nghệ", Mở Quyền Quick Demand Cho PUBLIC_USER & Kỷ Luật Zero-Mock KPI Summary
+
+> **Căn cứ thay đổi**: Quyết định `PO-DEC-20261030-01` & `PO-DEC-20261030-02`, Kế hoạch Đợt 1 chuẩn hóa thuật ngữ TT17 và số liệu đo lường toàn sàn.
+
+### 1. Bối Cảnh & Lý Do Thay Đổi
+- **Chuẩn hóa thuật ngữ TT17**: Thông tư 17/2019/TT-BKHCN quy định chính thức thuật ngữ **"Nhu cầu công nghệ"** (Technology Demand), loại bỏ thuật ngữ tự phát "Bài toán đổi mới / Bài toán công nghệ" gây lệch chuẩn văn bản quy phạm pháp luật.
+- **Mở quyền đăng nhu cầu nhanh cho đại chúng**: Người dùng cá nhân, kỹ sư (`PUBLIC_USER`, `USER`) được nộp nhu cầu kỹ thuật mà không cần MST, chuyển vào hàng đợi duyệt `PENDING` và bảo vệ dữ liệu cá nhân theo Nghị định 13/2023/NĐ-CP (PDPD).
+- **Kỷ luật Zero-Mock KPI Summary**: Xóa bỏ 100% số liệu ảo (`142 bài toán`, `68.5 tỷ`, `24 giờ`), nạp động qua API thời gian thực từ schema `demand`, hỗ trợ 5 UX states qua component `<Async>`.
+
+### 2. Yêu Cầu Kỹ Thuật Chi Tiết (Technical Requirements)
+- **`REQ-DEL-03-01` (Chuẩn Hóa Thuật Ngữ TT17: Nhu Cầu Công Nghệ)**:
+  - Trên toàn bộ giao diện Sàn Tìm Mua (`/nhu-cau-cong-nghe`), Form khảo sát (`/khao-sat-nhu-cau`), Modal đăng nhanh (`QuickDemandModal`), Bảng Kanban điều phối và các nhãn điều hướng: MUST thay thế toàn diện cụm từ `"Bài toán đổi mới"` / `"Bài toán công nghệ"` thành cụm từ chuẩn hóa **`"Nhu cầu công nghệ"`** theo đúng Thông tư 17/2019/TT-BKHCN.
+  - Các nhãn nút bấm, placeholder, thông báo hệ thống được cập nhật đồng bộ (ví dụ: *"Đăng nhu cầu công nghệ"*, *"Tìm kiếm nhu cầu công nghệ"*, *"Tra cứu nhu cầu theo lĩnh vực"*).
+- **`REQ-DEL-03-02` (Mở Quyền Quick Demand Cho PUBLIC_USER & Chế Độ Bảo Vệ PDPD)**:
+  - Cho phép tài khoản `PUBLIC_USER` / `USER` mở và nộp form `QuickDemandModal` từ cả hai bề mặt: Trang tổng quan / Không gian cá nhân (`/portal`) và Sàn Nhu cầu (`/nhu-cau-cong-nghe`).
+  - Không bắt buộc Mã số thuế (MST) và ĐKKD doanh nghiệp đối với người nộp là cá nhân/kỹ sư. Gán `scope_type = 'GLOBAL'`, `institution_id = null`, `created_by = current_user.id`.
+  - Trạng thái bản ghi khởi tạo mặc định là `PENDING` (chờ Cán bộ Sở KH&CN hoặc Quản trị viên Sàn thẩm tra tính hợp lệ và loại trừ spam trước khi niêm yết).
+  - Áp dụng bảo vệ PDPD: Thông tin định danh cá nhân (Họ tên, SĐT, Email) của người nộp bắt buộc phải được che mờ (masking) khi hiển thị công khai trên Sàn.
+
+### 3. Quy Tắc Nghiệp Vụ (Business Rules)
+- **`BR-DEL-03-01` (Kỷ Luật Zero-Mock KPI Summary & Marketplace Metrics)**:
+  - **Triệt tiêu số liệu tĩnh**: Xóa bỏ vĩnh viễn toàn bộ số liệu tĩnh hardcoded (`"142 bài toán"`, `"68.5 tỷ"`, `"24 giờ"`) trên Hero Banner Sàn Tìm Mua (`app/nhu-cau-cong-nghe/page.tsx`).
+  - **Nạp động 100% qua API backend thật**:
+    * `totalDemands`: Đếm thời gian thực tổng số nhu cầu công nghệ có trạng thái `PUBLISHED` từ schema `demand`.
+    * `totalBudget`: Tính tổng giá trị ngân sách dự kiến của các nhu cầu công khai (chuyển đổi đơn vị Triệu VNĐ / Tỷ VNĐ).
+    * `slaSupport`: Cam kết thời gian phản hồi hỗ trợ kết nối từ nền tảng.
+  - **Kỷ luật 5 UX States qua `<Async>`**: Mọi khối số liệu thống kê summary bắt buộc xử lý qua component `<Async>` hỗ trợ đủ 5 trạng thái (Loading, Empty, Error, Success, Updating). Khi CSDL chưa có dữ liệu, hiển thị trung thực con số `0`, cấm tuyệt đối fallback số dummy ảo trong khối `catch`.
+  - **Đồng bộ Taxonomy SSOT 10 Lĩnh vực TT17**: Bộ lọc Lĩnh vực nạp động 100% từ `GET /api/v1/master-data/sectors?activeOnly=true`, khớp chính xác 10 mã `LV` chuẩn, triệt tiêu mảng tự chế 18 ngành.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-DEL-03-01` (TT17 Terminology Standardization)**:
+  - 100% nhãn giao diện, bộ lọc, modal và thông báo tại phân hệ Sàn Tìm Mua hiển thị nhất quán cụm từ `"Nhu cầu công nghệ"`, không còn xuất hiện cụm từ `"Bài toán đổi mới"`.
+- **`AC-DEL-03-02` (PUBLIC_USER Quick Demand Submission)**:
+  - Người dùng đăng nhập vai trò `PUBLIC_USER` có thể bấm mở `QuickDemandModal`, form không yêu cầu MST, nhập nội dung nhu cầu và nộp thành công với status `PENDING`. Bản ghi không hiển thị công khai cho đến khi được duyệt sang `VERIFIED`.
+- **`AC-DEL-03-03` (Zero-Mock Marketplace Metrics Validation)**:
+  - Hero banner Sàn Tìm Mua hiển thị số liệu thực tế từ API `GET /api/v1/portal/stats` hoặc endpoint đếm nhu cầu thật. Không xuất hiện chuỗi hardcoded `"142 bài toán"` hay `"68.5 tỷ"`. Khi CSDL có 0 bản ghi, hiển thị chính xác số `0`.
+
+### 5. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+| Yêu Cầu Chức Năng (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Tệp Nguồn Triển Khai (Source Code) | Kiểm Thử Kiểm Chứng (Automated Tests) |
+| :--- | :--- | :--- | :--- | :--- |
+| **REQ-DEL-03-01** | `BR-DEL-03-01` | `AC-DEL-03-01` | `app/nhu-cau-cong-nghe/page.tsx`, `components/demand/*` | `nhu-cau-cong-nghe.test.tsx` |
+| **REQ-DEL-03-02** | `BR-DEL-03-01` | `AC-DEL-03-02` | `components/modals/QuickDemandModal.tsx`, `app/nhu-cau-cong-nghe/page.tsx` | `quick-demand-modal.test.tsx` |
+
+---
+
+## Spec Delta v13 (CR-TASK-03-DELTA-02): Quản Lý Đơn Hàng & Tiến Trình Đơn Mua Cho Public User
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định PO `PO-DEC-20261030-03` & Yêu cầu thay đổi `CR-TASK-03-DELTA-02` ngày 30/10/2026.  
+> **Mục tiêu**: Chuẩn hóa quy trình đặt mua sản phẩm thương mại cho Thành viên Đại chúng (`PUBLIC_USER` / `USER`), triệt tiêu hoàn toàn đơn hàng mồ côi (Zero Orphaned Orders) bằng Bearer Token, minh bạch hóa tiến trình xử lý đơn qua Stepper 4 bước và tổ chức giao diện quản trị 2 Tabs tại Public Workspace.
+
+### 1. Yêu Cầu Kỹ Thuật Nghiệp Vụ (Requirements Specification)
+
+- **`REQ-BUYER-ORD-001` [Đặt Mua Sản Phẩm Thương Mại & Gán Chủ Tài Khoản Xác Thực]**:
+  1. Hệ thống MUST cho phép người dùng (sau khi đăng nhập với vai trò `PUBLIC_USER` hoặc `BUYER`) thực hiện đặt mua hoặc gửi yêu cầu báo giá thương mại từ các trang sản phẩm/thiết bị (`/san-pham`, `/chao-ban-cong-nghe/[id]`) hoặc modal mua nhanh (`QuickBuyModal` / `OrderPlacementModal`).
+  2. Bắt buộc gắn kết chủ tài khoản: Mọi yêu cầu tạo đơn đặt mua MUST gửi kèm JWT Bearer Token trong header `Authorization: Bearer <token>`. Phía Backend trích xuất mã định danh người dùng `PersonId` (`current_user.id`) từ JWT claims và gán trực tiếp vào thuộc tính `created_by` / `buyer_id` của đơn hàng.
+  3. Form đặt mua thu thập tối thiểu:
+     - Thông tin mặt hàng: Mã sản phẩm (`offer_id`), tên sản phẩm, đơn giá niêm yết (nếu có), số lượng mong muốn.
+     - Thông tin liên hệ người mua: Họ và tên, số điện thoại, email (tự động nạp sẵn từ hồ sơ người dùng đã đăng nhập).
+     - Địa chỉ giao nhận / triển khai và ghi chú yêu cầu kỹ thuật/thương mại kèm theo.
+  4. Hệ thống MUST sinh mã đơn hàng chuẩn hóa: `ORD-YYYYMMDD-XXXXX` (trong đó `XXXXX` là số thứ tự tăng dần trong ngày).
+  5. Nghiêm cấm tạo đơn mồ côi: Nếu người dùng chưa đăng nhập bấm nút đặt mua, hệ thống MUST hiển thị Auth Modal yêu cầu đăng nhập/đăng ký, lưu tạm thông tin đặt mua trong bộ nhớ phiên và khôi phục nộp đơn sau khi đăng nhập thành công.
+
+- **`REQ-BUYER-ORD-002` [Giao Diện Quản Trị 2 Tabs: Đơn Hàng Thương Mại vs Nhu Cầu R&D]**:
+  1. Tại Bàn làm việc người mua (`/portal/saved` hoặc `/portal/orders`) thuộc menu **"Đơn hàng & Yêu cầu mua"**, hệ thống MUST cung cấp giao diện quản trị phân tách thành 2 Tabs rõ ràng:
+     - **Tab 1 — "Đơn hàng thương mại" (`Commercial Orders`)**:
+       * Hiển thị danh sách các đơn đặt mua sản phẩm/thiết bị thương mại do người dùng đã tạo.
+       * Mỗi đơn hàng hiển thị: Mã đơn, Tên sản phẩm, Nhà cung cấp (Seller), Ngày đặt, Tổng giá trị ước tính, và Huy hiệu trạng thái (Badge).
+       * Nhấp vào đơn hàng sẽ mở view chi tiết kèm Order Tracking Stepper 4 bước.
+     - **Tab 2 — "Nhu cầu công nghệ / Bài toán R&D" (`R&D Demands`)**:
+       * Hiển thị danh sách các bài toán kỹ thuật đã nộp qua `QuickDemandModal` hoặc Khảo sát sâu `/khao-sat-nhu-cau`.
+       * Hiển thị chỉ số TNI, lĩnh vực, ngân sách dự kiến và trạng thái thẩm định Cấp Sở/Sàn (`PENDING` / `VERIFIED` / `RETURNED`).
+  2. Mỗi Tab duy trì bộ lọc trạng thái, tìm kiếm từ khóa và phân trang độc lập, không làm xáo trộn dữ liệu của Tab còn lại.
+
+- **`REQ-BUYER-ORD-003` [Thanh Tiến Trình Đơn Hàng (Order Tracking Stepper 4 Bước)]**:
+  1. Giao diện chi tiết đơn hàng thương mại MUST tích hợp thành phần hiển thị tiến trình `OrderTrackingStepper` gồm đúng 4 bước tuyến tính:
+     - **Bước 1 — `SUBMITTED` (Đã gửi đơn)**: Thời điểm người mua hoàn tất gửi đơn. Đơn ở trạng thái chờ tiếp nhận.
+     - **Bước 2 — `PROCESSING` (Đang xử lý)**: Bên Bán (Seller) hoặc Quản trị viên đã tiếp nhận thông tin, đang kiểm tra tình trạng hàng/năng lực cung cấp kỹ thuật.
+     - **Bước 3 — `NEGOTIATING` (Đang đàm phán)**: Hai bên đang thương thảo hợp đồng, thống nhất bảng giá, phụ lục kỹ thuật, điều khoản bảo hành và thanh toán.
+     - **Bước 4 — `COMPLETED` (Hoàn tất)**: Hai bên ký kết hợp đồng thương mại hoặc hoàn tất bàn giao, chuyển giao giải pháp.
+  2. Hiển thị trực quan trạng thái từng bước:
+     - Bước đã hoàn thành: Icon check xanh lá cây kèm thời điểm hoàn thành (Timestamp).
+     - Bước hiện tại đang kích hoạt: Icon nổi bật, vòng quay hoặc viền sáng kèm thông tin hướng dẫn hành động tiếp theo.
+     - Bước chưa tới: Màu xám mờ.
+  3. Xử lý trạng thái ngoại lệ:
+     - Nếu đơn bị hủy (`CANCELLED`): Stepper chuyển sang màu xám/đỏ hiển thị nhãn "Đơn hàng đã hủy" kèm lý do hủy và người thực hiện hủy.
+     - Nếu đơn bị từ chối (`REJECTED`): Stepper hiển thị nhãn "Bên bán từ chối tiếp nhận" kèm lý do phản hồi của Seller.
+
+### 2. Quy Tắc Nghiệp Vụ (Business Rules)
+
+- **`BR-ORD-AUTH-01` [Bắt Buộc Xác Thực Bearer Token & Chống Đơn Hàng Mồ Côi]**:
+  1. API endpoint tạo đơn mua `POST /api/v1/demands/orders` bắt buộc phải có Header `Authorization: Bearer <jwt_access_token>`.
+  2. Nếu request thiếu token hoặc token hết hạn/không hợp lệ, Backend MUST trả về HTTP `401 Unauthorized` kèm mã lỗi `AUTH_TOKEN_REQUIRED`.
+  3. Backend giải mã JWT lấy `sub` hoặc claim `person_id` / `user_id` gán vào trường `created_by` và `buyer_id`. Tuyệt đối cấm để giá trị `NULL`.
+  4. Bản ghi đơn hàng mặc định gán: `scope_type = 'GLOBAL'`, `is_commercial = true`.
+  5. Tài khoản `PUBLIC_USER` chỉ được quyền xem và thao tác trên các đơn hàng có `created_by = current_user.id`.
+
+- **`BR-ORD-TRACKING-01` [Quy Tắc Chuyển Đổi Trạng Thái Đơn Hàng (Order State Machine)]**:
+  1. **Ma Trận Chuyển Đổi Hợp Lệ (State Transition Matrix)**:
+     - `SUBMITTED` → `PROCESSING` (Thực hiện bởi: Seller sở hữu sản phẩm hoặc Operator Admin).
+     - `SUBMITTED` → `CANCELLED` (Thực hiện bởi: Buyer chủ sở hữu đơn).
+     - `PROCESSING` → `NEGOTIATING` (Thực hiện bởi: Seller hoặc Buyer khi bắt đầu thương thảo).
+     - `PROCESSING` → `REJECTED` (Thực hiện bởi: Seller khi hết hàng hoặc không khả thi).
+     - `NEGOTIATING` → `COMPLETED` (Thực hiện bởi: Seller hoặc Buyer khi hai bên thống nhất hợp đồng).
+     - `NEGOTIATING` → `CANCELLED` (Thực hiện bởi: Seller hoặc Buyer khi đàm phán bất thành).
+  2. **Quyền Hủy Đơn Của Buyer**:
+     - Người mua (`Buyer`) có toàn quyền chủ động bấm "Hủy đơn" (`CANCELLED`) khi đơn đang ở trạng thái `SUBMITTED` mà không cần sự đồng thuận của Seller.
+     - Khi đơn đã chuyển sang `PROCESSING` hoặc `NEGOTIATING`, hành động hủy yêu cầu nhập lý do và gửi thông báo xác nhận đến bên còn lại.
+  3. **Lưu Vết Kiểm Toán Bắt Buộc (Audit Trail SSOT)**:
+     - Mọi thao tác đổi trạng thái MUST ghi nhận một bản ghi vào bảng `order_status_logs` (hoặc `audit_events`) gồm: `order_id`, `from_status`, `to_status`, `changed_by_user_id`, `changed_at`, `reason_notes`.
+
+### 3. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-ORD-01` [Đặt Hàng Thương Mại Kèm Bearer Token & Gán Chủ Sở Hữu]**:
+  - **Given** người dùng đã đăng nhập với tài khoản `PUBLIC_USER` (hoặc `BUYER`),
+  - **When** vào trang chi tiết sản phẩm thương mại `/chao-ban-cong-nghe/[id]` và bấm "Đặt mua ngay",
+  - **And** điền số lượng, địa chỉ giao nhận và bấm "Xác nhận đặt hàng",
+  - **Then** Frontend gửi request `POST /api/v1/demands/orders` kèm header `Authorization: Bearer <token>`,
+  - **And** Backend xác thực token thành công, trích xuất `PersonId`, lưu bản ghi với `created_by = PersonId`,
+  - **And** hệ thống trả về mã đơn hàng `ORD-YYYYMMDD-XXXXX` và chuyển hướng người dùng đến trang chi tiết đơn hàng trong Bàn làm việc `/portal/saved?tab=commercial`.
+
+- **`AC-ORD-02` [Chặn Khách Vãng Lai & Điều Hướng Đăng Nhập An Toàn]**:
+  - **Given** người dùng chưa đăng nhập (khách vãng lai / Guest),
+  - **When** bấm nút "Đặt mua ngay" tại trang sản phẩm,
+  - **Then** hệ thống KHÔNG gửi request tạo đơn ẩn danh,
+  - **And** hiển thị Auth Modal yêu cầu đăng nhập/đăng ký,
+  - **When** người dùng hoàn tất đăng nhập thành công,
+  - **Then** hệ thống tự động giữ nguyên mặt hàng đã chọn và mở lại form đặt hàng với thông tin cá nhân đã nạp sẵn.
+
+- **`AC-ORD-03` [Giao Diện Bàn Làm Việc 2 Tabs Hoạt Động Độc Lập]**:
+  - **Given** người dùng truy cập Bàn làm việc qua menu "Đơn hàng & Yêu cầu mua" (`/portal/saved`),
+  - **When** chọn Tab "Đơn hàng thương mại",
+  - **Then** hệ thống hiển thị danh sách các đơn đặt mua sản phẩm của người dùng kèm mã `ORD-*`, tên sản phẩm, trạng thái và nút xem tiến trình,
+  - **When** người dùng chuyển sang Tab "Nhu cầu công nghệ / Bài toán R&D",
+  - **Then** hệ thống nạp danh sách các bài toán kỹ thuật/khảo sát TNI kèm trạng thái thẩm định Cấp Sở (`PENDING` / `VERIFIED`), không hiển thị lẫn lộn đơn thương mại.
+
+- **`AC-ORD-04` [Hiển Thị Trực Quan Order Tracking Stepper 4 Bước]**:
+  - **Given** người mua mở chi tiết một đơn đặt mua hàng thương mại,
+  - **Then** màn hình hiển thị thanh `OrderTrackingStepper` gồm đúng 4 bước: `SUBMITTED` -> `PROCESSING` -> `NEGOTIATING` -> `COMPLETED`,
+  - **When** đơn hàng ở trạng thái `PROCESSING`,
+  - **Then** bước 1 (`SUBMITTED`) có tích xanh hoàn thành kèm giờ gửi, bước 2 (`PROCESSING`) sáng màu active với chú thích "Đang kiểm tra hàng", bước 3 và 4 ở trạng thái chờ (inactive).
+
+- **`AC-ORD-05` [Buyer Hủy Đơn Thành Công Tại Bước SUBMITTED]**:
+  - **Given** một đơn hàng của Buyer đang ở trạng thái `SUBMITTED`,
+  - **When** Buyer bấm nút "Hủy đơn hàng" và xác nhận tại hộp thoại cảnh báo,
+  - **Then** API `PATCH /api/v1/demands/orders/{id}/status` gửi payload `{ status: 'CANCELLED', reason: '...' }`,
+  - **And** Backend cập nhật `status = 'CANCELLED'`, ghi log kiểm toán,
+  - **And** giao diện Stepper chuyển sang trạng thái "Đã hủy", vô hiệu hóa các nút tương tác tiếp theo.
+
+### 4. Ma Trận Truy Vết Khép Kín (Traceability Matrix)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Bảng CSDL Tác Động (DB Schema) | Giao Diện Triển Khai (UI Screens) | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-BUYER-ORD-001** | `BR-ORD-AUTH-01` | `AC-ORD-01`, `AC-ORD-02` | `demand.demand_orders`, `demand.order_items` | `QuickBuyModal.tsx`, `ProductDetailPage.tsx` | `POST /api/v1/demands/orders` |
+| **REQ-BUYER-ORD-002** | `BR-ORD-AUTH-01`, `BR-ORD-TRACKING-01` | `AC-ORD-03` | `demand.demand_orders`, `demand.demand_items` | `OrdersWorkspaceTabs.tsx`, `/portal/saved/page.tsx` | `GET /api/v1/demands/my-orders`, `GET /api/v1/demands/items` |
+| **REQ-BUYER-ORD-003** | `BR-ORD-TRACKING-01` | `AC-ORD-04`, `AC-ORD-05` | `demand.demand_orders`, `demand.order_status_logs` | `OrderTrackingStepper.tsx`, `OrderDetailModal.tsx` | `GET /api/v1/demands/orders/{id}`, `PATCH /api/v1/demands/orders/{id}/status` |
+
+---
+
+## 9. DELTA V1.4: CR-TASK-03-DELTA-01 CHUẨN HÓA VÒNG ĐỜI TRẠNG THÁI BÀI TOÁN & RÀO CHẮN QUYỀN RIÊNG TƯ (PDPD PREVIEW GUARD)
+
+### 1. Bối cảnh & Căn cứ Quyết định
+- **Căn cứ**: Quyết định `PO-DEC-20261102-04` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 22 và Hồ sơ `CR-TASK-03-DELTA-01`.
+- **Mục tiêu**: Xóa bỏ hoàn toàn hardcode nhãn trạng thái trên trang chi tiết bài toán, hiển thị chuẩn 4 Badge trạng thái theo `DemandItemStatuses`, bổ sung Banner cảnh báo chờ Cán bộ Sở KH&CN thẩm định cho tác giả bài toán và áp dụng Preview Guard bảo vệ quyền riêng tư theo Nghị định 13/2023/NĐ-CP (PDPD).
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-BUYER-DMD-004` [Vòng Đời Trạng Thái Bài Toán & Quản Trị Thẩm Định Sở KH&CN]**:
+  - Bài toán nhu cầu khi tạo qua `POST /api/v1/demands/items` khởi tạo ở trạng thái `Status = 'PENDING'`, `IsPublicListed = false`.
+  - Bài toán tự động xuất hiện trong danh sách thẩm định của Cán bộ Sở KH&CN tại `/gov/demands`.
+  - Khi Cán bộ Sở bấm "Phê duyệt & Niêm yết", trạng thái bài toán chuyển sang `VERIFIED`, `IsPublicListed = true` và xuất hiện công khai trên Sàn.
+
+### 3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+- **`BR-DMD-STAT-01` [Quy Tắc Chuyển Đổi & Render 4 Trạng Thái Hiển Thị (Status Badges)]**:
+  1. `PENDING`: Badge vàng hổ phách `CHỜ SỞ KH&CN THẨM ĐỊNH` (`bg-amber-50 text-amber-700 border-amber-200`). Phụ đề: *"Hồ sơ đang được Cán bộ Sở KH&CN thẩm định trước khi niêm yết"*.
+  2. `VERIFIED`: Badge xanh ngọc `ĐANG MỞ TÌM CUNG` (`bg-emerald-50 text-emerald-700 border-emerald-200`). Phụ đề: *"Đang mở tiếp nhận giải pháp công nghệ từ Viện/Trường/Doanh nghiệp"*.
+  3. `CONNECTED`: Badge xanh dương `ĐÃ KẾT NỐI CUNG - CẦU` (`bg-blue-50 text-blue-700 border-blue-200`).
+  4. `CLOSED`: Badge xám `ĐÃ ĐÓNG HỒ SƠ` (`bg-slate-100 text-slate-700 border-slate-300`).
+
+- **`BR-DMD-PRIV-01` [Rào Chắn Quyền Riêng Tư & Bảo Vệ Bản Nháp (PDPD Preview Guard)]**:
+  1. Khi bài toán ở trạng thái `PENDING`:
+     - **Chính chủ sở hữu (`Actor.PersonId == item.CreatedBy`)**: Xem toàn bộ nội dung dưới dạng Author Preview kèm Banner cảnh báo màu vàng ở đầu trang.
+     - **Cán bộ Sở / Quản trị viên (`PROVINCIAL_ADMIN`, `SUPER_ADMIN`, `OPERATOR_ADMIN`, `ADMIN`)**: Xem đầy đủ để thực hiện thẩm định và gán chuyên gia.
+     - **Khách ngoài (Guest hoặc tài khoản khác)**: Hiển thị giao diện thông báo hồ sơ đang trong quá trình thẩm định của Sở KH&CN, ẩn thông tin kỹ thuật chi tiết và ẩn form chào giải pháp.
+  2. Form gửi chào giải pháp của Bên Bán ở chân trang bắt buộc tạm khóa khi bài toán chưa `VERIFIED`.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-DMD-01` [Hiển Thị Chuẩn Badge Trạng Thái Theo CSDL]**:
+  - **Given** người dùng mở bài toán nhu cầu có `status = 'PENDING'`,
+  - **Then** giao diện KHÔNG hiển thị nhãn "ĐANG MỞ TÌM CUNG",
+  - **And** hiển thị đúng Badge màu vàng `CHỜ SỞ KH&CN THẨM ĐỊNH`.
+
+- **`AC-DMD-02` [Banner Cảnh Báo Cho Chính Chủ Bài Toán]**:
+  - **Given** người dùng `public1` (chủ bài toán) mở bài toán vừa tạo,
+  - **Then** đầu trang hiển thị Banner cảnh báo: *"Hồ sơ bài toán nhu cầu đã được tiếp nhận và đang trong quá trình thẩm định của Cán bộ Sở KH&CN trước khi niêm yết rộng rãi."*
+
+- **`AC-DMD-03` [Khóa Form Chào Giải Pháp Khi Chưa Duyệt]**:
+  - **Given** bài toán đang ở trạng thái `PENDING`,
+  - **Then** form chào bán giải pháp ở chân trang bị tạm khóa kèm thông báo: *"Bài toán đang chờ duyệt niêm yết, tính năng gửi hồ sơ giải pháp tạm thời chưa khả dụng."*
+
+- **`AC-DMD-04` [Cán Bộ Sở Duyệt Chuyển Trạng Thái Thành Công]**:
+  - **Given** Cán bộ Sở Hà Nội đăng nhập và mở `/gov/demands`,
+  - **When** bấm "Phê duyệt & Niêm yết" cho bài toán `PENDING`,
+  - **Then** bài toán chuyển sang `status = 'VERIFIED'`, `is_public_listed = true`,
+  - **And** khi F5 trang chi tiết, Badge tự động đổi sang `ĐANG MỞ TÌM CUNG` màu xanh và mở form chào giải pháp.
+
+### 5. Ma Trận Truy Vết Bổ Sung (Traceability Matrix Delta)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Bảng CSDL Tác Động | Giao Diện Triển Khai | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-BUYER-DMD-004** | `BR-DMD-STAT-01`, `BR-DMD-PRIV-01` | `AC-DMD-01`, `AC-DMD-02`, `AC-DMD-03`, `AC-DMD-04` | `demand.demand_items` | `SourceCode/frontend/src/app/nhu-cau-cong-nghe/[id]/page.tsx` | `GET /api/v1/public/demands/{id}`, `POST /api/v1/gov/demands/{id}/verify` |
+
+---
+
+## 10. DELTA V15: CR-TASK-03-DELTA-02 CHUẨN HÓA CHỮ KÝ TAY CẢM ỨNG ĐIỆN TỬ (DIGITAL SIGNATURE PAD SHARED COMPONENT)
+
+### 1. Bối cảnh & Căn cứ Quyết định
+- **Căn cứ**: 
+  - Quyết định Phê duyệt Gate 1 của Product Owner ngày 04/11/2026 đối với đề xuất thay đổi `CR-TASK-03-DELTA-02`.
+  - Luật Giao dịch điện tử số 20/2023/QH15 (Hiệu lực từ 01/07/2024), quy định về chữ ký điện tử và giá trị pháp lý của thông điệp dữ liệu.
+  - Nghị định 13/2023/NĐ-CP của Chính phủ về Bảo vệ Dữ liệu Cá nhân (PDPD).
+  - Basic Design Wireframe chuẩn hóa tại `Specification/XUAT_MAN_HINH_WEB_HTML/25_web_khao_sat_nhu_cau_cong_nghe_dnnvv.html`.
+- **Mục tiêu**: Thay thế cơ chế xác nhận văn bản thuần túy bằng Bảng Ký Điện Tử Cảm Ứng (Touch Digital Signature Pad) dùng chung, đảm bảo tính chống chối bỏ (Non-Repudiation), trải nghiệm ký mượt mà trên cả máy tính lẫn thiết bị di động/tablet, và lưu trữ dữ liệu nét vẽ an toàn dưới dạng Base64 PNG.
+
+### 2. Yêu Cầu Chức Năng Bổ Sung (Functional Requirements)
+- **`REQ-SIG-01` [Bảng Ký Điện Tử Cảm Ứng (Touch Digital Signature Pad Modal)]**:
+  - Kích hoạt qua khung tương tác *"Bấm vào đây để ký tay / Chữ ký điện tử"* tại Bước 5 (Xác nhận & Cam kết PDPD) của form khảo sát trực tuyến.
+  - Hỗ trợ HTML5 Canvas thuần (Zero external libraries) với độ phân giải Retina High-DPI (`window.devicePixelRatio`).
+  - Hỗ trợ đa phương thức nhập liệu: Chuột (`mousedown`, `mousemove`, `mouseup`, `mouseleave`) và Cảm ứng (`touchstart`, `touchmove`, `touchend`, `touchcancel` kèm `touch-action: none` và `e.preventDefault()`).
+  - Thiết lập nét vẽ chuẩn văn bản: nét mực xanh đen `#0F172A`, độ dày nét `lineWidth = 2.5`, bo tròn `lineCap = 'round'`, `lineJoin = 'round'`.
+  - Hỗ trợ đầy đủ các thao tác: [Xóa nét / Ký lại], [Hủy bỏ], và [Xác nhận & Sử dụng chữ ký].
+
+- **`REQ-SIG-02` [Hiển Thị Xem Trước & Quản Lý Chữ Ký Trên Phiếu (Preview Box)]**:
+  - Sau khi xác nhận chữ ký trong Modal, giao diện Bước 5 chuyển sang Hộp xem trước chữ ký (Signature Preview Box).
+  - Hiển thị hình ảnh chữ ký sắc nét trên nền sáng chống lóa, gắn kèm Badge `✓ Đã ký điện tử` màu xanh lục (#047857 / #ECFDF5).
+  - Cung cấp 2 nút điều khiển: `[Ký lại]` (mở lại canvas để vẽ nét mới) và `[Xóa chữ ký]` (xóa dữ liệu chữ ký, quay về ô trống ban đầu và cập nhật lại thanh tiến độ).
+  - Tự động lưu chuỗi Base64 chữ ký vào Bản nháp (LocalStorage Draft) và tự động khôi phục khi tải lại bản nháp.
+
+- **`REQ-SIG-03` [Toàn Vẹn Dữ Liệu & Cam Kết Bảo Mật PDPD]**:
+  - Chữ ký điện tử được đóng gói dạng Data URL `data:image/png;base64,...`.
+  - Gắn chặt với bộ 4 yếu tố xác thực: Họ tên người đại diện (`confirm_name`), Chức vụ (`confirm_position`), Ngày xác nhận (`confirm_date`), và Cam kết PDPD (`pdpd_consent = true`).
+  - Bảo mật tuyệt đối theo Nghị định 13/2023/NĐ-CP, chỉ lưu trữ trong CSDL nội bộ và hiển thị trong bản in tiếp nhận hoặc Ticket Modal.
+
+### 3. Quy Tắc Nghiệp Vụ Bổ Sung (Business Rules)
+- **`BR-SIG-01` [Bắt Buộc Ký Xác Nhận Điện Tử Trước Khi Gửi Phiếu (Mandatory Validation Gate)]**:
+  - Trường Chữ ký điện tử là trường **bắt buộc 100% (Mandatory)** đối với mọi người dùng nộp phiếu khảo sát.
+  - Khi người dùng bấm `[Kiểm Tra & Gửi Phiếu Khảo Sát]`, nếu trường `signature_data` rỗng:
+    1. Chặn hành động nộp phiếu (`event.preventDefault()`).
+    2. Cuộn mượt màn hình (smooth scroll) định vị đến khung chữ ký.
+    3. Hiển thị thông báo lỗi màu đỏ tại ô chữ ký: *"⚠ Vui lòng ký tên xác nhận điện tử trước khi gửi phiếu khảo sát!"*.
+    4. Kích hoạt Toast cảnh báo lỗi.
+
+- **`BR-SIG-02` [Tiêu Chuẩn Nét Ký & Chống Chữ Ký Trống (Anti-Blank Signature & High-DPI)]**:
+  - Không cho phép bấm "Xác nhận & Sử dụng chữ ký" khi cờ `hasDrawn === false` hoặc dữ liệu pixel canvas hoàn toàn trong suốt.
+  - Nếu người dùng bấm xác nhận khi chưa vẽ nét nào, hiển thị cảnh báo: *"Vui lòng ký tên vào khung trước khi bấm xác nhận!"*.
+  - Nét vẽ canvas phải được nhân hệ số tỷ lệ `window.devicePixelRatio` (1.5x - 3x) để đảm bảo không vỡ hạt khi in văn bản A4.
+
+- **`BR-SIG-03` [Tính Bất Biến & Chống Chối Bỏ Sau Khi Nộp Hồ Sơ (Immutability Post-Submission)]**:
+  - Khi hồ sơ khảo sát đã được hệ thống ghi nhận thành công và cấp mã `Ticket ID` (hoặc `Survey Code`):
+    - Dữ liệu chữ ký chuyển sang trạng thái chỉ đọc (Read-only / Immutable), không được phép chỉnh sửa.
+    - Hình ảnh chữ ký được hiển thị trong Modal tiếp nhận thành công và nhúng vào file JSON xuất dữ liệu hoặc bản in PDF tiếp nhận.
+
+### 4. Đặc Tả Giao Diện & 5 Trạng Thái UX (UI-SIG-PAD-01)
+
+```mermaid
+stateDiagram-v2
+    [*] --> STATE_1_EMPTY: Khởi tạo phiếu khảo sát
+
+    state STATE_1_EMPTY {
+        [*] --> UnsignedPlaceholder
+        UnsignedPlaceholder: - Viền nét đứt màu xanh dương nhạt
+        UnsignedPlaceholder: - Icon bút ký điện tử
+        UnsignedPlaceholder: - Text: Bấm vào đây để ký tay / Chữ ký điện tử
+        UnsignedPlaceholder: - signatureDataUrl = empty
+    }
+
+    STATE_1_EMPTY --> STATE_2_DRAWING: Bấm vào ô chữ ký
+    
+    state STATE_2_DRAWING {
+        [*] --> ModalCanvasOpen
+        ModalCanvasOpen: - Modal Backdrop làm mờ nền
+        ModalCanvasOpen: - Canvas touch-action none
+        ModalCanvasOpen: - Stroke 2.5px, màu #0F172A
+        ModalCanvasOpen: - DPR High-Resolution scaling
+        ModalCanvasOpen: - Trạng thái: Đang ký...
+    }
+
+    STATE_2_DRAWING --> STATE_4_CLEARED: Bấm [Xóa nét / Ký lại]
+    state STATE_4_CLEARED {
+        [*] --> ClearCanvas
+        ClearCanvas: - Xóa sạch buffer canvas
+        ClearCanvas: - hasDrawn = false
+        ClearCanvas: - Trạng thái: Chưa có nét ký
+    }
+    STATE_4_CLEARED --> STATE_2_DRAWING: Người dùng vẽ nét mới
+
+    STATE_2_DRAWING --> STATE_1_EMPTY: Bấm [Hủy bỏ] hoặc [X]
+    STATE_2_DRAWING --> STATE_3_SIGNED: Bấm [Xác nhận] (hasDrawn = true)
+
+    state STATE_3_SIGNED {
+        [*] --> SignaturePreview
+        SignaturePreview: - Render ảnh chữ ký từ Base64 PNG
+        SignaturePreview: - Badge: ✓ Đã ký điện tử
+        SignaturePreview: - Nút: Ký lại / Xóa chữ ký
+        SignaturePreview: - signatureDataUrl = data:image/png;base64,...
+    }
+
+    STATE_3_SIGNED --> STATE_2_DRAWING: Bấm [Ký lại]
+    STATE_3_SIGNED --> STATE_1_EMPTY: Bấm [Xóa chữ ký]
+
+    STATE_1_EMPTY --> STATE_5_ERROR: Bấm [Gửi phiếu] khi chưa ký
+    state STATE_5_ERROR {
+        [*] --> ValidationError
+        ValidationError: - Viền đỏ cảnh báo
+        ValidationError: - Text lỗi: Vui lòng ký tên xác nhận...
+        ValidationError: - Toast cảnh báo lỗi
+        ValidationError: - Smooth scroll định vị ô chữ ký
+    }
+    STATE_5_ERROR --> STATE_2_DRAWING: Bấm vào ô để ký bổ sung
+```
+
+### 5. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+
+- **`AC-SIG-01` [Chặn Nộp Phiếu Khi Chưa Ký Tên]**:
+  - **Given** người dùng điền đầy đủ các bước 1-4 nhưng chưa ký tại ô chữ ký điện tử,
+  - **When** bấm nút gửi phiếu khảo sát,
+  - **Then** hệ thống ngăn chặn submit, tự động cuộn đến khung chữ ký, hiển thị viền đỏ cảnh báo và Toast lỗi.
+
+- **`AC-SIG-02` [Vẽ Chữ Ký Chuột Mượt Mà Trên Desktop]**:
+  - **Given** người dùng mở Modal bảng ký trên máy tính để bàn/laptop,
+  - **When** nhấn giữ chuột trái và rê vẽ chữ ký,
+  - **Then** nét mực xanh đen `#0F172A` xuất hiện mượt mà, bo tròn đầu nét, không bị giật lag,
+  - **And** cờ `hasDrawn` chuyển sang `true`, nút [Xóa nét] cho phép làm sạch canvas về trạng thái ban đầu.
+
+- **`AC-SIG-03` [Vuốt Vẽ Cảm Ứng Chuẩn Xác Trên Mobile / Tablet]**:
+  - **Given** người dùng truy cập form trên smartphone hoặc máy tính bảng cảm ứng,
+  - **When** chạm ngón tay hoặc bút cảm ứng vuốt vẽ trên khung Canvas,
+  - **Then** màn hình trang web KHÔNG bị cuộn trang ngoài ý muốn (`touch-action: none`), nét ký bám sát tọa độ chạm của ngón tay.
+
+- **`AC-SIG-04` [Xác Nhận & Hiển Thị Hộp Xem Trước Preview]**:
+  - **Given** người dùng đã vẽ nét ký hợp lệ trong Modal,
+  - **When** bấm nút "Xác nhận & Sử dụng chữ ký",
+  - **Then** Modal đóng lại, ô chữ ký chuyển sang Hộp xem trước (Preview Box) với ảnh sắc nét và Badge `✓ Đã ký điện tử`,
+  - **And** thanh tiến độ phần trăm khảo sát được cập nhật tăng lên.
+
+- **`AC-SIG-05` [Lưu Trữ Bản Nháp & Phục Hồi Chữ Ký (Draft Persistence)]**:
+  - **Given** người dùng đã ký xác nhận và lưu bản nháp vào LocalStorage,
+  - **When** người dùng tải lại trang hoặc mở lại bản nháp đã lưu,
+  - **Then** dữ liệu chữ ký Base64 được phục hồi nguyên vẹn trong Hộp xem trước mà không bắt người dùng phải vẽ lại từ đầu.
+
+### 6. Ma Trận Truy Vết Kiểm Thử Nghiệm Thu (Traceability Matrix Delta v15)
+
+| Mã Yêu Cầu (REQ) | Quy Tắc Nghiệp Vụ (BR) | Tiêu Chí Chấp Thuận (AC) | Mã Kiểm Thử (TEST) | Bảng CSDL Tác Động | Giao Diện Triển Khai | API Endpoint Ánh Xạ |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **REQ-SIG-01** | `BR-SIG-02` | `AC-SIG-02`, `AC-SIG-03` | **`TEST-SIG-02`**, **`TEST-SIG-03`** | `demand.demand_surveys` | `src/components/ui/signature-pad-modal.tsx` | N/A (Client Component) |
+| **REQ-SIG-02** | `BR-SIG-01`, `BR-SIG-02` | `AC-SIG-04`, `AC-SIG-05` | **`TEST-SIG-04`**, **`TEST-SIG-05`** | `demand.demand_surveys` | `src/app/khao-sat-nhu-cau/page.tsx` | N/A (Client State & LocalStorage) |
+| **REQ-SIG-03** | `BR-SIG-01`, `BR-SIG-03` | `AC-SIG-01` | **`TEST-SIG-01`** | `demand.demand_surveys` | `src/app/khao-sat-nhu-cau/page.tsx` | `POST /api/v1/demands/surveys` |
+
+
+
+
+---
+
+## 11. DELTA V16: CR-2026-TRL-TNI-VERIFY MINH BẠCH PHƯƠNG PHÁP LUẬN CHỈ SỐ TNI (MÔ HÌNH K-L-N-O 304 DN), TÁCH BẠCH XÁC THỰC TNI & CẤM FALLBACK ĐIỂM GIẢ
+
+> **Căn cứ pháp lý & Quyết định PO**: Quyết định `PO-DEC-20261109-01` tại `Specification/BASIC_DESIGN_NACENTECH.md` Mục 31; Hồ sơ [`CR-2026-TRL-TNI-VERIFY`](../TASK-04_HO_SO_CHAO_BAN_SELLER_VA_BO_LOC/deltas/CR-2026-TRL-TNI-VERIFY.md).
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-METH-02`)
+- **`REQ-METH-02` [Minh Bạch Mô Hình Định Lượng 4 Chiều K-L-N-O & Màn Hình Giải Thích Cách Tính TNI]**:
+  1. Tại mọi vị trí nhập liệu khảo sát và xem điểm TNI (`TniRealtimeCalculator.tsx`, `/khao-sat-nhu-cau`, `QuickDemandModal.tsx`, `/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`), hệ thống MUST hiển thị dẫn chứng phương pháp luận: **Mô hình định lượng Năng lực hấp thụ & Cấp thiết công nghệ 4 chiều (K-L-N-O) của NacenTech, được kiểm định thực nghiệm trên bộ dữ liệu 304 Doanh nghiệp Việt Nam và đồng bộ khung Thông tư 17/2019/TT-BKHCN**.
+  2. Tích hợp nút mở `<TniMethodologyModal />` giải thích tường minh:
+     - Công thức toán học: $\text{TNI} = \text{ROUND}\left(\frac{35 \times K + 30 \times L + 20 \times N + 15 \times O}{5}, 0\right)$ (thang điểm 20–100).
+     - Ý nghĩa và thang đo Likert 1–5 của 4 biến số: **K** (Knowledge & Aspiration - 35%), **L** (Learning & Absorption Capacity - 30%), **N** (Need Urgency - 20%), **O** (Openness to Collaboration - 15%).
+     - Bảng 4 phân hạng sẵn sàng chuyển giao (`LOW` < 40, `MEDIUM` 40–59, `HIGH` 60–79, `VERY_HIGH` $\ge 80$) đối chiếu với phân phối thực nghiệm 304 DN và ví dụ tính toán cụ thể.
+
+### 2. Quy Tắc Nghiệp Vụ (`BR-TNI-VERIFY-01`)
+- **`BR-TNI-VERIFY-01` [Quy Tắc Xác Thực Chỉ Số TNI Tách Bạch & Cấm Tuyệt Đối Fallback Điểm Giả]**:
+  1. Khi Buyer tạo nhu cầu công nghệ qua `QuickDemandModal` hoặc `/khao-sat-nhu-cau`, bản ghi `demand_items` được khởi tạo với `tni_verification_status = 'SELF_DECLARED'` (hoặc `'PENDING_VERIFICATION'` nếu đính kèm phiếu khảo sát 5 bước đã ký số).
+  2. Khi Cán bộ Sở KH&CN duyệt nhu cầu tại `/gov/demands` hoặc `gov-approval-queue.tsx`:
+     - Cán bộ có thể phê duyệt cho nhu cầu niêm yết công khai lên sàn (`status = 'VERIFIED'`, `is_public_listed = true`) trong khi giữ `tni_verification_status = 'SELF_DECLARED'`.
+     - Khi Cán bộ đã kiểm tra chi tiết 4 trụ cột K-L-N-O và phiếu khảo sát liên kết (`survey_id`), Cán bộ có thể tích chọn xác thực chỉ số TNI để nâng lên `tni_verification_status = 'VERIFIED_BY_GOV'`, lưu `verified_authority_name` (VD: `"Sở KH&CN TP. Hà Nội"`) và `tni_review_note`.
+  3. **Cấm tuyệt đối Fallback điểm giả (`Zero-Mock TNI`)**: Giao diện danh sách và chi tiết nhu cầu TUYỆT ĐỐI KHÔNG ĐƯỢC dùng biểu thức `item.tniScore || 75`. Nếu `tniScore == null`, hiển thị nhãn `"Chưa đánh giá TNI"`.
+
+### 3. Đặc Tả CSDL (`DB-DEMAND-02`) & Hợp Đồng API (`API-DEMAND-VERIFY-02`)
+- **`DB-DEMAND-02`**: Mở rộng bảng `demand.demand_items` với các cột:
+  - `tni_verification_status VARCHAR(30) NOT NULL DEFAULT 'SELF_DECLARED'` (`SELF_DECLARED` | `PENDING_VERIFICATION` | `VERIFIED_BY_GOV`)
+  - `verified_authority_name VARCHAR(255) NULL`
+  - `tni_review_note TEXT NULL`
+- **`API-DEMAND-VERIFY-02`**:
+  - Các endpoint `GET /api/v1/demands`, `GET /api/v1/public/demands`, `GET /api/v1/demands/{id}` trả về thêm `tniVerificationStatus`, `verifiedAuthorityName`, `tniReviewNote`, và 4 điểm thành phần `scoreK`, `scoreL`, `scoreN`, `scoreO` (JOIN từ `demand.demand_surveys` qua `survey_id`).
+  - Endpoint `POST /api/v1/demands/{id}/verify` (và `/api/v1/gov/demands/{id}/verify`) nhận thêm `tniVerificationDecision` (`"VERIFY_BY_GOV"` | `"KEEP_SELF_DECLARED"`), `verifiedAuthorityName`, `tniReviewNote`.
+
+### 4. Tiêu Chuẩn Chấp Thuận Nghiệm Thu (Acceptance Criteria)
+- **`AC-TNI-VERIFY-01`**: Tại `/khao-sat-nhu-cau`, `QuickDemandModal` và `/nhu-cau-cong-nghe/[id]`, bấm vào nút `"Phương pháp tính chỉ số TNI"` mở ra Modal hiển thị đầy đủ công thức 4 chiều K-L-N-O, dẫn chứng 304 DN và ví dụ minh họa.
+- **`AC-TNI-VERIFY-02`**: Thẻ nhu cầu trên `/nhu-cau-cong-nghe` và trang chi tiết phân biệt rõ `TNI 82/100 (Tự đánh giá - Chưa kiểm định)` với `✓ TNI 82/100 - Đã thẩm định bởi Sở KH&CN`, hoàn toàn không còn fallback `75`.
+
+---
+
+## Spec Delta v17 (CR-BACLINK-005): Bảng Nhu Cầu Tìm Nhà Cung Ứng & Đặt Hàng Gia Công Công Nghiệp Bắc Ninh
+
+> **Căn cứ thay đổi**: [`CR-BACLINK-005`](../TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md); [`Specification/BASIC_DESIGN_BACLINK.md`](../../../Specification/BASIC_DESIGN_BACLINK.md) (Mục 1, 3, 6, 9.2); [`ADR-0018`](../../backend/docs/decisions/ADR-0018-BACLINK-3-TIER-RBAC-AND-CONTENT-REFACTOR.md) (Mục 2.3, 2.5).  
+> **Phiên bản áp dụng**: `1.16.0`  
+> **Trạng thái**: `APPROVED` (In Implementation)
+
+### 1. Yêu Cầu Chức Năng Bổ Sung (`REQ-03-BL-01`, `REQ-03-BL-02`)
+
+- **`REQ-03-BL-01` [Bảng Nhu Cầu Tìm Nhà Cung Ứng & Đặt Hàng Gia Công Bắc Ninh]**:
+  - Sàn công khai `/nhu-cau-cong-nghe`, `/nhu-cau-cong-nghe/[id]`, `/khao-sat-nhu-cau`, `/khao-sat-doanh-nghiep` tái định vị thuật ngữ sang **Bảng Nhu Cầu Mua, Đặt Hàng Gia Công & Tìm Nhà Cung Ứng Công Nghiệp Bắc Ninh** (linh kiện, vật tư, gia công phụ trợ, cải tiến dây chuyền/MES từ DN FDI & đầu chuỗi).
+  - Bộ lọc đa tầng cập nhật sang **8 ngành công nghiệp `IND_*`** và **Địa bàn/KCN Bắc Ninh** (thay 18 ngành TT17 `LV*` và 34 tỉnh), hiển thị 8 nhu cầu seed thật qua `<Async>` Zero-Mock.
+- **`REQ-03-BL-02` [CRUD Nhu Cầu Cho Tài Khoản `ENTERPRISE` Dual-Mode (`activeRole = 'BUYER'`)]**:
+  - Tại `/portal/buyer/demands`, `QuickDemandModal` và `EditDemandModal`, tài khoản có `user.role = 'ENTERPRISE'` khi bật `RoleSwitcher` sang `activeRole = 'BUYER'` thực hiện tạo, sửa, đóng bài toán nhu cầu mà không cần tách role `BUYER`.
+
+### 2. Quy Tắc Nghiệp Vụ Bổ Sung (`BR-03-BL-01`, `BR-03-BL-02`)
+
+- **`BR-03-BL-01` [Duyệt Nhu Cầu 1 Cấp Bởi `ADMIN` & Khóa `/gov/demands` Anonymous]**:
+  - Khóa toàn bộ endpoint `/api/v1/gov/demands*` đang mở `[AllowAnonymous]` (trả `401/403/410`), thay luồng thẩm định `PROVINCIAL_ADMIN` bằng phê duyệt tập trung 1 cấp của `ADMIN` BACLINK. Giữ nguyên quy tắc cấm fallback `tniScore || 75` (`BR-TNI-VERIFY-01`) và đổi nhãn cơ quan bảo chứng mặc định sang `Hiệp hội BACLINK`.
+- **`BR-03-BL-02` [Tách Bạch `user.role = 'ENTERPRISE'` và `activeRole = 'BUYER'` (`ADR-0018` Mục 2.3)]**:
+  - `DemandController` và `DemandService` cho phép mọi `ENTERPRISE` tạo và quản lý nhu cầu gắn với `CreatedBy == Actor.PersonId` hoặc `OrganizationId == Actor.OrganizationId`, tuyệt đối không chặn vì thiếu role `BUYER` riêng lẻ.
+
+### 3. Tiêu Chuẩn Chấp Thuận (`AC-03-BL-01` .. `AC-03-BL-03`)
+
+- **`AC-03-BL-01`**: Trên `/nhu-cau-cong-nghe`, danh sách hiển thị các nhu cầu đặt hàng công nghiệp từ PostgreSQL (`seed_baclink_demo_data.sql`) và lọc được theo `IND_*` + KCN Bắc Ninh, không có fallback số giả.
+- **`AC-03-BL-02`**: Tài khoản `ENTERPRISE` (`member.hanelpt@baclink.org.vn`) chuyển `RoleSwitcher` sang Bên Mua (`activeRole = 'BUYER'`), giữ nguyên `user.role = 'ENTERPRISE'` và tạo mới nhu cầu thành công (`200/201`).
+- **`AC-03-BL-03`**: Gọi `GET /api/v1/gov/demands` hoặc `GET /api/v1/gov/demands/surveys` không có token hoặc với role `ENTERPRISE`/`PUBLIC_USER` bị từ chối (`401/403/410`), không còn rò rỉ dữ liệu anonymous.

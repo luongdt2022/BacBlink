@@ -1,0 +1,155 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import AdminApprovalsPage from "./page";
+
+vi.mock("@/components/admin/admin-nav", () => ({
+  AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
+}));
+
+describe("AdminApprovalsPage (TASK-07)", () => {
+  beforeEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("renders approvals queue with initial items and counters", () => {
+    render(<AdminApprovalsPage />);
+    expect(screen.getByText("Hàng Đợi Phê Duyệt & Thẩm Định Hồ Sơ Phân Cấp")).toBeInTheDocument();
+    expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
+    expect(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).toBeInTheDocument();
+    expect(screen.getByText(/Chờ thẩm định:/)).toBeInTheDocument();
+  });
+
+  it("filters items by tab (EXPERT, SHOP, DEMAND)", () => {
+    render(<AdminApprovalsPage />);
+    
+    // Tab "Chuyên gia KH&CN"
+    const expertTab = screen.getByText("Chuyên gia KH&CN");
+    fireEvent.click(expertTab);
+
+    expect(screen.getByText("Đặng Tiến Lượng")).toBeInTheDocument();
+    expect(screen.queryByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).not.toBeInTheDocument();
+  });
+
+  it("filters items by search query", () => {
+    render(<AdminApprovalsPage />);
+    const searchInput = screen.getByPlaceholderText(/Tìm kiếm nhanh theo Tên chuyên gia/i);
+    
+    fireEvent.change(searchInput, { target: { value: "Vinabiom" } });
+    expect(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).toBeInTheDocument();
+    expect(screen.queryByText("Đặng Tiến Lượng")).not.toBeInTheDocument();
+  });
+
+  it("selects an item and approves it (Happy Path)", () => {
+    render(<AdminApprovalsPage />);
+    
+    // Select first row "Đặng Tiến Lượng"
+    fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
+
+    // Action button appears in detail drawer
+    const approveBtn = screen.getByRole("button", { name: /Phê duyệt Chính thức/i });
+    expect(approveBtn).toBeInTheDocument();
+
+    fireEvent.click(approveBtn);
+
+    // Toast appears
+    expect(screen.getByText(/Đã phê duyệt thành công hồ sơ Đặng Tiến Lượng/i)).toBeInTheDocument();
+  });
+
+  it("requires rejection note >= 10 chars (BR-ADM-004 Validation & Negative Test)", () => {
+    const alertMock = vi.fn();
+    vi.stubGlobal("alert", alertMock);
+
+    render(<AdminApprovalsPage />);
+    
+    // Select first row "Đặng Tiến Lượng"
+    fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
+
+    // Click "Từ chối Hồ sơ"
+    const rejectBtn = screen.getByRole("button", { name: /Từ chối Hồ sơ/i });
+    fireEvent.click(rejectBtn);
+
+    // Rejection modal opens
+    expect(screen.getByText("Từ Chối Hồ Sơ")).toBeInTheDocument();
+    
+    // Verify confirm button is disabled when < 10 chars
+    const confirmBtn = screen.getByRole("button", { name: /Xác nhận Từ chối/i });
+    expect(confirmBtn).toBeDisabled();
+
+    // Valid reason >= 10 chars
+    const textarea = screen.getByPlaceholderText(/Nhập lý do không đạt tiêu chí/i);
+    fireEvent.change(textarea, { target: { value: "Hồ sơ chưa đạt yêu cầu do thiếu minh chứng văn bằng hợp lệ." } });
+    
+    expect(confirmBtn).not.toBeDisabled();
+    fireEvent.click(confirmBtn);
+
+    expect(screen.getByText(/Đã gửi thông báo Từ chối tới Đặng Tiến Lượng/i)).toBeInTheDocument();
+  });
+
+  it("supports requesting changes with note >= 10 chars (Maker-Checker Flow)", () => {
+    render(<AdminApprovalsPage />);
+    
+    // Select first row "Đặng Tiến Lượng"
+    fireEvent.click(screen.getByText("Đặng Tiến Lượng"));
+
+    // Click "Yêu cầu Bổ sung"
+    const changeReqBtn = screen.getByRole("button", { name: /Yêu cầu Bổ sung/i });
+    fireEvent.click(changeReqBtn);
+
+    expect(screen.getByText("Yêu Cầu Bổ Sung Hồ Sơ")).toBeInTheDocument();
+    
+    const confirmBtn = screen.getByRole("button", { name: /Xác nhận Yêu cầu/i });
+    expect(confirmBtn).toBeDisabled();
+
+    const textarea = screen.getByPlaceholderText(/Nhập các thông tin \/ văn bằng/i);
+    fireEvent.change(textarea, { target: { value: "Vui lòng scan lại bằng Tiến sĩ bản rõ nét công chứng." } });
+
+    expect(confirmBtn).not.toBeDisabled();
+    fireEvent.click(confirmBtn);
+
+    expect(screen.getByText(/Đã gửi thông báo Yêu cầu bổ sung tới Đặng Tiến Lượng/i)).toBeInTheDocument();
+  });
+
+  it("renders 5 independent navigation tabs with pending badges and filtering (TC-C2-APP-01)", () => {
+    render(<AdminApprovalsPage />);
+
+    // Verify all 5 independent tabs exist
+    const shopTab = screen.getByTestId("tab-shop");
+    const demandTab = screen.getByTestId("tab-demand");
+    const expertTab = screen.getByTestId("tab-expert");
+    const accountTab = screen.getByTestId("tab-account");
+    const facilityTab = screen.getByTestId("tab-facility");
+
+    expect(shopTab).toBeInTheDocument();
+    expect(demandTab).toBeInTheDocument();
+    expect(expertTab).toBeInTheDocument();
+    expect(accountTab).toBeInTheDocument();
+    expect(facilityTab).toBeInTheDocument();
+
+    // Verify badges contain pending counts > 0
+    expect(screen.getByTestId("badge-shop").textContent).toBe("1");
+    expect(screen.getByTestId("badge-demand").textContent).toBe("1");
+    expect(screen.getByTestId("badge-expert").textContent).toBe("1");
+    expect(screen.getByTestId("badge-account").textContent).toBe("1");
+    expect(screen.getByTestId("badge-facility").textContent).toBe("1");
+
+    // Click "Cơ sở" tab and verify filtering
+    fireEvent.click(facilityTab);
+    expect(screen.getByText("Trung tâm Đổi mới Sáng tạo Quốc gia - Hòa Lạc")).toBeInTheDocument();
+    expect(screen.queryByText("Đặng Tiến Lượng")).not.toBeInTheDocument();
+
+    // Click "Tài khoản" tab and verify filtering
+    fireEvent.click(accountTab);
+    expect(screen.getByText("Công ty Cổ phần Công nghệ Mới Greentech")).toBeInTheDocument();
+    expect(screen.queryByText("Trung tâm Đổi mới Sáng tạo Quốc gia - Hòa Lạc")).not.toBeInTheDocument();
+
+    // Click "Shop" tab and verify filtering
+    fireEvent.click(shopTab);
+    expect(screen.getByText("Công ty Cổ phần Công nghệ Sinh học Vinabiom")).toBeInTheDocument();
+
+    // Click "Nhu cầu" tab and verify filtering
+    fireEvent.click(demandTab);
+    expect(screen.getByText("Tập đoàn Công nghệ Cơ điện Thái Bình Dương")).toBeInTheDocument();
+  });
+});
+

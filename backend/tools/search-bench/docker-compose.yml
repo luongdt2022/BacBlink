@@ -1,0 +1,95 @@
+services:
+  # Postgres + pgvector (>= 0.7 for sparsevec). Debian-based image.
+  pg:
+    image: pgvector/pgvector:pg16
+    # Docker gives a container 64MB of /dev/shm by default. A parallel HNSW
+    # build allocates its dynamic shared memory there and dies with
+    # "could not resize shared memory segment ... No space left on device".
+    # Any real deployment building HNSW indexes in Docker needs this raised.
+    # A parallel HNSW build allocates maintenance_work_mem in POSIX shared
+    # memory, so /dev/shm must be at least that large. 16GB covers the 12GB
+    # build setting used at 1M. At 5M the vectors alone are ~20GB, so pgvector
+    # will fall back to its slower on-disk build — that is a real result, not
+    # a misconfiguration, and is reported as such.
+    shm_size: 16gb
+    environment:
+      POSTGRES_DB: bench
+      POSTGRES_USER: bench
+      POSTGRES_PASSWORD: bench
+    command:
+      - postgres
+      - -c
+      - shared_buffers=8GB
+      - -c
+      - effective_cache_size=24GB
+      - -c
+      - maintenance_work_mem=2GB
+      - -c
+      - work_mem=64MB
+      - -c
+      - max_parallel_maintenance_workers=4
+    ports:
+      - "5442:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bench -d bench"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Same version/config as production compose, so the baseline is honest.
+  es:
+    image: elasticsearch:8.17.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      # Production runs 512m. That is fine for 82 chunks and hopeless at 1M+,
+      # so the load test gives Elasticsearch a realistic heap instead of
+      # letting it lose to a setting nobody would use at this scale.
+      # The 512m production value is itself a finding, reported separately.
+      - ES_JAVA_OPTS=-Xms8g -Xmx8g
+    ports:
+      - "9210:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\\|yellow\"'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  # BGE-M3 embedder — dense + sparse lexical weights.
+  rag:
+    # Built from Dockerfile.rag-pinned — the repo's own requirements.txt
+    # resolves to a FlagEmbedding/transformers combination that crashes on
+    # startup. See that file for the detail.
+    image: dmst-rag:pinned
+    environment:
+      - MODEL_DEVICE=cpu
+      - MODEL_CACHE_DIR=/model_cache
+      - APP_ENV=development
+    ports:
+      - "8013:8000"
+    volumes:
+      - model_cache:/model_cache
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)\"",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 60
+      start_period: 300s
+
+volumes:
+  pg_data:
+  es_data:
+  model_cache:

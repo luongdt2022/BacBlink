@@ -1,0 +1,28 @@
+{
+  // ADR-0014 — công cụ pháp lý của hồ sơ quyết định `EXECUTION` có phải đích hợp pháp không.
+  //
+  // Luật nền: **công cụ không có dòng ở đây thì KHÔNG được thực thi tại chỗ** (default DENY, §23.2/D2-21).
+  // `UNDETERMINED` vì thế không cần dòng riêng — nó bị chặn sớm hơn, ở cổng QUALIFICATION.
+  //
+  // `legalBasisRef` là **bắt buộc**: dòng thiếu nó làm hỏng lúc nạp, không âm thầm thành mặc định. Đây là chỗ
+  // duy nhất một kết luận pháp lý được ghi, và nó phải trỏ tới văn bản thật.
+  //
+  // Năm công cụ CHƯA có dòng và đó là chủ đích: RND_TASK, GRANT, CO_FUNDED_PROGRAM, REGULATORY_SANDBOX, và
+  // mọi công cụ thêm sau. Chúng cần legal memo trước khi bật — xem mục "Câu hỏi còn mở" của ADR-0014.
+  "version": "funding-v1",
+  "effectiveFrom": "2026-09-06T00:00:00Z",
+  "rules": [
+    {
+      "instrument": "PRIVATE",
+      "executionInPlatformPermitted": true,
+      "legalBasisRef": "KHONG-AP-DUNG/LUAT-DAU-THAU-2023",
+      "description": "Bên mua trả bằng vốn tư: không thuộc phạm vi điều chỉnh của pháp luật đấu thầu về lựa chọn nhà thầu, nên việc chọn bên cung ứng và chạy PoC diễn ra ngay tại nền tảng."
+    },
+    {
+      "instrument": "PUBLIC_PROCUREMENT",
+      "executionInPlatformPermitted": false,
+      "legalBasisRef": "LUAT-DAU-THAU-2023/DIEU-50",
+      "description": "Mua sắm bằng vốn nhà nước: chọn nhà thầu bắt buộc chạy trên Hệ thống mạng đấu thầu quốc gia. NacenTwin làm phần thượng nguồn rồi dừng ở HANDED_OVER (ADR-0013)."
+    }
+  ]
+}

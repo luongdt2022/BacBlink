@@ -1,0 +1,31 @@
+name: Deploy dmst-admin
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-admin-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy dmst-admin
+    runs-on: [self-hosted, admin]
+
+    defaults:
+      run:
+        working-directory: /home/sotatek/projects/dmst/dmst-admin
+
+    steps:
+      - name: Pull latest code
+        run: git pull origin main
+
+      - name: Build and deploy
+        run: docker compose --env-file .env up -d --build app
+
+      - name: Verify deployment
+        run: |
+          docker ps -f "name=dmst-admin-app" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

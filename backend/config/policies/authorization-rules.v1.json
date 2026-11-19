@@ -1,0 +1,59 @@
+{
+  // DecisionTable v1 — §23.2. Ô không phủ = DENY. Priority nhỏ khớp trước.
+  // Chiều null = bất kỳ. Giá trị dạng "A|B" = một trong.
+  // Tầng 2 (AccessGrant/purpose/COI) kiểm ở SQL trong module dataroom; rule chỉ yêu cầu accessGrantRequired=true.
+  "version": "authz-v1",
+  "effectiveFrom": "2026-09-03T00:00:00Z",
+  "rules": [
+    // ---- Chặn tuyệt đối: tài liệu mật không có grant đã kiểm → DENY trước mọi PERMIT ----
+    { "ruleId": "DENY_CONFIDENTIAL_WITHOUT_GRANT", "priority": 10, "action": "document.read",
+      "documentClassification": "CONFIDENTIAL|HIGHLY_CONFIDENTIAL", "accessGrantRequired": false, "organizationRelation": "SAME_ORGANIZATION|NONE",
+      "effect": "Deny", "description": "AC 5/17/28: không grant hiệu lực thì không đọc tài liệu mật, kể cả admin" },
+    { "ruleId": "DENY_CONFLICT_BLOCKED", "priority": 11, "action": "*", "conflictStatus": "BLOCKED", "effect": "Deny" },
+
+    // ---- Chủ sở hữu ----
+    { "ruleId": "OWNER_DOCUMENT_READ", "priority": 100, "action": "document.read", "organizationRelation": "OWNER", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "OWNER_DOCUMENT_WRITE", "priority": 101, "action": "document.write|document.delete", "organizationRelation": "OWNER", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "OWNER_SUBJECT_MANAGE", "priority": 102, "action": "subject.read_own|subject.update|subject.delete|subject.publish|subject.beautify|subject.compute_matches", "organizationRelation": "OWNER", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "OWNER_STORY", "priority": 103, "action": "story.update_own", "organizationRelation": "OWNER", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "OWNER_INVITATION", "priority": 104, "action": "invitation.respond|invitation.read", "organizationRelation": "OWNER", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "OWNER_LMS_MANAGE", "priority": 105, "action": "lms.read_management|lms.update|lms.unpublish|lms.delete", "organizationRelation": "OWNER", "platformRole": "ENTERPRISE|VERIFIED_EXPERT|ADMIN|SUPER_ADMIN|OPERATOR_ADMIN|PUBLIC_USER", "effect": "Permit" },
+
+    // ---- Grant hợp lệ (tầng 2 đã kiểm) ----
+    { "ruleId": "GRANT_DOCUMENT_READ", "priority": 200, "action": "document.read", "accessGrantRequired": true, "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+
+    // ---- Public ----
+    { "ruleId": "PUBLIC_DOCUMENT_READ", "priority": 300, "action": "document.read", "documentClassification": "PUBLIC", "effect": "Permit" },
+    { "ruleId": "PUBLIC_SUBJECT_READ", "priority": 301, "action": "subject.read_public", "effect": "Permit" },
+
+    // ---- Người dùng đã đăng nhập ----
+    { "ruleId": "USER_SELF", "priority": 400, "action": "person.read_self|person.update_self|notification.manage_self", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "USER_CREATE", "priority": 401, "action": "subject.create|story.create|invitation.create", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "USER_SEARCH", "priority": 402, "action": "search.query|match_round.read|ai.invoke", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+    { "ruleId": "USER_SEARCH_FEEDBACK", "priority": 403, "action": "search.feedback", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit", "description": "§26.6.5: nhãn liên quan cho golden set; chỉ người đã đăng nhập, nhãn gắn với người chấm" },
+    { "ruleId": "LMS_CREATE", "priority": 404, "action": "lms.create", "platformRole": "ENTERPRISE|VERIFIED_EXPERT|ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+    { "ruleId": "USER_LMS_SUBMIT_QUIZ", "priority": 405, "action": "lms.submit_quiz", "platformRole": "USER|ADMIN|ENTERPRISE|SUPER_ADMIN|OPERATOR_ADMIN|PROVINCIAL_ADMIN|SECTOR_ADMIN|CLUSTER_ADMIN|SELLER|BUYER|INNOVATION_ENTITY|VERIFIED_EXPERT|PUBLIC_USER", "effect": "Permit" },
+
+    // ---- Operator/admin (platform role ADMIN / SUPER_ADMIN / OPERATOR_ADMIN) — không mở tài liệu mật của người khác (đã DENY ở trên) ----
+    { "ruleId": "ADMIN_MANAGE", "priority": 500, "action": "person.admin_manage|person.provision_role|subject.read_any|subject.update|subject.delete|subject.publish|subject.beautify|subject.compute_matches|document.write|document.delete|invitation.read_any|notification.read_any|story.moderate|taxonomy.manage|stats.read|access_grant.issue", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+    { "ruleId": "LMS_ADMIN_MANAGE", "priority": 501, "action": "lms.*", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+
+    // ---- Tín hiệu nhu cầu từ nguồn ngoài (ADR-0011) ----
+    { "ruleId": "ADMIN_SIGNAL", "priority": 450, "action": "signal.ingest|signal.read|signal.triage", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+
+    // ---- Quyền lợi thương mại (§20). Chỉ ADMIN: hợp đồng và quota là dữ liệu thương mại, không phải dữ liệu người dùng.
+    { "ruleId": "ADMIN_AGREEMENT", "priority": 451, "action": "agreement.manage|agreement.read", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+
+    // ---- Phân quyền và Năng lực Quản trị Admin (TASK-07 / CR-BACLINK-001: 1 cấp ADMIN) ----
+    { "ruleId": "GOVERNANCE_REVIEW", "priority": 460, "action": "governance.read|governance.review|org_unit.read", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+    { "ruleId": "GOVERNANCE_ADMIN_MANAGE", "priority": 461, "action": "org_unit.create|org_unit.provision_leader", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+
+    // ---- Case (Phase 1 concierge) ----
+    { "ruleId": "CASE_BROKER", "priority": 600, "action": "case.read|case.transition", "caseRole": "LEAD_BROKER|CO_BROKER", "effect": "Permit" },
+    { "ruleId": "CASE_PARTY_READ", "priority": 601, "action": "case.read", "caseRole": "PROBLEM_OWNER|PROVIDER|EVALUATOR|VERIFIER|SPONSOR", "effect": "Permit" },
+    { "ruleId": "CASE_ADMIN", "priority": 602, "action": "case.create|case.read|case.assign_broker", "platformRole": "ADMIN|SUPER_ADMIN|OPERATOR_ADMIN", "effect": "Permit" },
+
+    // ---- System actor (worker/ETL) ----
+    { "ruleId": "SYSTEM_ALL", "priority": 900, "action": "*", "platformRole": "SYSTEM", "effect": "Permit" }
+  ]
+}

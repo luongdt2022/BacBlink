@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Shouldly" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\policy-engine\NacenTech.PolicyEngine.csproj" />
+    <ProjectReference Include="..\..\packages\persistence\NacenTech.Persistence.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\config\policies\authorization-rules.v1.json" Link="config\policies\authorization-rules.v1.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

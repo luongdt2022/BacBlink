@@ -1,0 +1,16 @@
+@import 'tailwindcss' source(none);
+@source '../**/*.{js,ts,jsx,tsx}';
+
+@import 'tw-animate-css';
+
+/* Brand colors — Nacentech Deep Teal */
+@theme {
+  --color-brand: #137f79;
+  --color-brand-hover: #0f6b66;
+  --color-brand-dark: #0c5955;
+  --color-brand-darker: #094845;
+  --color-brand-light: #e6f4f3;
+
+  --color-primary: #137f79;
+  --color-primary-hover: #0f6b66;
+}

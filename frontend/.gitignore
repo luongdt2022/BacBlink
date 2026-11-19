@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+.env
+.env.local
+.DS_Store
+*.log
+
+.next-*
+
+.next-*/
+__pycache__/
+*.pyc
+
+tmp/
+test-results/

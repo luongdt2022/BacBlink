@@ -1,0 +1,14 @@
+{
+  "utc": "2026-10-08T01:51:11.948202+00:00",
+  "reviewer": "QC checker",
+  "cases": {
+    "TC-C2-01": {
+      "status": "PASS",
+      "evidence": "Actual1440x900 screenshot visually reviewed: full names/options wrap, no overlap/clipping/horizontal overflow, compact cards and nowrapreset."
+    },
+    "TC-C2-02": {
+      "status": "PASS",
+      "evidence": "Actual390x844 screenshot reviewed: compactheading, readable search/filter/cardCTA, no horizontal overflow/overlap."
+    }
+  }
+}

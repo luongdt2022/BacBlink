@@ -1,0 +1,58 @@
+{
+  "summary": {
+    "PASS": 16,
+    "FAIL": 6,
+    "TOTAL": 22
+  },
+  "defects": [
+    {
+      "tc_id": "TC-DMD-T3-003",
+      "title": "RÒ RỈ DỮ LIỆU: Bài toán đang PENDING bị trả về trên Public API /api/v1/public/demands",
+      "severity": "CRITICAL",
+      "expected": "Chỉ bài toán có status='VERIFIED' và is_public_listed=true mới xuất hiện trên sàn công khai (BR-03-002)",
+      "actual": "Bài toán mới tạo 01a1633f-da23-7460-ab57-b4b154f9df1e (PENDING) đã xuất hiện trên Public API",
+      "description": "Kiểm tra cách ly hồ sơ chưa duyệt trên Sàn công khai"
+    },
+    {
+      "tc_id": "TC-DMD-T3-004",
+      "title": "LỖ HỔNG BẢO MẬT NGHIÊM TRỌNG: API /api/v1/gov/demands/{id}/verify cho phép khách ẩn danh (AllowAnonymous) phê duyệt bài toán",
+      "severity": "CRITICAL",
+      "expected": "Phải trả về 401 Unauthorized hoặc 403 Forbidden đối với request không có quyền PROVINCIAL_ADMIN/SUPER_ADMIN",
+      "actual": "Request không token vẫn được duyệt thành công (Status 200: {'success': True, 'message': 'Phê duyệt bài toán niêm yết lên sàn thành công.'})",
+      "description": "Kiểm tra phân quyền Scoped RBAC trên API phê duyệt"
+    },
+    {
+      "tc_id": "TC-DMD-T3-005",
+      "title": "LỖ HỔNG BẢO MẬT IDOR: API /api/v1/buyer/demands cho phép khách vãng lai xem toàn bộ danh sách bài toán nội bộ của mọi doanh nghiệp",
+      "severity": "CRITICAL",
+      "expected": "Chỉ trả về danh sách bài toán của chính Buyer đang đăng nhập (CreatedBy == Actor.PersonId)",
+      "actual": "Khách không đăng nhập vẫn đọc được 50 bài toán của tất cả doanh nghiệp",
+      "description": "Bảo mật Bàn làm việc Bên Mua (/api/v1/buyer/demands)"
+    },
+    {
+      "tc_id": "TC-DMD-T3-006",
+      "title": "MOCK NGẦM TRÁI PHÉP: API SubmitSolutionOffer hardcode số điện thoại '0901234567' và email 'buyer@company.vn' vào CSDL thay vì đối soát thông tin Bên Mua thật",
+      "severity": "CRITICAL",
+      "expected": "Lấy thông tin liên hệ thật từ hồ sơ doanh nghiệp Bên Mua (TASK-02 / identity.persons)",
+      "actual": "Dữ liệu tĩnh bị chèn cứng vào DB: 0901234567|buyer@company.vn",
+      "description": "Kiểm tra kỷ luật Zero-Mock khi tạo Cơ hội hợp tác"
+    },
+    {
+      "tc_id": "TC-DMD-T3-007",
+      "title": "LỖI VI PHẠM BUSINESS RULE: API cho phép nhảy cóc giai đoạn từ INITIATED thẳng sang COMPLETED",
+      "severity": "MAJOR",
+      "expected": "Phải chặn chuyển bước không hợp lệ với mã lỗi 400 Bad Request (ERR_INVALID_STATE_TRANSITION)",
+      "actual": "Cho phép nhảy cóc thẳng sang COMPLETED: {'success': True, 'data': {'id': '40899798-da98-438a-bc0e-a650b9b2e8f3', 'opportunityCode': 'DEAL-2026-D366', 'stage': 'COMPLETED', 'updatedAt': '2026-10-22T10:54:51.940198Z'}}",
+      "description": "Cưỡng chế luồng tuần tự Kanban (BR-BRK-06)"
+    },
+    {
+      "tc_id": "TC-DMD-T4-004-DOM",
+      "title": "LỖI VI PHẠM HTML5 / WCAG: Trang chi tiết bài toán có 2 thẻ <main> trùng nhau",
+      "severity": "MINOR",
+      "expected": "Chỉ cho phép duy nhất 1 thẻ <main> trên toàn bộ tài liệu HTML",
+      "actual": "Tìm thấy 2 thẻ <main>",
+      "description": "Kiểm tra ngữ nghĩa HTML5 & WCAG AA"
+    }
+  ],
+  "timestamp": "2026-10-22 17:55:10"
+}

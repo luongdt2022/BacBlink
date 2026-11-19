@@ -1,0 +1,23 @@
+# dmst-rag's requirements.txt pins transformers<4.46 but leaves FlagEmbedding
+# unpinned. Today pip resolves FlagEmbedding 1.4.2, which passes `dtype=` to
+# AutoModel.from_pretrained — a kwarg transformers only accepts from 4.56 on
+# (it was torch_dtype before). Result: the image builds but crashes at startup.
+#
+# Pinned back to the FlagEmbedding/sentence-transformers generation that matches
+# transformers 4.45. Same BGE-M3 weights, so embeddings are unaffected.
+FROM dmst-rag:bench
+
+RUN pip install --no-cache-dir --timeout=600 --retries=5 \
+      "transformers==4.45.2" \
+      "FlagEmbedding==1.3.4" \
+      "sentence-transformers==3.2.1" \
+ && python -c "import transformers, FlagEmbedding, sentence_transformers as st; \
+print('transformers', transformers.__version__); \
+print('sentence-transformers', st.__version__)"
+
+# Second bug in dmst-rag: /embed with return_sparse=true always 500s, because
+# BGE-M3's lexical_weights are numpy.float32 and pydantic v2 cannot serialize
+# them. Never noticed because the NestJS backend only ever calls /embed/text
+# (dense). The sparse channel the architecture calls a flag-flip is, today,
+# an endpoint that throws.
+COPY patch/embedder.py /app/app/embedder.py

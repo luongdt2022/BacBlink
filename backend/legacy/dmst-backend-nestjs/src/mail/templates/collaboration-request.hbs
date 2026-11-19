@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yêu cầu hợp tác DMST</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background: #f3f6fb;
+      font-family: Inter, Arial, sans-serif;
+      color: #0f172a;
+    "
+  >
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      width="100%"
+      style="padding: 24px 12px"
+    >
+      <tr>
+        <td align="center">
+          <table
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            width="100%"
+            style="
+              max-width: 600px;
+              background: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+            "
+          >
+            <!-- Header -->
+            <tr>
+              <td
+                style="
+                  background: linear-gradient(135deg, #0f172a, #1e293b);
+                  padding: 20px 24px;
+                  color: #ffffff;
+                "
+              >
+                <h1
+                  style="
+                    margin: 0;
+                    font-size: 20px;
+                    font-weight: 700;
+                    letter-spacing: 0.2px;
+                  "
+                >
+                  Hệ thống DMST
+                </h1>
+                <p style="margin: 8px 0 0; font-size: 13px; color: #cbd5e1">
+                  {{#if (eq type "received")}}Yêu cầu hợp tác mới{{/if}}
+                  {{#if (eq type "accepted")}}Yêu cầu hợp tác được chấp nhận{{/if}}
+                  {{#if (eq type "rejected")}}Yêu cầu hợp tác bị từ chối{{/if}}
+                </p>
+              </td>
+            </tr>
+
+            <!-- Greeting -->
+            <tr>
+              <td style="padding: 28px 24px 12px">
+                <p style="margin: 0 0 12px; font-size: 16px; font-weight: 600">
+                  Xin chào {{recipientName}},
+                </p>
+
+                {{#if (eq type "received")}}
+                <p style="margin: 0 0 14px; font-size: 14px; line-height: 1.7; color: #334155">
+                  Bạn vừa nhận được một yêu cầu hợp tác mới trên hệ thống DMST.
+                </p>
+                {{/if}}
+
+                {{#if (eq type "accepted")}}
+                <p style="margin: 0 0 14px; font-size: 14px; line-height: 1.7; color: #334155">
+                  Yêu cầu hợp tác của bạn đã được <strong>chấp nhận</strong>. Hai bên có thể bắt đầu trao đổi hợp tác.
+                </p>
+                {{/if}}
+
+                {{#if (eq type "rejected")}}
+                <p style="margin: 0 0 14px; font-size: 14px; line-height: 1.7; color: #334155">
+                  Yêu cầu hợp tác của bạn đã bị <strong>từ chối</strong>. Bạn có thể chọn một đối tác khác từ danh sách kết quả matching.
+                </p>
+                {{/if}}
+              </td>
+            </tr>
+
+            <!-- Intake info card -->
+            <tr>
+              <td style="padding: 0 24px 20px">
+                <div
+                  style="
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    padding: 16px;
+                  "
+                >
+                  <p style="margin: 0 0 10px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px">
+                    Thông tin yêu cầu
+                  </p>
+                  <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td style="padding: 4px 0; font-size: 13px; color: #64748b; width: 140px">Intake đề xuất:</td>
+                      <td style="padding: 4px 0; font-size: 13px; color: #0f172a; font-weight: 500">{{requesterIntakeTitle}}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 4px 0; font-size: 13px; color: #64748b">Intake mục tiêu:</td>
+                      <td style="padding: 4px 0; font-size: 13px; color: #0f172a; font-weight: 500">{{targetIntakeTitle}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </td>
+            </tr>
+
+            <!-- CTA Button -->
+            <tr>
+              <td align="center" style="padding: 0 24px 24px">
+                <a
+                  href="{{requestUrl}}"
+                  style="
+                    display: inline-block;
+                    background: #0f172a;
+                    color: #ffffff;
+                    text-decoration: none;
+                    font-size: 14px;
+                    font-weight: 600;
+                    padding: 12px 24px;
+                    border-radius: 10px;
+                  "
+                >
+                  {{#if (eq type "received")}}Xem yêu cầu hợp tác{{/if}}
+                  {{#if (eq type "accepted")}}Xem chi tiết hợp tác{{/if}}
+                  {{#if (eq type "rejected")}}Tìm đối tác khác{{/if}}
+                </a>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  border-top: 1px solid #e2e8f0;
+                  padding: 14px 24px;
+                  font-size: 11px;
+                  color: #94a3b8;
+                  text-align: center;
+                "
+              >
+                Email được gửi tự động từ {{companyName}}, vui lòng không trả lời email này.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

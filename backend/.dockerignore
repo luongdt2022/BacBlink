@@ -1,0 +1,44 @@
+# Build context cho Dockerfile ở root (ảnh dùng chung api / worker / legacy-etl).
+# Ba frontend có Dockerfile + .dockerignore riêng trong apps/<tên>/ và được build với context riêng,
+# nên phải loại khỏi context này — nếu không, node_modules của chúng (~1GB) bị gửi sang daemon mỗi lần build.
+
+# --- Không thuộc backend .NET ---
+apps/admin
+apps/portal
+apps/landing
+legacy/
+tools/search-bench/
+docs/
+scripts/
+infra/
+
+# --- Kết quả build ---
+**/bin/
+**/obj/
+**/dist/
+**/build/
+**/out/
+**/node_modules/
+artifacts/
+
+# --- VCS / editor / CI ---
+.git/
+.github/
+.vs/
+.idea/
+.vscode/
+**/*.user
+**/*.suo
+
+# --- Secret & dữ liệu chạy thật ---
+**/.env
+**/.env.*
+!**/.env.example
+data/
+storage/
+**/*.log
+logs/
+
+# --- Tài liệu lẻ ở root ---
+*.md
+!README.md

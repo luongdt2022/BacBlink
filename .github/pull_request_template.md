@@ -1,59 +1,63 @@
 ### 📌 1. THÔNG TIN CHUNG (OVERVIEW)
 - **Task liên quan**: `specs/TASK-[XX]` (hoặc Issue `#...`)
-- **Traceability IDs**: `REQ-[XXX]`, `UI-[XXX]`, `BR-[XXX]`
+- **Traceability IDs**: `REQ-[XXX]`, `BR-[XXX]`, `DB-[XXX]`, `UI-[XXX]`, `API-[XXX]`
 - **Loại thay đổi**:
-  - [ ] 🚀 Màn hình / Component mới (New UI/Page)
-  - [ ] 🐛 Sửa lỗi hiển thị / Tương tác (Bugfix)
-  - [ ] 🎨 Chuẩn hóa Design System / Responsive (UI/UX Refactor)
-  - [ ] ⚡ Tối ưu Bundle / Performance (Performance)
+  - [ ] 🚀 Tính năng mới (New Feature)
+  - [ ] 🐛 Sửa lỗi (Bugfix)
+  - [ ] 🔨 Cải tiến cấu trúc / Tối ưu hóa (Refactor / Optimization)
+  - [ ] 🗄️ Cập nhật CSDL / Migration (DB Schema)
+  - [ ] 🛡️ An ninh / Phân quyền (Security / RBAC)
 
 ---
 
 ### 📝 2. TÓM TẮT THAY ĐỔI (SUMMARY)
-- *Mô tả ngắn gọn 2-3 câu về màn hình/component và trạng thái tương tác:*
+- *Mô tả ngắn gọn 2-3 câu về bối cảnh, giải pháp kỹ thuật và các điểm lưu ý:*
   - ...
 
 ---
 
 ### 🛡️ 3. DEVELOPER SELF-REVIEW CHECKLIST (Bắt buộc tích đủ trước khi gán Reviewer)
 
-#### A. Kiến trúc UI & 5 Trạng Thái UX
-- [ ] Bọc component xử lý đủ 5 trạng thái UX qua `<Async>`: Loading Skeleton, Empty state, Error (kèm nút Thử lại), Success data, Partial (phân trang).
-- [ ] Phân tách Dumb Components (chỉ render UI) và Smart Containers/Hooks (quản lý state & gọi API).
-- [ ] Chống Double-click: Nút Submit tự động disabled & hiển thị spinner ngay khi bấm.
+#### A. Kiến trúc & Clean Architecture (.NET / React)
+- [ ] Controller / Minimal API chỉ nhận `IMediator` hoặc `ISender`, **TUYỆT ĐỐI KHÔNG** inject trực tiếp `DbContext`.
+- [ ] Tầng `Domain` độc lập 100%, không tham chiếu thư viện ngoài hoặc tầng Infrastructure.
+- [ ] Truy vấn (Queries) dùng `.AsNoTracking()` và trả về DTO; Lệnh ghi (Commands) gọi qua Entity/Aggregate Root methods.
+- [ ] Frontend bọc component xử lý đủ 5 trạng thái UX: Loading Skeleton, Empty, Error (có nút Thử lại), Success, Partial.
 
-#### B. Dữ liệu & Tích hợp API (Zero-Mock SSOT)
-- [ ] Kết nối API thật qua Hook/SDK (`useMasterData`, apiClient), KHÔNG dùng mock state tĩnh trong RAM.
-- [ ] KHÔNG hardcode mảng danh mục tĩnh tại từng file page riêng lẻ.
-- [ ] Bắt lỗi Network/API và hiển thị thông báo thân thiện với người dùng (Toast / Alert).
+#### B. CSDL, Schema & EF Core (Nếu có chỉnh sửa DB)
+- [ ] Migration phi phá hủy (Non-destructive): Không xóa/đổi tên cột trực tiếp, cột mới thêm có Default hoặc Nullable.
+- [ ] Đã kiểm tra chặn đứng N+1 Query (dùng `.Include()`, `.ThenInclude()` hoặc `.Select()` projection).
+- [ ] Đã đánh Index cho các khóa ngoại và trường lọc/tìm kiếm thường xuyên (`TenantId`, `Status`, `CreatedAt`).
+- [ ] Bảng trạng thái quan trọng có Concurrency Token (Optimistic Locking) chống Race Condition.
 
-#### C. Responsive & Trải nghiệm Đa thiết bị
-- [ ] Đã kiểm tra responsive trên cả Desktop, Tablet và Mobile / Zalo Mini App.
-- [ ] Xử lý chống tràn văn bản (`text-overflow: ellipsis`, `break-words`).
-- [ ] Đạt chuẩn Accessible cơ bản (alt tag cho ảnh, label cho input).
+#### C. An ninh & 3D Scoped RBAC
+- [ ] Mọi endpoint mới (trừ public) đều gắn Policy phân quyền theo `Role` + `Scope` + `Action`.
+- [ ] Chống IDOR: Mọi query/update dữ liệu sở hữu bắt buộc kèm điều kiện `TenantId` / `UserId`.
+- [ ] File Upload: Kiểm tra Magic Bytes thực tế, giới hạn kích thước tối đa, lưu trữ an toàn.
 
-#### D. Kiểm thử & Đảm bảo chất lượng (Quality & Lint)
-- [ ] Đã chạy lint và typecheck không có lỗi: `pnpm run lint` && `npx tsc --noEmit`.
-- [ ] Unit Test frontend chạy PASS 100%: `pnpm test`.
-- [ ] Không có `console.log` thừa hoặc debug code còn sót lại.
+#### D. Kiểm thử & Đảm bảo chất lượng (Quality & Tests)
+- [ ] Đã viết Unit Test bao phủ 100% các quy tắc trong `BR-[MODULE]-[STT]`.
+- [ ] Không có assertion vô hiệu (`Assert.NotNull` hình thức), test assert giá trị thực tế.
+- [ ] Đã build thử Release không phát sinh lỗi hoặc warning mới.
+- [ ] 100% Unit Test & Integration Test chạy PASS cục bộ.
 
 ---
 
-### 📸 4. BẰNG CHỨNG KIỂM THỬ GIAO DIỆN (UI EVIDENCE)
-*(Bắt buộc đính kèm ảnh chụp màn hình đầy đủ các trạng thái UX)*
-- [Ảnh 1: Màn hình Loading Skeleton]
-- [Ảnh 2: Màn hình Empty State khi không có dữ liệu]
-- [Ảnh 3: Màn hình Error State và nút Thử lại]
-- [Ảnh 4: Màn hình Success hiển thị dữ liệu thật trên Desktop & Mobile]
+### 📸 4. BẰNG CHỨNG KIỂM THỬ (TEST EVIDENCE)
+*(Bắt buộc đính kèm ảnh chụp màn hình UI, log chạy test PASS, hoặc response API Swagger/Postman)*
+- **Kết quả Test**:
+  - `dotnet test` hoặc `pnpm test`: [Ảnh chụp / log terminal pass 100%]
+- **Giao diện / API Response**:
+  - [Ảnh chụp màn hình 5 trạng thái UX hoặc Postman response]
 
 ---
 
 ### 👥 5. CỔNG DUYỆT BẮT BUỘC (STAGE-GATE APPROVAL)
 *Chỉ được phép merge khi cả 2 cổng dưới đây đều được tích xác nhận và Approve:*
 
-- [ ] **Gate 3: TechLead / SA Review** (Xác nhận cấu trúc component, bundle size, clean code, SSOT data hook).
+- [ ] **Gate 3: TechLead / SA Review** (Xác nhận tính toàn vẹn Clean Architecture, Schema CSDL, An ninh RBAC, N+1 Query).
   - *Reviewer (SA)*: `@reviewer_username`
   - *Kết luận*: `[ ] APPROVED` | `[ ] REQUEST CHANGES`
-- [ ] **Gate 4: QC Verification** (Xác nhận Playwright E2E, Visual QA, 5 UX states, Responsive test).
+- [ ] **Gate 4: QC Verification** (Xác nhận kiểm thử 3 tầng, kiểm thử góc khuất Edge-case và E2E Flow).
   - *Reviewer (QC)*: `@qc_username`
   - *Kết luận*: `[ ] VERIFIED PASS` | `[ ] REJECTED`

@@ -1,0 +1,36 @@
+name: Deploy to Demo
+
+on:
+  push:
+    branches:
+      - demo
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, backend]
+
+    defaults:
+      run:
+        working-directory: /home/sotatek/projects/dmst/dmst-backend-demo
+
+    steps:
+      - name: Pull latest code
+        run: git pull origin demo
+
+      - name: Build Docker image
+        run: docker compose -f docker-compose.demo.yml --env-file .env.demo build backend_app
+
+      - name: Recreate backend container
+        run: docker compose -f docker-compose.demo.yml --env-file .env.demo up -d --no-deps --force-recreate backend_app
+
+      - name: Run database migrations
+        run: docker compose -f docker-compose.demo.yml exec backend_app npm run migration:run:prod
+
+      - name: Verify deployment
+        run: |
+          docker ps -f "name=dmst-backend-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

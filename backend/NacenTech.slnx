@@ -1,0 +1,42 @@
+<Solution>
+  <Folder Name="/apps/">
+    <Project Path="apps/api/NacenTech.Api.csproj" />
+    <Project Path="apps/worker/NacenTech.Worker.csproj" />
+  </Folder>
+  <Folder Name="/packages/">
+    <Project Path="packages/kernel/NacenTech.Kernel.csproj" />
+    <Project Path="packages/contracts/NacenTech.Contracts.csproj" />
+    <Project Path="packages/policy-engine/NacenTech.PolicyEngine.csproj" />
+    <Project Path="packages/persistence/NacenTech.Persistence.csproj" />
+    <Project Path="packages/test-kit/NacenTech.TestKit.csproj" />
+  </Folder>
+  <Folder Name="/modules/">
+    <Project Path="modules/identity/NacenTech.Modules.Identity.csproj" />
+    <Project Path="modules/assessment/NacenTech.Modules.Assessment/NacenTech.Modules.Assessment.csproj" />
+
+    <Project Path="modules/policy/NacenTech.Modules.Policy.csproj" />
+    <Project Path="modules/demand/NacenTech.Modules.Demand.csproj" />
+    <Project Path="modules/technology/NacenTech.Modules.Technology.csproj" />
+    <Project Path="modules/dataroom/NacenTech.Modules.DataRoom.csproj" />
+    <Project Path="modules/matching/NacenTech.Modules.Matching.csproj" />
+    <Project Path="modules/communication/NacenTech.Modules.Communication.csproj" />
+    <Project Path="modules/content/NacenTech.Modules.Content.csproj" />
+    <Project Path="modules/case/NacenTech.Modules.Case.csproj" />
+    <Project Path="modules/brokerage/NacenTech.Modules.Brokerage.csproj" />
+    <Project Path="modules/audit/NacenTech.Modules.Audit.csproj" />
+    <Project Path="modules/integration/NacenTech.Modules.Integration.csproj" />
+    <Project Path="modules/entitlement/NacenTech.Modules.Entitlement.csproj" />
+    <Project Path="modules/lms/NacenTech.Lms.csproj" />
+    <Project Path="modules/blockchain/NacenTech.Blockchain.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/legacy-etl/NacenTech.Tools.LegacyEtl.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/architecture/NacenTech.Tests.Architecture.csproj" />
+    <Project Path="tests/integration/NacenTech.Tests.Integration.csproj" />
+    <Project Path="tests/invariants/NacenTech.Tests.Invariants.csproj" />
+    <Project Path="tests/authorization/NacenTech.Tests.Authorization.csproj" />
+    <Project Path="tests/contracts/NacenTech.Tests.Contracts.csproj" />
+  </Folder>
+</Solution>

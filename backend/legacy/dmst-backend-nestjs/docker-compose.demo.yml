@@ -1,0 +1,82 @@
+services:
+  backend_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: dmst-backend-demo
+    ports:
+      - "${PORT:-3023}:3013"
+    env_file:
+      - path: .env.demo
+        required: true
+    environment:
+      PORT: 3013
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ENABLE_DOCUMENTATION: ${ENABLE_DOCUMENTATION:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - dmst_network_demo
+
+  postgres:
+    # See docker-compose.yml: switching from the alpine (musl) image to this
+    # Debian (glibc) one changes text collation order. Do not reuse an existing
+    # data volume in place without a REINDEX or a dump/restore.
+    image: pgvector/pgvector:pg16
+    shm_size: 2gb
+    container_name: dmst-backend-demo-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-dmst_poc_demo}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "${DB_PORT:-5449}:5432"
+    volumes:
+      - postgres_data_demo:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-dmst_poc_demo}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dmst_network_demo
+
+  redis:
+    image: redis:7-alpine
+    container_name: dmst-backend-demo-redis
+    ports:
+      - "${REDIS_PORT:-6381}:6379"
+    volumes:
+      - redis_data_demo:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dmst_network_demo
+
+volumes:
+  postgres_data_demo:
+  redis_data_demo:
+
+networks:
+  dmst_network_demo:
+    driver: bridge
+    name: dmst_network_demo

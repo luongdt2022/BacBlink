@@ -1,0 +1,7 @@
+{
+  "utc": "2026-10-07T15:40:47.049641+00:00",
+  "database": "nacentech_qc_delta_20261007",
+  "source": "PostgreSQL direct query",
+  "activeSectorCount": 10,
+  "query": "SELECT count(*) FROM policy.taxonomy_terms WHERE kind='SECTOR' AND is_active=true AND code IS NOT NULL;"
+}

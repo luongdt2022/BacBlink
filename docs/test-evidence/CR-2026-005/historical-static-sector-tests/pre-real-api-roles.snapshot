@@ -1,0 +1,90 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import AdminRolesPage from "./page";
+
+vi.mock("@/components/admin/admin-nav", () => ({
+  AdminNav: () => <nav data-testid="admin-nav">AdminNav</nav>,
+}));
+
+describe("AdminRolesPage (TASK-07 RBAC Matrix & Provisioning)", () => {
+  beforeEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("renders 10 Roles Matrix tab by default", () => {
+    render(<AdminRolesPage />);
+    expect(screen.getByText("Ma Trận 10 Vai Trò & Thẩm Quyền Cốt Lõi")).toBeInTheDocument();
+    expect(screen.getByText("SUPER_ADMIN")).toBeInTheDocument();
+    expect(screen.getByText("OPERATOR_ADMIN")).toBeInTheDocument();
+    expect(screen.getByText("PROVINCIAL_ADMIN")).toBeInTheDocument();
+    expect(screen.getByText("SECTOR_ADMIN")).toBeInTheDocument();
+    expect(screen.getByText("CLUSTER_ADMIN")).toBeInTheDocument();
+    expect(screen.getByText("PUBLIC_USER")).toBeInTheDocument();
+  });
+
+  it("switches to officers list tab and filters by search query", () => {
+    render(<AdminRolesPage />);
+    
+    // Switch to Officers tab
+    const officersTab = screen.getByRole("button", { name: /Danh Sách Cán Bộ & Phân Quyền/i });
+    fireEvent.click(officersTab);
+
+    expect(screen.getByText("Lãnh Đạo Cục ĐMST")).toBeInTheDocument();
+    expect(screen.getByText("Nguyễn Văn Hùng (Sở HN)")).toBeInTheDocument();
+
+    // Search officer by email/name
+    const searchInput = screen.getByPlaceholderText(/Tìm theo email, tên cán bộ, mã tỉnh.../i);
+    fireEvent.change(searchInput, { target: { value: "hanoi" } });
+
+    expect(screen.getByText("Nguyễn Văn Hùng (Sở HN)")).toBeInTheDocument();
+    expect(screen.queryByText("Lãnh Đạo Cục ĐMST")).not.toBeInTheDocument();
+  });
+
+  it("opens modal and provisions a new officer role (Happy Path)", () => {
+    render(<AdminRolesPage />);
+
+    // Click "Gán Vai Trò Cán Bộ"
+    const assignBtn = screen.getByRole("button", { name: /Gán Vai Trò Cán Bộ/i });
+    fireEvent.click(assignBtn);
+
+    expect(screen.getByText("Bổ Nhiệm & Gán Vai Trò Cán Bộ")).toBeInTheDocument();
+
+    // Fill form
+    fireEvent.change(screen.getByPlaceholderText("VD: so.danang@nacentech.local"), {
+      target: { value: "officer.danang@nacentech.local" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("VD: Nguyễn Văn A"), {
+      target: { value: "Lê Văn Cường" },
+    });
+
+    const submitBtn = screen.getByRole("button", { name: /Xác Nhận Bổ Nhiệm/i });
+    fireEvent.click(submitBtn);
+
+    // Switch to Officers tab to see newly added officer
+    const officersTab = screen.getByRole("button", { name: /Danh Sách Cán Bộ & Phân Quyền/i });
+    fireEvent.click(officersTab);
+
+    // Toast alert confirms assignment
+    expect(screen.getByText(/Đã gán vai trò PROVINCIAL_ADMIN cho officer.danang@nacentech.local thành công!/i)).toBeInTheDocument();
+    expect(screen.getByText("officer.danang@nacentech.local")).toBeInTheDocument();
+  });
+
+  it("rejects empty officer email on form submit (Negative Validation)", () => {
+    const alertMock = vi.fn();
+    vi.stubGlobal("alert", alertMock);
+
+    const { container } = render(<AdminRolesPage />);
+
+    const assignBtn = screen.getByRole("button", { name: /Gán Vai Trò Cán Bộ/i });
+    fireEvent.click(assignBtn);
+
+    const form = container.querySelector("form");
+    expect(form).not.toBeNull();
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    expect(alertMock).toHaveBeenCalledWith("Vui lòng nhập email cán bộ!");
+  });
+});
