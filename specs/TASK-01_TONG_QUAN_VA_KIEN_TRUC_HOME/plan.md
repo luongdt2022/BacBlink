@@ -354,3 +354,10 @@ Mở rộng `SECTOR_IMAGE_MAP` phủ trọn 17 mã ngành chuẩn Bộ Khoa họ
 ### 7.3. Chiến Lược Kiểm Thử (`AC-01-009` .. `AC-01-012`)
 - **Backend**: `dotnet test` trên `PortalHomeInvariantsTests.cs` kiểm chứng stats thật + event seed + AI assistant context BACLINK.
 - **Frontend**: `vitest` cho `page.test.tsx`, `gioi-thieu/page.test.tsx`, `dich-vu-khac/page.test.tsx`, `huong-dan/page.test.tsx`, `IndexVerificationBadge.test.tsx` (và test mới cho `/matrix`, `/trien-lam`); kiểm chứng Zero Brand Leakage (không còn `NacenTech`/`NacenTwin`/`34 Sở KH&CN`/`/gov/`).
+
+---
+
+## Plan Delta v23 (CR-BACLINK-009): CMS
+- **DB (non-destructive)**: migration `AddBaclinkCms` tạo `content.cms_articles / cms_documents / cms_media / cms_faqs / cms_partners` (IF NOT EXISTS) + seed 13 bài từ `news-data.ts` (giữ slug) và FAQ quy trình hiện có.
+- **API**: `CmsControllers.cs` (facade V1Compat, SQL tham số hóa như `MembershipControllers`): public đọc ẩn danh chỉ `PUBLISHED`; ghi chỉ `RequireAdmin`.
+- **FE**: client `lib/cms-client.ts`; trang `/tin-tuc`, `/chinh-sach`, `/tai-lieu`, `/thu-vien`, `/gioi-thieu/{dieu-le,bao-cao-thuong-nien,co-cau-to-chuc/[code]}`; admin `/admin/cms`. Markdown render an toàn (không cho HTML thô).

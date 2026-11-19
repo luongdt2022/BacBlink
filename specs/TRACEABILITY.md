@@ -457,3 +457,34 @@ Mọi yêu cầu kỹ thuật phải được giữ nguyên vẹn mã định da
 | **`P0-B4` · `CR-BACLINK-004`** | `TASK-01` | [`CR-BACLINK-004`](./TASK-01_TONG_QUAN_VA_KIEN_TRUC_HOME/deltas/CR-BACLINK-004_home_about_events_services_content.md) | `REQ-01-BL-01..04`, `BR-01-BL-01..02`, `AC-01-009..012` | `src/app/page.tsx`, `gioi-thieu/page.tsx`, `matrix/page.tsx`, `trien-lam/**`, `dich-vu-khac/page.tsx`, `huong-dan/guide-data.ts`, `PortalControllers.cs`, `TechmartEventService.cs`, `AiAssistantService.cs` | `APPROVED` (Spec) |
 | **`P0-B4` · `CR-BACLINK-005`** | `TASK-02`, `TASK-03`, `TASK-04`, `TASK-08` | [`CR-BACLINK-005`](./TASK-02_HO_SO_CHU_THE_VA_DN_DMST/deltas/CR-BACLINK-005_baclink_directory_supply_demand_dealroom.md) | `REQ-02-BL-01..02`, `BR-02-BL-01..02`, `AC-02-046..048`; `REQ-03-BL-01..02`, `BR-03-BL-01..02`, `AC-03-BL-01..03`; `REQ-04-BL-01..02`, `BR-04-BL-01..02`, `AC-04-059..061`; `REQ-08-BL-01..02`, `BR-08-BL-01..02`, `AC-08-BL-01..03` | `EnterprisesDirectoryView.tsx`, `EnterpriseController.cs`, `seed_baclink_demo_data.sql`, `DemandController.cs`, `nhu-cau-cong-nghe/**`, `TechnologyOffersController.cs`, `chao-ban-cong-nghe/**`, `BrokerageMatchingEngineService.cs`, `portal/matching/radar/**`, `deal-room/**` | `APPROVED` (Spec) |
 | **`P0-B5` · `CR-BACLINK-006`** | `TASK-09`, `TASK-05`, `TASK-10`, `TASK-11` | [`CR-BACLINK-006`](./TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17/deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) | `REQ-05-BL-01..02`, `BR-05-BL-01..02`, `AC-05-BL-01..03`; `REQ-09-BL-01..02`, `BR-09-BL-01..02`, `AC-09-BL-01..03`; `REQ-10-BL-01..02`, `BR-10-BL-01..02`, `AC-10-BL-01..03`; `REQ-11-BL-01`, `BR-11-BL-01`, `AC-11-BL-01..03` | `ExpertController.cs`, `ExpertService.cs`, `experts/**`, `portal/expert/**`, `Tt17ScoringEngine.cs`, `AssessmentsController.cs`, `survey-docx-exporter.ts`, `tt17-docx-template-filler.ts`, `LmsController.cs`, `elearning/**`, `BlockchainAdminController.cs`, `BlockchainZkpBadge.tsx`, `admin/blockchain/page.tsx` | `APPROVED` (Spec) |
+
+
+## CR-BACLINK-008 — 7 Menu, Trang chủ 8 khối & Hội viên (2026-11-19)
+
+| Mã neo | Tệp triển khai | Kiểm thử |
+| :--- | :--- | :--- |
+| `REQ-BL08-IA-001`, `REQ-BL08-HEADER-002`, `UI-BL08-HEADER-001` | `frontend/src/lib/constants/navigation.ts`, `components/common/navbar.tsx` | `components/common/navbar.test.tsx`, `test/navbar-footer-shell.test.tsx` |
+| `REQ-BL08-HOME-003`, `UI-BL08-HOME-002` | `app/page.tsx`, `components/home/home-blocks.tsx` | `app/page.test.tsx`, `test/cross-surface-sectors.test.tsx`, `test/portal-task01.test.tsx` |
+| `REQ-BL08-SEARCH-004` | `app/tim-kiem/page.tsx`, `lib/site-search.ts` | `lib/site-search.test.ts` |
+| `REQ-BL08-CONTACT-009`, `API-BL08-CONTACT-006`, `DB-BL08-CONTACT-005` | `app/lien-he/*`, `components/common/contact-{form,modal}.tsx`, `app/admin/contact-requests/page.tsx`, `backend/apps/api/V1Compat/ContactRequestsController.cs`, migration `20261119100000_AddBaclinkContactRequests` | `contact-form.test.tsx`, `app/lien-he/page.test.tsx`, E2E API (200/400/429/401/403) |
+| `REQ-BL08-ABOUT-010`, `BR-BL08-SINGLE-SOURCE-001` | `lib/constants/organization.ts`, `app/gioi-thieu/**` | `lib/constants/organization.test.ts`, `app/gioi-thieu/**/page.test.tsx` |
+| `BR-BL08-NO-UNSOURCED-STATS-002`, `UI-BL08-FLOAT-004` | `components/common/footer.tsx`, `floating-contact.tsx`, `app/tin-tuc/page.tsx`, `app/trien-lam/page.tsx` | `footer.test.tsx`, `floating-contact.test.tsx` |
+| `REQ-BL08-JOIN-005`, `BR-BL08-JOIN-DEDUP-007`, `API-BL08-JOIN-003` | `app/hoi-vien/gia-nhap/page.tsx`, `lib/membership-client.ts`, `backend/modules/identity/Application/ApprovalService.cs`, `EnterpriseApprovalSynchronizer.cs` | `app/hoi-vien/gia-nhap/page.test.tsx`, `Task00BaclinkMembershipLifecycleTests` |
+| `REQ-BL08-MEMBER-PUBLIC-006`, `API-BL08-TIERS-001`, `API-BL08-FEATURED-002` | `app/hoi-vien/{page,tieu-bieu,xac-thuc}.tsx`, `MembershipControllers.cs` | `app/hoi-vien/page.test.tsx`, E2E API |
+| `REQ-BL08-MEMBER-PORTAL-007`, `API-BL08-MY-004`, `BR-BL08-CERT-NO-005` | `app/portal/membership/**`, `MembershipActivator.cs` | `app/portal/membership/page.test.tsx`, `Concurrent_Activations_Never_Duplicate_Certificate_Numbers` |
+| `REQ-BL08-MEMBER-ADMIN-008`, `API-BL08-ADMIN-005` | `app/admin/members/page.tsx`, `MembershipControllers.cs` | E2E API (record-fee/renew/suspend/restore/featured) |
+| `BR-BL08-MEMBER-LIFECYCLE-003`, `BR-BL08-ROLE-DECOUPLE-004`, `DB-BL08-TIERS-002..BACKFILL-004` | `packages/persistence/Workers/MembershipExpiryWorker.cs`, migration `20261119120000_AddBaclinkMembership` | `Expiry_Worker_Expires_Then_Suspends_Without_Touching_Role_And_Reminds_Before_Expiry`, `Revoke_Suspends_Membership` |
+
+
+## CR-BACLINK-009/010/011 — CMS, Dịch vụ, Cơ hội KD, Yêu cầu của tôi, EN (2026-11-19)
+
+| Mã neo | Tệp triển khai | Kiểm thử |
+| :--- | :--- | :--- |
+| `REQ-BL09-CMS-ARTICLE-001`, `BR-BL09-SLUG-STABLE-002`, `BR-BL09-PUBLIC-ONLY-003`, `DB-BL09-CMS-001`, `API-BL09-CMS-001` | `backend/apps/api/V1Compat/CmsControllers.cs`, `apps/api/Infrastructure/CmsSeedHostedService.cs`, migration `20261119140000_AddBaclinkCms`, `frontend/src/lib/{cms-client,cms-news}.ts`, `app/tin-tuc/**` | `Task01BaclinkCmsTests` (19), `test/news-portal.test.tsx`, E2E API 27/27 |
+| `REQ-BL09-CMS-DOC-002`, `REQ-BL09-KNOWLEDGE-HUB-003`, `REQ-BL09-MEDIA-005` | `app/{tai-lieu,thu-vien,chinh-sach}`, `app/gioi-thieu/{dieu-le,bao-cao-thuong-nien}`, `components/cms/cms-document-list.tsx` | `page.test.tsx` từng trang |
+| `REQ-BL09-COMMITTEE-PAGE-004` | `app/gioi-thieu/co-cau-to-chuc/[code]/page.tsx` | `page.test.tsx` |
+| `REQ-BL09-PARTNER-006`, `NFR-BL09-SAFE-HTML-001` | `components/home/home-blocks.tsx` (PartnerStrip), `CmsController.RequireSafeUrl` | `home` test, `SafeUrl_*` (xUnit), E2E (`javascript:`/`data:` → 400) |
+| `REQ-BL10-SERVICE-001` | `lib/constants/services.ts`, `app/dich-vu/**` | `services.test.ts`, `app/dich-vu/[slug]/page.test.tsx` |
+| `REQ-BL10-OPPS-002` | `app/co-hoi-kinh-doanh/page.tsx` | `page.test.tsx` |
+| `REQ-BL10-MYREQ-003`, `BR-BL10-REQ-PRIVACY-001` | `ContactRequestsController.cs`, `app/portal/requests/page.tsx` | `page.test.tsx`, E2E API 8/8 |
+| `REQ-BL11-EN-001` | `lib/constants/i18n-public.ts`, `navbar.tsx`, `footer.tsx`, `home-blocks.tsx` | `i18n-public.test.ts` |

@@ -1050,3 +1050,15 @@ Sau khi đối soát toàn bộ 7 mục menu trong Workspace Nhà Cung Ứng (`S
 | **REQ-BACLINK-RBAC-002** | `BR-BACLINK-RBAC-002` | `AC-CR-BACLINK-001.2` | `src/components/common/role-switcher.tsx`, `src/app/portal/layout.tsx` | `src/components/common/role-switcher.test.tsx` |
 | **REQ-BACLINK-NAV-001** | `BR-BACLINK-BRAND-001` | `AC-CR-BACLINK-001.3` | `src/components/common/navbar.tsx`, `footer.tsx`, `i18n-provider.tsx` | `navbar.test.tsx`, `footer.test.tsx` |
 | **REQ-BACLINK-UPG-001** | `BR-BACLINK-RBAC-001`, `BR-BACLINK-RBAC-002` | `AC-CR-BACLINK-001.4` | `src/app/profile/upgrade/page.tsx`, `ApprovalService.cs` | `src/app/profile/upgrade/page.test.tsx`, `dotnet test` |
+
+---
+
+## Spec Delta v22 (CR-BACLINK-008): Tái Cấu Trúc 7 Menu, Trang Chủ 8 Khối & Gia Nhập / Tư Cách Hội Viên [XÁC NHẬN SCOPE 2026-11-19]
+
+- **Bối cảnh & Căn cứ**: `[VERIFIED]` `Specification/02_BASIC_DESIGN/260717_Góp ý website Baclink.docx`; `[VERIFIED]` web đối chứng `baclink.truyenthongtht.com`; `[CONFIRMED]` PO chốt dữ kiện pháp nhân theo THT (QĐ 589/QĐ-UBND ngày 27/06/2025), 9 ban demo, giữ 8 ngành `IND_*`, hạng/phí hội viên demo cấu hình được.
+- **Delta Ledger đầy đủ**: [`deltas/CR-BACLINK-008_ia_7menu_home_8block_membership.md`](./deltas/CR-BACLINK-008_ia_7menu_home_8block_membership.md) (Master Facts §2, Impact Matrix §3, Anchors §4, AC §5).
+- **Yêu cầu chức năng mới**: `REQ-BL08-IA-001`, `REQ-BL08-HEADER-002`, `REQ-BL08-HOME-003`, `REQ-BL08-SEARCH-004`, `REQ-BL08-JOIN-005`, `REQ-BL08-MEMBER-PUBLIC-006`, `REQ-BL08-MEMBER-PORTAL-007`, `REQ-BL08-MEMBER-ADMIN-008`, `REQ-BL08-CONTACT-009`, `REQ-BL08-ABOUT-010`.
+- **Quy tắc nghiệp vụ bổ sung**: `BR-BL08-SINGLE-SOURCE-001`, `BR-BL08-NO-UNSOURCED-STATS-002`, `BR-BL08-MEMBER-LIFECYCLE-003`, `BR-BL08-ROLE-DECOUPLE-004`, `BR-BL08-CERT-NO-005`, `BR-BL08-FEE-006`, `BR-BL08-JOIN-DEDUP-007`.
+- **Dữ liệu / API / UI / NFR**: `DB-BL08-ENT-COLS-001..CONTACT-005`, `API-BL08-TIERS-001..SEARCH-007`, `UI-BL08-HEADER-001..FLOAT-004`, `NFR-BL08-PERF-001..REGRESSION-003`.
+- **Tiêu chuẩn chấp thuận**: `AC-CR-BACLINK-008.1` → `AC-CR-BACLINK-008.9` (Given-When-Then tại Ledger §5).
+- **Ghi đè dữ kiện cũ**: Thay thế giá trị pháp nhân `QĐ 1652/QĐ-UBND`, `Số 7 Lý Thái Tổ` nêu tại Spec Delta v21 / `REQ-BACLINK-NAV-001`; menu 8 mục của v21 được thay bằng 7 menu theo góp ý khách hàng.

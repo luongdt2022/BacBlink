@@ -569,3 +569,47 @@
 
 
 
+---
+
+## Phase 28: BACLINK Slim Edition Clean-Sweep (CR-BACLINK-007) — Gỡ Triệt Để Các Phiếu/TT17/ĐMST, Role Sở/Đa Tỉnh & Tàn Dư Thương Hiệu Cũ
+
+- [x] `T-00.BL07.01` **[DB]** Viết và thực thi script SQL idempotent `SourceCode/backend/scripts/clean_baclink_slim_edition.sql` trên PostgreSQL `nacentech`: dọn 3 dòng email rác trong `enterprise.enterprises` (giữ đúng 7 DN Bắc Ninh), dọn 2 chuyên gia `CG-NACEN-*` trong `brokerage.expert_profiles` (giữ đúng 5 Cố vấn BACLINK), làm sạch `identity.persons` (sửa tên Hiệp hội tại `admin@baclink.org.vn`, dọn tên `Viện NacenTech` / `Demo ĐMST`, giữ $\le 25$ user sạch), dọn các bản ghi khảo sát/TT17/Sở tỉnh lịch sử trong `identity.approval_requests`, `content.techmart_events`, `demand.demand_surveys`, `assessment.tt17_assessments`, `enterprise.innovation_evaluations` (`DB-BL07-CLEAN-SEED-001`). *(Verified idempotent x2: 7 DN, 5 cố vấn, 10 sản phẩm, 8 nhu cầu, 6 LMS, 0 khảo sát/TT17)*.
+- [x] `T-00.BL07.02` **[BE]** Cập nhật Backend .NET 10: `GET /api/v1/master-data/sectors` mặc định chỉ trả các ngành `isActive = true` (8 ngành `IND_*`, hỗ trợ `?includeInactive=true` cho quản trị); `GET /api/v1/public/experts` giải nghĩa tên ngành tiếng Việt từ `policy.taxonomy_terms` cho `IND_*`; `EnterpriseService` / `EnterpriseController` không sinh nhãn `"Huy hiệu ... ĐMST"`; build & chạy unit/integration tests + restart API port `5080` (`API-BL07-CLEAN-CONTRACT-001`). *(463/463 .NET tests PASS, API :5080 live verified)*.
+- [x] `T-00.BL07.03` **[FE-Shell-Public]** Dọn sạch tàn dư ở Shell, Auth & các trang Công khai (`next.config.ts`, `navbar.tsx`, `footer.tsx`, `i18n-provider.tsx`, `(auth)/login`, `(auth)/register`, `huong-dan/*`, `matrix`, `wireframes` Sitemap, `elearning/*`, `dich-vu-khac`, `gioi-thieu`, `page.tsx`, `components/common/*`, `lib/{label-resolver,gov-label-resolver,auth-client,api-client,cv-parser-helper}.ts`) (`REQ-BL07-NO-SURVEY-001`, `BR-BL07-3TIER-ONLY-001`, `BR-BL07-BRAND-PURITY-002`, `UI-BL07-CLEAN-WEB-001`). *(67 files cleaned, 48/48 Vitest files / 428+ tests PASS)*.
+- [x] `T-00.BL07.04` **[FE-Marketplace-Portal]** Dọn sạch tàn dư Phiếu/TT17/ĐMST/Sở/NacenTech trên Danh bạ & Hồ sơ Doanh nghiệp (`enterprises/*`, `doanh-nghiep-dmst`, `components/enterprise/*`), Sàn Chào bán & Nhu cầu (`chao-ban-cong-nghe/*`, `nhu-cau-cong-nghe/*`, `components/{seller,demand}/*`, `services/api/technology-offer.ts`, `types/technology-offer.ts`), Cố vấn (`experts/*`, `components/expert-detail/*`, `lib/consultations.ts`), và toàn bộ Workspace Portal / Hồ sơ / Upgrade (`portal/**`, `components/portal/*`, `profile/**`, `settings`) (`REQ-BL07-NO-SURVEY-001`, `UI-BL07-CLEAN-WEB-001`). *(65 files cleaned/tested, 42/42 Vitest files / 277/277 tests PASS)*.
+- [x] `T-00.BL07.05` **[FE-Admin]** Dọn sạch tàn dư TT17/Phiếu/Sở/34 tỉnh/ĐMST/NacenTwin trên toàn bộ Cổng Quản trị Hiệp hội (`src/app/admin/**`, `src/components/admin/**`, `src/components/lms/**`) (`REQ-BL07-NO-SURVEY-001`, `BR-BL07-3TIER-ONLY-001`, `UI-BL07-CLEAN-WEB-001`). *(Vitest `src/app/admin/` + `src/components/admin/`: 18/18 files, 91/91 tests PASS)*.
+- [x] `T-00.BL07.06` **[TEST-QC]** Chạy kiểm chứng 4 tầng độc lập: `dotnet test` + `npx tsc --noEmit` + `pnpm vitest run` + `pnpm build` & khởi động lại server `3001` + đối soát PostgreSQL thật + Playwright Live Browser DOM Audit qua toàn bộ routes và 3 cấp tài khoản đạt 0 từ cấm lộ UI (`TEST-BL07-FULL-SWEEP-001`). *(tsc 0 errors, Vitest 127/127 files - 875/875 tests PASS, .NET 463/463 PASS, Playwright Live E2E 7/7 suites - 63/63 checkpoints PASS, PostgreSQL PL/pgSQL full-DB regex scan = 0 banned hits, 11 bugs caught & fixed, guard-rails 8/8 PASS)*.
+
+---
+
+## Phase 29: CR-BACLINK-008 — 7 Menu, Trang Chủ 8 Khối & Gia Nhập / Tư Cách Hội Viên
+
+### GĐ0 — Shell, IA & Trang chủ
+- [x] `T-00.BL08.01` **[FE]** Tạo `src/lib/constants/organization.ts`; thay thế thông tin pháp nhân tại 13 tệp; cập nhật assert test (`BR-BL08-SINGLE-SOURCE-001`).
+- [x] `T-00.BL08.02` **[DB]** Script idempotent `backend/scripts/update_baclink_008_legal_facts.sql` cập nhật QĐ/địa chỉ trong nội dung sự kiện/tin.
+- [x] `T-00.BL08.03` **[FE]** Navbar: TopBar, 7 menu, 4 nút, drawer mobile; gỡ `/wireframes`, `/matrix` khỏi menu (`REQ-BL08-IA-001`, `REQ-BL08-HEADER-002`, `UI-BL08-HEADER-001`).
+- [x] `T-00.BL08.04` **[FE]** Footer: gỡ số liệu không nguồn & NCSC; cột liên kết 7 menu; Zalo (`BR-BL08-NO-UNSOURCED-STATS-002`).
+- [x] `T-00.BL08.05` **[FE]** Cụm nút nổi Gọi/Zalo/Lên đầu trang; dời AI widget (`UI-BL08-FLOAT-004`).
+- [x] `T-00.BL08.06` **[FE]** Trang chủ 8 khối + Hội viên tiêu biểu + Đối tác (`REQ-BL08-HOME-003`, `UI-BL08-HOME-002`).
+- [x] `T-00.BL08.07` **[FE][API]** Trang `/tim-kiem` (`REQ-BL08-SEARCH-004`, `API-BL08-SEARCH-007`).
+- [x] `T-00.BL08.08` **[FE]** Trang con Về BACLINK + Cơ cấu 9 ban demo (`REQ-BL08-ABOUT-010`).
+- [x] `T-00.BL08.09` **[FE][API][DB]** Popup liên hệ + `/lien-he` + `communication.contact_requests` + hộp thư admin (`REQ-BL08-CONTACT-009`, `API-BL08-CONTACT-006`, `DB-BL08-CONTACT-005`).
+
+> **Ghi chú GĐ0 (2026-11-19)**: tsc 0 lỗi · Vitest 133 files / 887 tests PASS · .NET 561/561 PASS · `pnpm build` PASS · API live: contact 200/400/429/401/403 đúng hợp đồng · smoke 7 route :3001 = 200. Phát sinh trong phạm vi: mở lại `/trien-lam` (bỏ redirect sang `/tin-tuc`), gỡ link 404 `/dieu-khoan`, `/bao-mat`, gỡ số liệu không nguồn tại `/tin-tuc` & `/trien-lam`, đổi tiêu đề VIMEXPO tại `/trien-lam/dang-ky-tham-quan` sang dữ liệu sự kiện thật, bỏ khối đối tác chưa xác thực (Samsung, Canon…) khỏi trang chủ; dải logo Đối tác hoãn tới khi có danh sách xác nhận (GĐ2 CMS).
+
+### GĐ1 — Gia nhập & Tư cách hội viên
+- [x] `T-00.BL08.10` **[DB]** EF migration `AddMembershipAndRepresentativeFields` + seed hạng + backfill 7 DN (`DB-BL08-ENT-COLS-001..004`).
+- [x] `T-00.BL08.11` **[API]** Membership public/my/admin APIs + policy (`API-BL08-TIERS-001`, `-FEATURED-002`, `-MY-004`, `-ADMIN-005`).
+- [x] `T-00.BL08.12` **[API]** `ApprovalService` nhánh `ENTERPRISE` tạo membership, cấp số chứng nhận, chặn trùng MST (`BR-BL08-CERT-NO-005`, `-JOIN-DEDUP-007`, `API-BL08-JOIN-003`).
+- [x] `T-00.BL08.13` **[API]** `MembershipExpiryJob` + nhắc gia hạn (`BR-BL08-MEMBER-LIFECYCLE-003`, `-ROLE-DECOUPLE-004`).
+- [x] `T-00.BL08.14` **[API]** Sinh chứng nhận hội viên PDF.
+- [x] `T-00.BL08.15` **[FE]** Trang `/hoi-vien/*` công khai (`REQ-BL08-MEMBER-PUBLIC-006`).
+- [x] `T-00.BL08.16` **[FE]** Wizard `/hoi-vien/gia-nhap` 3 bước; redirect `/profile/upgrade` (`REQ-BL08-JOIN-005`, `UI-BL08-WIZARD-003`).
+- [x] `T-00.BL08.17` **[FE]** Portal "Tư cách hội viên" + banner gia hạn (`REQ-BL08-MEMBER-PORTAL-007`).
+- [x] `T-00.BL08.18` **[FE]** Admin `/admin/members` + cấu hình hạng/phí + tiêu biểu (`REQ-BL08-MEMBER-ADMIN-008`).
+- [x] `T-00.BL08.19` **[TEST]** xUnit + Vitest + Playwright 3 hành trình (`NFR-BL08-REGRESSION-003`).
+- [x] `T-00.BL08.20` **[DOC]** Cập nhật `Specification/BASIC_DESIGN_BACLINK.md`, `ROADMAP.md`, `TRACEABILITY.md`.
+
+> **Ghi chú GĐ1 (2026-11-19)**: tsc 0 lỗi · Vitest 136 files / 895 tests PASS · .NET 568/568 PASS (5 bộ, gồm 7 test tích hợp `Task00BaclinkMembershipLifecycleTests` có kiểm thử song song cấp số chứng nhận) · `pnpm build` PASS · E2E API sống 16/16 bước (đăng ký → nộp hồ sơ → trùng MST 409 → duyệt → BL-2026-0010 → xác thực công khai → gia hạn/tiêu biểu/tạm ngưng/khôi phục → member gọi admin 403), dữ liệu QC đã dọn.
+> **Sai khác có chủ đích so với Spec Delta v22**: (1) Người đại diện/trợ lý/sản phẩm nổi bật lưu trong `enterprises.profile_details_json.membershipApplication` thay vì cột mới (tránh đổi EF model bảng đang chạy); cờ tiêu biểu nằm ở `memberships.is_featured`. (2) Chứng nhận hội viên là trang in (`/portal/membership/chung-nhan`, In/Lưu PDF) + trang xác thực công khai `/hoi-vien/xac-thuc` thay cho PDF sinh ở backend (chưa có thư viện PDF). (3) Các trang con hội viên dùng anchor trên `/hoi-vien` (`#quyen-loi`, `#loai-hinh-va-hoi-phi`, `#quy-trinh`) + `/hoi-vien/tieu-bieu`, `/hoi-vien/xac-thuc`, `/hoi-vien/gia-nhap`. (4) Cấp số chứng nhận bằng upsert 1 câu lệnh + unique index + retry (quy ước MOD cấm module mở transaction).
+> **Lỗi có sẵn được sửa**: hồ sơ `requestType = ENTERPRISE` từ `/profile/upgrade` bị backend từ chối ("Loại hồ sơ không hợp lệ") và nếu có cũng không nâng quyền khi duyệt → hành trình gia nhập trước đây không hoạt động. Màn duyệt admin ghi cứng "Giấy phép ĐKKD: Đã xác thực" → nay hiển thị link tệp thật hoặc "Chưa đính kèm".

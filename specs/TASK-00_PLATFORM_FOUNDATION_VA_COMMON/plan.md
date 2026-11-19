@@ -1055,3 +1055,60 @@ Cập nhật `src/test/qc-gate4-typography.test.ts`:
 
 
 
+
+---
+
+## Plan Delta v22 (CR-BACLINK-008): 7 Menu, Trang Chủ 8 Khối & Membership Lifecycle
+
+### 1. Frontend (GĐ0)
+- **Single source**: `src/lib/constants/organization.ts` export `ORG` (tên, QĐ, trụ sở, SĐT, email, Zalo, tôn chỉ) và `BACLINK_COMMITTEES` (9 ban / 4 khối). 13 tệp tiêu thụ chuyển sang import (`BR-BL08-SINGLE-SOURCE-001`).
+- **Shell**: `navbar.tsx` tách cấu hình menu ra `src/lib/constants/navigation.ts` (7 menu, chỉ khai báo menu con có trang thật); thêm `TopBar`, nút Tìm kiếm (`/tim-kiem`), nút `Gia nhập BACLINK` (`/hoi-vien/gia-nhap`). `floating-contact.tsx` mới (Gọi/Zalo/Lên đầu trang), AI widget dời lên trên cụm nút.
+- **Home**: tách `app/page.tsx` thành `components/home/{HeroMessage,NeedRouter,EnterpriseFinder,LatestOpportunities,ServicesGrid,UpcomingEvents,PolicyInsights,JoinBenefits,FeaturedMembers,PartnerStrip}.tsx`; dữ liệu qua `portalClient`, `fetchPublicOffers`, `listEvents`, LMS catalog, `GET /api/v1/public/members/featured`.
+- **Trang mới**: `/tim-kiem`, `/gioi-thieu/{tong-quan,tam-nhin-su-menh,co-so-phap-ly,ban-lanh-dao,co-cau-to-chuc}`, `/hoi-vien/{quyen-loi,loai-hinh-va-hoi-phi,quy-trinh,tieu-bieu,gia-nhap}`, `/lien-he`, `/portal/membership`, `/admin/members`.
+
+### 2. Database Schema Delta (Non-destructive, EF migration `AddMembershipAndRepresentativeFields`)
+```sql
+ALTER TABLE enterprise.enterprises
+  ADD COLUMN IF NOT EXISTS representative_salutation varchar(10) NULL,
+  ADD COLUMN IF NOT EXISTS representative_title varchar(150) NULL,
+  ADD COLUMN IF NOT EXISTS highlight_products text NULL,
+  ADD COLUMN IF NOT EXISTS website varchar(300) NULL,
+  ADD COLUMN IF NOT EXISTS assistant_name varchar(150) NULL,
+  ADD COLUMN IF NOT EXISTS assistant_phone varchar(30) NULL,
+  ADD COLUMN IF NOT EXISTS assistant_email varchar(200) NULL,
+  ADD COLUMN IF NOT EXISTS is_featured_member boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS featured_order int NULL;
+
+CREATE TABLE IF NOT EXISTS enterprise.membership_tiers (
+  code varchar(30) PRIMARY KEY, name varchar(150) NOT NULL, member_type varchar(20) NOT NULL,
+  description text NULL, annual_fee numeric(14,0) NOT NULL DEFAULT 0, joining_fee numeric(14,0) NOT NULL DEFAULT 0,
+  sort_order int NOT NULL DEFAULT 0, is_active boolean NOT NULL DEFAULT true);
+
+CREATE TABLE IF NOT EXISTS enterprise.memberships (
+  id uuid PRIMARY KEY, enterprise_id uuid NOT NULL REFERENCES enterprise.enterprises(id),
+  tier_code varchar(30) NOT NULL REFERENCES enterprise.membership_tiers(code),
+  status varchar(20) NOT NULL DEFAULT 'PENDING', certificate_no varchar(20) NULL UNIQUE,
+  valid_from date NULL, valid_to date NULL, fee_amount numeric(14,0) NULL, fee_paid_at timestamptz NULL,
+  fee_note text NULL, approved_by uuid NULL, created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(), row_version int NOT NULL DEFAULT 0);
+CREATE INDEX IF NOT EXISTS ix_memberships_enterprise ON enterprise.memberships(enterprise_id);
+CREATE INDEX IF NOT EXISTS ix_memberships_status_validto ON enterprise.memberships(status, valid_to);
+
+CREATE TABLE IF NOT EXISTS communication.contact_requests (
+  id uuid PRIMARY KEY, full_name varchar(150) NOT NULL, phone varchar(30) NULL, email varchar(200) NULL,
+  topic varchar(50) NOT NULL DEFAULT 'GENERAL', message text NOT NULL, source_path varchar(300) NULL,
+  status varchar(20) NOT NULL DEFAULT 'NEW', created_at timestamptz NOT NULL DEFAULT now(),
+  handled_by uuid NULL, handled_at timestamptz NULL);
+```
+- Seed 5 hạng (§2.3 Ledger) + backfill 7 DN `VERIFIED` → `ACTIVE`, `OFFICIAL_M`, `BL-2026-0001..0007`, `valid_to = 2026-12-31` (idempotent `ON CONFLICT DO NOTHING`).
+
+### 3. Domain, API & Policy Delta
+- `MembershipService` (module `enterprise`): `ListTiers`, `GetMine`, `RequestRenewal`, `Admin{List,RecordFee,Renew,Suspend,Restore,UpdateTier,SetFeatured}`, `IssueCertificateNo` (sequence theo năm, khóa bằng transaction `SERIALIZABLE` hoặc advisory lock).
+- `ApprovalService` nhánh `ENTERPRISE`: sau khi cấp `ENTERPRISE + DUAL`, gọi `MembershipService.ActivateFromApproval(enterpriseId, tierCode)`; payload cũ thiếu `tierCode` → mặc định `OFFICIAL_M`. Chặn trùng MST (`BR-BL08-JOIN-DEDUP-007`).
+- Hosted job `MembershipExpiryJob` (1 lần/ngày): `ACTIVE→EXPIRED` khi `valid_to < today`; `EXPIRED→SUSPENDED` khi quá 90 ngày; nhắc trước 30 ngày qua `notifications`. **Không đổi role** (`BR-BL08-ROLE-DECOUPLE-004`).
+- Policy: `public/*` anonymous; `my/membership*` yêu cầu `ENTERPRISE` + sở hữu `OwnerPersonId`; `admin/memberships*`, `admin/contact-requests*` yêu cầu `ADMIN`. `POST public/contact-requests` rate-limit 5/IP/giờ + honeypot.
+
+### 4. Chiến lược kiểm thử
+- xUnit: `MembershipLifecycleTests`, `CertificateNumberingTests` (song song không trùng), `ApprovalCreatesMembershipTests`, `JoinDedupTests`, `ContactRateLimitTests`.
+- Vitest: `organization.test.ts`, `navbar.test.tsx` (7 menu + 4 nút), `footer.test.tsx` (0 số liệu không nguồn), `home-blocks.test.tsx`, `join-wizard.test.tsx`.
+- Playwright: `e2e/baclink-008-three-journeys.spec.ts`.

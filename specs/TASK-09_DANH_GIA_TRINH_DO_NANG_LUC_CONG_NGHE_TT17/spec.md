@@ -4,11 +4,11 @@
 > **Mã Epic**: `TASK-09_DANH_GIA_TRINH_DO_NANG_LUC_CONG_NGHE_TT17`  
 > **Căn cứ pháp lý**: [Thông tư 17/2019/TT-BKHCN](https://congbao.chinhphu.vn/van-ban/thong-tu-so-17-2019-tt-bkhcn-30405/29385.htm) của Bộ Khoa học và Công nghệ  
 > **Phạm vi áp dụng**: Doanh nghiệp ngành công nghiệp chế biến, chế tạo (mã ngành C.10 – C.32 theo VSIC)  
-> **Trạng thái**: 🟡 In Implementation (CR-BACLINK-006 Approved)  
-> **Version**: 1.7.0 (Bumped from 1.6.0 via CR-BACLINK-006)  
-> **Last Updated**: 2026-11-17  
-> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md) (PO-DEC-20261104-01), [CR-BACLINK-006](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md) (PO-DEC-BACLINK-04, Q2)  
-> **Độ ưu tiên**: P1 (Trọng tâm Đánh giá Năng lực Doanh nghiệp Sản xuất)
+> **Trạng thái**: ⚪ Retired on Web UI in BACLINK Slim Edition (`CR-BACLINK-007` / `PO-DEC-BACLINK-06`)  
+> **Version**: 1.8.0 (Bumped from 1.7.0 via CR-BACLINK-007)  
+> **Last Updated**: 2026-11-18  
+> **Change Requests Reference**: [CR-2026-026](./deltas/CR-2026-026.md), [CR-2026-027](./deltas/CR-2026-027.md), [CR-BACLINK-006](./deltas/CR-BACLINK-006_specialized_modules_baclink_reposition.md), [CR-BACLINK-007](../TASK-00_PLATFORM_FOUNDATION_VA_COMMON/deltas/CR-BACLINK-007_slim_bacninh_purge_surveys_gov_remnants.md) (`PO-DEC-BACLINK-06`: Gỡ bỏ hoàn toàn các giao diện/dịch vụ Phiếu khảo sát DNNVV, Phiếu ĐMST 43 câu & Phiếu đánh giá TT17 khỏi bản rút gọn Bắc Ninh; bảo toàn non-destructive domain schema ở tầng nền)  
+> **Độ ưu tiên**: Out-of-Scope UI trong Bản rút gọn BACLINK Bắc Ninh (`REQ-BL07-NO-SURVEY-001`)
 
 ---
 

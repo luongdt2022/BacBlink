@@ -361,3 +361,10 @@
 - **`AC-01-010`**: Truy cập `/gioi-thieu` và `/matrix`, hiển thị đầy đủ QĐ 1652/QĐ-UBND, trụ sở TP. Bắc Ninh, BCH 28 thành viên và Ma trận 8 ngành `IND_*` × KCN Bắc Ninh.
 - **`AC-01-011`**: Truy cập `/trien-lam`, hiển thị 3 sự kiện xúc tiến giao thương BACLINK từ PostgreSQL (`seed_baclink_demo_data.sql`) và gửi form đăng ký tham quan thành công (`200/201`).
 - **`AC-01-012`**: Truy cập `/dich-vu-khac` và `/huong-dan`, chỉ hiển thị hướng dẫn 3 cấp (`ADMIN`, `ENTERPRISE`, `PUBLIC_USER`) và không còn bất kỳ liên kết hoặc hướng dẫn nào trỏ tới `/gov/*`.
+
+---
+
+## Spec Delta v23 (CR-BACLINK-009): CMS Nội dung Hiệp hội [XÁC NHẬN SCOPE 2026-11-19]
+- **Delta Ledger**: [`deltas/CR-BACLINK-009_cms_knowledge_committees_media.md`](./deltas/CR-BACLINK-009_cms_knowledge_committees_media.md).
+- **Yêu cầu mới**: `REQ-BL09-CMS-ARTICLE-001`, `REQ-BL09-CMS-DOC-002`, `REQ-BL09-KNOWLEDGE-HUB-003`, `REQ-BL09-COMMITTEE-PAGE-004`, `REQ-BL09-MEDIA-005`, `REQ-BL09-PARTNER-006`.
+- **Quy tắc**: `BR-BL09-NO-FABRICATION-001`, `BR-BL09-SLUG-STABLE-002`, `BR-BL09-PUBLIC-ONLY-003`; `DB-BL09-CMS-001`, `API-BL09-CMS-001`, `NFR-BL09-SAFE-HTML-001`.

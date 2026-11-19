@@ -180,3 +180,24 @@
 - [x] `T-01.BL.06` **[TEST]** Bổ sung & cập nhật Unit/Component tests cho Trang chủ, Giới thiệu QĐ 1652, Ma trận `IND_*`, Sự kiện PostgreSQL seed, Dịch vụ, Hướng dẫn 3 cấp và kiểm tra Zero Brand Leakage (`AC-01-009`..`AC-01-012`, `BR-01-BL-01`, `BR-01-BL-02`):
   - Tệp: `SourceCode/frontend/src/app/page.test.tsx`, `SourceCode/frontend/src/app/gioi-thieu/page.test.tsx`, `SourceCode/frontend/src/app/matrix/page.test.tsx`, `SourceCode/frontend/src/app/trien-lam/page.test.tsx`, `SourceCode/frontend/src/app/huong-dan/page.test.tsx`, `SourceCode/frontend/src/components/common/IndexVerificationBadge.test.tsx`, `SourceCode/backend/tests/invariants/PortalHomeInvariantsTests.cs`.
   - Kiểm chứng: `dotnet test SourceCode/backend/tests/invariants/NacenTech.Tests.Invariants.csproj --filter "FullyQualifiedName~PortalHomeInvariantsTests"` và `cd SourceCode/frontend && npx vitest run src/app/page.test.tsx src/app/gioi-thieu/page.test.tsx src/app/matrix/page.test.tsx src/app/trien-lam/page.test.tsx src/app/dich-vu-khac/page.test.tsx src/app/huong-dan/page.test.tsx src/components/common/IndexVerificationBadge.test.tsx && npx tsc --noEmit`.
+
+---
+
+## Phase CR-BACLINK-009 — CMS Nội dung Hiệp hội
+- [x] `T-01.BL09.01` **[DB]** Migration `AddBaclinkCms` + seed 13 bài + FAQ.
+- [x] `T-01.BL09.02` **[API]** `CmsControllers` public + admin (bài viết, tài liệu, media, FAQ, đối tác).
+- [x] `T-01.BL09.03` **[FE]** `cms-client` + Markdown an toàn.
+- [x] `T-01.BL09.04` **[FE]** `/tin-tuc` + `/tin-tuc/[slug]` đọc từ API; danh mục mới.
+- [x] `T-01.BL09.05` **[FE]** `/chinh-sach` (7 mục) + `/tai-lieu`.
+- [x] `T-01.BL09.06` **[FE]** `/gioi-thieu/dieu-le`, `/bao-cao-thuong-nien`.
+- [x] `T-01.BL09.07` **[FE]** Trang từng ban `/gioi-thieu/co-cau-to-chuc/[code]`.
+- [x] `T-01.BL09.08` **[FE]** `/thu-vien` (ảnh/video).
+- [x] `T-01.BL09.09` **[FE]** Trang chủ: Chính sách & ngành từ API + `PartnerStrip`.
+- [x] `T-01.BL09.10` **[FE]** `/lien-he`: FAQ từ API + Hợp tác & tài trợ + Truyền thông & báo chí.
+- [x] `T-01.BL09.11` **[FE]** Admin `/admin/cms` (5 tab).
+- [x] `T-01.BL09.12` **[FE]** Menu 5/6 trỏ trang mới; `site-search` đọc bài từ API.
+- [x] `T-01.BL09.13` **[TEST]** xUnit + vitest + E2E API.
+- [x] `T-01.BL09.14` **[DOC]** ROADMAP, TRACEABILITY.
+
+> **Ghi chú CR-BACLINK-009 (2026-11-19)**: FE tsc 0 lỗi · Vitest 148 files / 932 tests PASS · .NET 587/587 PASS (gồm `Task01BaclinkCmsTests` 19 test) · `pnpm build` PASS · E2E API CMS 27/27 + "yêu cầu của tôi" 8/8 trên CSDL sống. Nạp 98 bài tin cũ vào CMS (giữ slug; bỏ nhãn `[TEST-BACLINK]` còn sót ở 1 tiêu đề). Số bài hiển thị công khai có thể thấp hơn 98 nếu bài có ngày đăng ở tương lai. File `frontend/src/lib/news-data.ts` (318KB) đã xóa — CSDL là nguồn duy nhất.
+> **Sai khác có chủ đích**: nội dung Admin soạn là văn bản thuần phân đoạn bằng dòng trống (không WYSIWYG, không HTML thô → chặn XSS); trang `/gioi-thieu/co-cau-to-chuc/[code]` là client component nên mã ban sai vẫn trả 200 kèm `noindex` (soft-404), khác `/dich-vu/[slug]` trả 404 thật.
