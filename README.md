@@ -15,11 +15,11 @@ dotnet tool install --global dotnet-ef --version 10.*
 dotnet ef database update \
   --project packages/persistence/NacenTech.Persistence.csproj \
   --startup-project apps/api/NacenTech.Api.csproj \
-  --connection "Host=localhost;Port=55440;Database=nacentech;Username=postgres;Password=postgres"
+  --connection "Host=localhost;Port=55440;Database=baclink_dev;Username=postgres;Password=postgres"
 
 # 3. API (cổng 5199) và worker
 cd apps/api && ASPNETCORE_URLS=http://127.0.0.1:5199 \
-  ConnectionStrings__Postgres="Host=localhost;Port=55440;Database=nacentech;Username=postgres;Password=postgres" \
+  ConnectionStrings__Postgres="Host=localhost;Port=55440;Database=baclink_dev;Username=postgres;Password=postgres" \
   Auth__SigningKey="doi-khoa-nay-va-dai-it-nhat-32-byte" dotnet run
 
 cd apps/worker && ConnectionStrings__Postgres="..." dotnet run
@@ -128,7 +128,7 @@ dotnet test tests/architecture/NacenTech.Tests.Architecture.csproj   # MOD-01…
 dotnet test tests/invariants/NacenTech.Tests.Invariants.csproj       # ma trận §7.4, CASE-01…14
 dotnet test tests/authorization/NacenTech.Tests.Authorization.csproj # AC 5/17/28
 dotnet test tests/contracts/NacenTech.Tests.Contracts.csproj         # canonical hash (AC 31)
-NACENTECH_TEST_PG="Host=localhost;Port=55440;Database=nacentech;Username=postgres;Password=postgres" \
+NACENTECH_TEST_PG="Host=localhost;Port=55440;Database=baclink_dev;Username=postgres;Password=postgres" \
   dotnet test tests/integration/NacenTech.Tests.Integration.csproj   # audit DENY, job dedup
 ```
 

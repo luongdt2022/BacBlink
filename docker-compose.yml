@@ -7,7 +7,7 @@ services:
     # ADR-0010: chỉ mục tìm kiếm nằm trong PostgreSQL — ảnh có sẵn extension `vector`; Elasticsearch đã gỡ.
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: ${DB_NAME:-nacentech}
+      POSTGRES_DB: ${DB_NAME:-baclink_dev}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
@@ -15,7 +15,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-nacentech}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-baclink_dev}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,7 +31,7 @@ services:
       - "${API_PORT:-5000}:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${DB_NAME:-nacentech};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${DB_NAME:-baclink_dev};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
       Auth__SigningKey: ${AUTH_SIGNING_KEY:?Đặt AUTH_SIGNING_KEY ≥ 32 byte, không có giá trị mặc định}
       Auth__FrontendUrl: ${FRONTEND_URL:-http://localhost:3001}
       Communication__FrontendUrl: ${FRONTEND_URL:-http://localhost:3001}
@@ -74,7 +74,7 @@ services:
         ASSEMBLY: NacenTech.Worker
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
-      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${DB_NAME:-nacentech};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${DB_NAME:-baclink_dev};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-postgres}
       Communication__FrontendUrl: ${FRONTEND_URL:-http://localhost:3001}
       ObjectStorage__PublicBaseUrl: ${API_PUBLIC_URL:-http://localhost:5080}
       Matching__EmbeddingBaseUrl: ${RAG_URL:-http://host.docker.internal:8003}

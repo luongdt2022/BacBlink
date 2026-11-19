@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Collections.Generic;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -124,6 +126,7 @@ public sealed class EnterpriseApprovalSynchronizer(DbContext db) : IEnterpriseAp
                     ent.Approve(note);
                     db.Set<Domain.Enterprise>().Add(ent);
                 }
+                if (ent != null) ApplyJoinPayload(ent, payloadJson);
                 break;
 
             case "REJECT":
@@ -137,5 +140,62 @@ public sealed class EnterpriseApprovalSynchronizer(DbContext db) : IEnterpriseAp
                 }
                 break;
         }
+    }
+
+    /// <summary>
+    /// CR-BACLINK-008 · REQ-BL08-JOIN-005: chép dữ liệu wizard gia nhập vào hồ sơ doanh nghiệp.
+    /// Người đại diện / trợ lý / sản phẩm nổi bật lưu trong ProfileDetailsJson.membershipApplication (không thêm cột).
+    /// Chỉ ghi đè trường đang trống để không làm mất dữ liệu doanh nghiệp tự cập nhật.
+    /// </summary>
+    private static void ApplyJoinPayload(Domain.Enterprise ent, string payloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson)) return;
+        Dictionary<string, string> p;
+        try
+        {
+            using var doc = JsonDocument.Parse(payloadJson);
+            if (doc.RootElement.ValueKind != JsonValueKind.Object) return;
+            p = doc.RootElement.EnumerateObject()
+                .Where(x => x.Value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(x.Value.GetString()))
+                .ToDictionary(x => x.Name, x => x.Value.GetString()!.Trim(), StringComparer.OrdinalIgnoreCase);
+        }
+        catch (JsonException) { return; }
+
+        string? Get(string k) => p.TryGetValue(k, out var v) ? v : null;
+        static bool Empty(string? v) => string.IsNullOrWhiteSpace(v);
+
+        if (Empty(ent.SectorCode) && Get("sectorCode") is { } sc) ent.SectorCode = sc;
+        if (Get("district") is { } d && (Empty(ent.ProvinceCity) || ent.ProvinceCity == "BN")) ent.ProvinceCity = d;
+        if (Empty(ent.OperatingZone) && Get("industrialZone") is { } iz) ent.OperatingZone = iz;
+        if (Empty(ent.Description) && Get("description") is { } desc) ent.Description = desc;
+        if (Empty(ent.Website) && Get("website") is { } web) ent.Website = web;
+        if (Empty(ent.ContactPerson) && Get("representativeName") is { } rn) ent.ContactPerson = rn;
+        if (Empty(ent.ContactPhone) && Get("representativePhone") is { } rp) ent.ContactPhone = rp;
+        if (Empty(ent.ContactEmail) && Get("representativeEmail") is { } re) ent.ContactEmail = re;
+        if (Get("workforceScale") is { } ws && Empty(ent.WorkforceScale)) ent.WorkforceScale = ws;
+
+        var details = new Dictionary<string, object?>();
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(ent.ProfileDetailsJson))
+                details = JsonSerializer.Deserialize<Dictionary<string, object?>>(ent.ProfileDetailsJson) ?? new();
+        }
+        catch (JsonException) { details = new(); }
+
+        details["membershipApplication"] = new Dictionary<string, string?>
+        {
+            ["representativeSalutation"] = Get("representativeSalutation"),
+            ["representativeName"] = Get("representativeName"),
+            ["representativeTitle"] = Get("representativeTitle"),
+            ["representativePhone"] = Get("representativePhone"),
+            ["representativeEmail"] = Get("representativeEmail"),
+            ["assistantName"] = Get("assistantName"),
+            ["assistantPhone"] = Get("assistantPhone"),
+            ["assistantEmail"] = Get("assistantEmail"),
+            ["highlightProducts"] = Get("highlightProducts"),
+            ["tierCode"] = Get("tierCode"),
+            ["acceptedCharterAt"] = Get("acceptedCharterAt"),
+        };
+        ent.ProfileDetailsJson = JsonSerializer.Serialize(details);
     }
 }

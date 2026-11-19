@@ -35,6 +35,8 @@ public static class NotificationTypes
     public const string ExpertConsultationCompleted = "expert_consultation_completed";
     public const string ExpertConsultationReviewed = "expert_consultation_reviewed";
     public const string ExpertCompletenessReminder = "expert_completeness_reminder";
+    /// <summary>CR-BACLINK-008: nhắc gia hạn hội viên trước 30 ngày / khi hết hạn.</summary>
+    public const string MembershipExpiring = "membership_expiring";
 }
 
 public sealed record InvitationDto(

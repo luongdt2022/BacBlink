@@ -12,8 +12,16 @@ public static class ApprovalRequestTypes
     public const string Institution = "INSTITUTION";
     public const string TechnologyOffer = "TECHNOLOGY_OFFER";
     public const string TechSupply = "TECH_SUPPLY";
+    /// <summary>CR-BACLINK-008: hồ sơ gia nhập hội viên doanh nghiệp (wizard /hoi-vien/gia-nhap).</summary>
+    public const string Enterprise = "ENTERPRISE";
+    /// <summary>Tên cũ trong dữ liệu seed; xử lý như <see cref="Enterprise"/>.</summary>
+    public const string EnterpriseMembership = "ENTERPRISE_MEMBERSHIP";
 
-    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution, TechnologyOffer, TechSupply];
+    public static readonly HashSet<string> All = [Account, Shop, Expert, Demand, Institution, TechnologyOffer, TechSupply, Enterprise, EnterpriseMembership];
+
+    /// <summary>Các loại hồ sơ mà khi duyệt sẽ cấp quyền ENTERPRISE + tư cách hội viên.</summary>
+    public static readonly HashSet<string> GrantsMembership = [Shop, Institution, Enterprise, EnterpriseMembership];
+    public static bool IsEnterpriseJoin(string type) => type is Enterprise or EnterpriseMembership;
 }
 
 public static class ApprovalStatuses

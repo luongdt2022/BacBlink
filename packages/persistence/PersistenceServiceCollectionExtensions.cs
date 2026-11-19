@@ -80,6 +80,9 @@ public static class PersistenceServiceCollectionExtensions
         services.AddHostedService(sp => sp.GetRequiredService<ExpertCompletenessReminderWorker>());
         services.AddSingleton<ApprovalSlaMonitorWorker>();
         services.AddHostedService(sp => sp.GetRequiredService<ApprovalSlaMonitorWorker>());
+        // CR-BACLINK-008: vòng đời hội viên (hết hạn / tạm ngưng / nhắc gia hạn)
+        services.AddSingleton<MembershipExpiryWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<MembershipExpiryWorker>());
         return services;
     }
 

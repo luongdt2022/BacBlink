@@ -21,6 +21,9 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Seed\**\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\packages\persistence\NacenTech.Persistence.csproj" />
     <ProjectReference Include="..\..\packages\kernel\NacenTech.Kernel.csproj" />
     <ProjectReference Include="..\..\packages\contracts\NacenTech.Contracts.csproj" />

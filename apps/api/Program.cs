@@ -33,6 +33,8 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentActor, HttpCurrentActor>();
 if (builder.Configuration.GetValue<bool>("Api:RunWorkersInProcess")) builder.Services.AddNacenTechWorkers();
+// CR-BACLINK-009: nạp nội dung CMS ban đầu (idempotent) sau khi migration đã chạy.
+builder.Services.AddHostedService<NacenTech.Api.Infrastructure.CmsSeedHostedService>();
 
 // Auth: JwtBearer validate token do identity module phát hành. Legacy JWT (NestJS) vô hiệu vì khác key (D2-150).
 var auth = builder.Configuration.GetSection(AuthOptions.Section).Get<AuthOptions>() ?? new AuthOptions();
@@ -128,6 +130,10 @@ builder.Services.AddRateLimiter(options => {
     options.AddPolicy("expert-draft", context => RateLimitPartition.GetFixedWindowLimiter(
         context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
+    // CR-BACLINK-008 · API-BL08-CONTACT-006: hộp thư liên hệ công khai — 5 yêu cầu / IP / giờ.
+    options.AddPolicy("contact-public", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 5, Window = TimeSpan.FromHours(1), QueueLimit = 0, AutoReplenishment = true }));
 });
 builder.Services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 12 * 1024 * 1024);
 builder.Services.AddScoped<V1Mappers>();

@@ -22,7 +22,7 @@ namespace NacenTech.Tests.Invariants;
 [Collection("BlockchainDatabase")]
 public class BlockchainComprehensiveVerificationTests
 {
-    private const string ConnectionString = "Host=localhost;Port=55440;Database=nacentech;Username=postgres;Password=postgres";
+    private const string ConnectionString = "Host=localhost;Port=55440;Database=baclink_dev;Username=postgres;Password=postgres";
 
     private static NacenTechDbContext CreateTestDbContext()
     {

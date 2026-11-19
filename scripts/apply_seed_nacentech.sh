@@ -10,7 +10,7 @@ SQL_FILE="${SCRIPT_DIR}/seed_nacentech_providers_and_offers.sql"
 
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-55440}"
-DB_NAME="${DB_NAME:-nacentech}"
+DB_NAME="${DB_NAME:?Phải đặt DB_NAME tường minh — script nạp dữ liệu NacenTech, KHÔNG dùng mặc định cho BACLINK (baclink_dev)}"
 DB_USER="${DB_USER:-postgres}"
 
 echo "Đang nạp 8 Đơn vị và 38 Sản phẩm NacenTech vào CSDL [${DB_NAME}] tại ${DB_HOST}:${DB_PORT}..."

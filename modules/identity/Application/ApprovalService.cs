@@ -10,7 +10,8 @@ public sealed class ApprovalService(
     IUnitOfWork uow,
     IClock clock,
     IExpertApprovalSynchronizer expertApproval,
-    IEnterpriseApprovalSynchronizer enterpriseApproval) : IApprovalService
+    IEnterpriseApprovalSynchronizer enterpriseApproval,
+    IMembershipActivator membership) : IApprovalService
 {
     public async Task<PagedResult<ApprovalRequestDto>> GetApprovalsAsync(ApprovalListFilter filter, ICurrentActor actor, CancellationToken ct)
     {
@@ -79,6 +80,10 @@ public sealed class ApprovalService(
         if (cmd.RequestType == ApprovalRequestTypes.Shop)
         {
             ValidateShopApprovalPayload(cmd.PayloadJson);
+        }
+        if (ApprovalRequestTypes.IsEnterpriseJoin(cmd.RequestType))
+        {
+            await ValidateEnterpriseJoinAsync(cmd, ct);
         }
 
         var slaDeadline = cmd.SlaDeadlineUtc ?? cmd.RequestType switch
@@ -176,7 +181,7 @@ public sealed class ApprovalService(
         if (request.RequestType == ApprovalRequestTypes.Expert && normalizedAction != "FORWARD")
             await expertApproval.ApplyAsync(request.UserId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
 
-        if (request.RequestType is ApprovalRequestTypes.Institution or ApprovalRequestTypes.Shop && normalizedAction != "FORWARD")
+        if (ApprovalRequestTypes.GrantsMembership.Contains(request.RequestType) && normalizedAction != "FORWARD")
             await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, normalizedAction, cmd.ReviewNote, ct);
 
         // BR-ADM-003: Immutable Audit Trail
@@ -193,8 +198,58 @@ public sealed class ApprovalService(
 
         await uow.CommitAsync(ct);
 
+        // CR-BACLINK-008: cấp / tạm ngưng tư cách hội viên SAU commit (idempotent, BR-BL08-MEMBER-LIFECYCLE-003).
+        if (ApprovalRequestTypes.GrantsMembership.Contains(request.RequestType))
+        {
+            if (normalizedAction == "APPROVE")
+            {
+                var tier = request.RequestType == ApprovalRequestTypes.Institution ? "ASSOCIATE" : ReadPayloadString(request.PayloadJson, "tierCode");
+                await membership.ActivateForOwnerAsync(request.UserId, tier, actorId == Guid.Empty ? null : actorId, ct);
+            }
+            else if (normalizedAction is "REVOKE" or "REVOKE_EXPERT")
+            {
+                await membership.SuspendForOwnerAsync(request.UserId, $"Thu hồi bởi Ban Quản trị: {cmd.ReviewNote}", ct);
+            }
+        }
+
         var user = await db.Set<Person>().AsNoTracking().FirstOrDefaultAsync(p => p.Id == request.UserId, ct);
         return ToDto(request, user is null ? null : PersonMapper.ToDto(user));
+    }
+
+    private static string? ReadPayloadString(string payloadJson, string name)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(payloadJson);
+            foreach (var p in doc.RootElement.EnumerateObject())
+                if (p.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && p.Value.ValueKind == System.Text.Json.JsonValueKind.String)
+                    return p.Value.GetString();
+        }
+        catch (System.Text.Json.JsonException) { }
+        return null;
+    }
+
+    /// <summary>CR-BACLINK-008 · REQ-BL08-JOIN-005 / BR-BL08-JOIN-DEDUP-007.</summary>
+    private async Task ValidateEnterpriseJoinAsync(SubmitApprovalRequestCommand cmd, CancellationToken ct)
+    {
+        var taxCode = ReadPayloadString(cmd.PayloadJson, "taxCode")?.Trim();
+        var company = ReadPayloadString(cmd.PayloadJson, "companyName")?.Trim();
+        if (string.IsNullOrWhiteSpace(taxCode) || !System.Text.RegularExpressions.Regex.IsMatch(taxCode, @"^\d{10}(\d{3})?$"))
+            throw new ValidationException("Mã số thuế doanh nghiệp bắt buộc và phải gồm 10 hoặc 13 chữ số.");
+        if (string.IsNullOrWhiteSpace(company) || company.Length < 5)
+            throw new ValidationException("Tên doanh nghiệp bắt buộc và tối thiểu 5 ký tự.");
+
+        var pendingStatuses = new[] { ApprovalStatuses.PendingReview, ApprovalStatuses.PendingApproval, ApprovalStatuses.ChangesRequested };
+        var pending = await db.Set<ApprovalRequest>().AsNoTracking()
+            .Where(x => (x.RequestType == ApprovalRequestTypes.Enterprise || x.RequestType == ApprovalRequestTypes.EnterpriseMembership)
+                        && pendingStatuses.Contains(x.Status))
+            .Select(x => x.PayloadJson)
+            .ToListAsync(ct);
+        if (pending.Any(p => string.Equals(ReadPayloadString(p, "taxCode")?.Trim(), taxCode, StringComparison.Ordinal)))
+            throw new ConflictException("Doanh nghiệp đã có hồ sơ gia nhập đang chờ duyệt.", "ERR_JOIN_DUPLICATE_PENDING");
+
+        if (await membership.IsTaxCodeOwnedByOtherMemberAsync(taxCode, cmd.UserId, ct))
+            throw new ConflictException("Mã số thuế này đã thuộc một doanh nghiệp hội viên khác. Vui lòng liên hệ Văn phòng Hiệp hội.", "ERR_JOIN_TAXCODE_TAKEN");
     }
 
     public async Task<IReadOnlyList<ApprovalAuditLogDto>> GetAuditLogsAsync(string targetEntity, string targetId, CancellationToken ct)
@@ -497,6 +552,8 @@ public sealed class ApprovalService(
 
             case ApprovalRequestTypes.Shop:
             case ApprovalRequestTypes.Institution:
+            case ApprovalRequestTypes.Enterprise:            // CR-BACLINK-008: trước đây bị bỏ sót → duyệt không nâng quyền
+            case ApprovalRequestTypes.EnterpriseMembership:
                 // CR-BACLINK-001: ADMIN duyệt nâng hạng tự động cấp ENTERPRISE với ScopeTypes.Global
                 person.AssignRoleAndScope(PlatformRoles.Enterprise, ScopeTypes.Global, null);
                 if (request.RequestType == ApprovalRequestTypes.Institution && Guid.TryParse(request.ScopeId, out var orgId))
@@ -527,7 +584,7 @@ public sealed class ApprovalService(
         // BR-ADM-007: Khi Admin thu hồi quyền, tài khoản bị hạ cấp về PUBLIC_USER
         person.AssignRoleAndScope(PlatformRoles.PublicUser, ScopeTypes.Global, null);
 
-        if (request.RequestType is ApprovalRequestTypes.Institution or ApprovalRequestTypes.Shop)
+        if (ApprovalRequestTypes.GrantsMembership.Contains(request.RequestType))
         {
             await enterpriseApproval.ApplyAsync(request.UserId, request.ScopeId, request.PayloadJson, "REVOKE", null, ct);
         }

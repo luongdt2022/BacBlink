@@ -37,7 +37,7 @@ docker compose up -d postgres
 # 2. API, tự áp migration
 cd apps/api
 ASPNETCORE_URLS=http://127.0.0.1:5199 \
-ConnectionStrings__Postgres='Host=localhost;Port=55440;Database=nacentech;Username=postgres;Password=postgres' \
+ConnectionStrings__Postgres='Host=localhost;Port=55440;Database=baclink_dev;Username=postgres;Password=postgres' \
 Auth__SigningKey="$AUTH_SIGNING_KEY" \
 Api__MigrateOnStartup=true \
 Api__EnableSwaggerUi=true \

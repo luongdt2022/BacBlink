@@ -18,5 +18,6 @@ public sealed class EnterpriseModule : IModule
         services.AddScoped<IEnterpriseRepository, EfEnterpriseRepository>();
         services.AddScoped<IEnterpriseService, EnterpriseService>();
         services.AddScoped<IEnterpriseApprovalSynchronizer, EnterpriseApprovalSynchronizer>();
+        services.AddScoped<IMembershipActivator, MembershipActivator>();
     }
 }
