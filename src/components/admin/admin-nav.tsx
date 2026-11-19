@@ -9,7 +9,10 @@ import {
   Layers,
   ArrowLeft,
   Workflow,
-  Users
+  Users,
+  Inbox,
+  BadgeCheck,
+  Newspaper
 } from "lucide-react";
 
 export function AdminNav() {
@@ -33,6 +36,24 @@ export function AdminNav() {
       label: "Quản Lý Vai Trò",
       icon: ShieldCheck,
       badge: "3 Cấp RBAC",
+    },
+    {
+      href: "/admin/cms",
+      label: "Nội Dung",
+      icon: Newspaper,
+      badge: "CMS",
+    },
+    {
+      href: "/admin/members",
+      label: "Hội Viên",
+      icon: BadgeCheck,
+      badge: "Hội phí",
+    },
+    {
+      href: "/admin/contact-requests",
+      label: "Hộp Thư Liên Hệ",
+      icon: Inbox,
+      badge: "Mới",
     },
     {
       href: "/admin/sectors",

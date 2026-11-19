@@ -1,122 +1,112 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, cleanup } from "@testing-library/react";
-import {
-  BACLINK_NEWS_ARTICLES,
-  getNewsBySlug,
-  getFeaturedNews,
-  NEWS_CATEGORIES,
-} from "@/lib/news-data";
+import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
 import NewsPage from "@/app/tin-tuc/page";
 import NewsDetailPage from "@/app/tin-tuc/[slug]/page";
+import { fullToNews, summaryToNews } from "@/lib/cms-news";
+import type { CmsArticle, CmsArticleSummary } from "@/lib/cms-client";
 
-let mockSlug = "dien-dan-go-global-bac-ninh-2026-ket-noi-chuoi-cung-ung-toan-cau";
+let mockSlug = "go-global-2026";
 
-// Mock Next.js navigation and router
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-  }),
-  useParams: () => ({
-    slug: mockSlug,
-  }),
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+  useParams: () => ({ slug: mockSlug }),
   usePathname: () => "/tin-tuc",
 }));
-
-// Mock Next/Image
 vi.mock("next/image", () => ({
-  default: (props: any) => {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} alt={props.alt || "image"} />;
-  },
+  // eslint-disable-next-line @next/next/no-img-element
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} alt={props.alt || "image"} />,
 }));
+vi.mock("@/components/common/toast", () => ({ useToast: () => ({ success: vi.fn(), error: vi.fn(), info: vi.fn() }) }));
 
-describe("BACLINK News Data & Functions", () => {
-  it("contains at least 6 detailed articles cloned from Facebook", () => {
-    expect(BACLINK_NEWS_ARTICLES.length).toBeGreaterThanOrEqual(6);
-    BACLINK_NEWS_ARTICLES.forEach((article) => {
-      expect(article.id).toBeDefined();
-      expect(article.slug).toBeDefined();
-      expect(article.title).toBeDefined();
-      expect(article.category).toBeDefined();
-      expect(article.publishedAt).toBeDefined();
-      expect(article.thumbnail).toBeDefined();
-      expect(article.contentParagraphs.length).toBeGreaterThan(0);
-    });
+const summary = (o: Partial<CmsArticleSummary>): CmsArticleSummary => ({
+  id: o.slug ?? "x", slug: "x", title: "Bài", categorySlug: "hoat-dong", excerpt: "Tóm tắt", thumbnailUrl: "/a.jpg", author: "BTC", location: "Bắc Ninh",
+  isFeatured: false, status: "PUBLISHED", publishedAt: "2026-10-10T00:00:00Z", tags: ["tag"], ...o,
+});
+
+const list = vi.fn();
+const one = vi.fn();
+vi.mock("@/lib/cms-client", async (orig) => {
+  const real = await orig<typeof import("@/lib/cms-client")>();
+  return { ...real, cmsClient: { ...real.cmsClient, articles: (...a: unknown[]) => list(...a), article: (...a: unknown[]) => one(...a) } };
+});
+
+const page = {
+  data: [
+    summary({ slug: "go-global-2026", title: "Diễn đàn Go Global", categorySlug: "chuoi-cung-ung", isFeatured: true }),
+    summary({ slug: "ban-dan-1", title: "Ra mắt Hội Bán dẫn", categorySlug: "ban-dan" }),
+  ],
+  total: 2, page: 1, totalPages: 1,
+  categories: [{ slug: "chuoi-cung-ung", count: 1 }, { slug: "ban-dan", count: 1 }],
+};
+
+describe("cms-news adapter", () => {
+  it("summaryToNews điền giá trị mặc định an toàn", () => {
+    const n = summaryToNews(summary({ thumbnailUrl: null, author: null, location: null, excerpt: null }));
+    expect(n.thumbnail).toBeTruthy();
+    expect(n.author).toBe("Ban Truyền thông BACLINK");
+    expect(n.category).toBe("Hoạt động Hiệp hội");
+    expect(n.publishedAt).toBe(new Date("2026-10-10T00:00:00Z").toLocaleDateString("vi-VN"));
   });
 
-  it("getFeaturedNews returns a featured article", () => {
-    const featured = getFeaturedNews();
-    expect(featured).toBeDefined();
-    expect(featured.title).toContain("Go Global");
-  });
-
-  it("getNewsBySlug correctly resolves article by slug or id", () => {
-    const article = getNewsBySlug("dien-dan-go-global-bac-ninh-2026-ket-noi-chuoi-cung-ung-toan-cau");
-    expect(article).toBeDefined();
-    expect(article?.categorySlug).toBe("chuoi-cung-ung");
-
-    const invalid = getNewsBySlug("non-existent-slug");
-    expect(invalid).toBeUndefined();
-  });
-
-  it("NEWS_CATEGORIES defines all key business categories", () => {
-    expect(NEWS_CATEGORIES.some((c) => c.slug === "all")).toBe(true);
-    expect(NEWS_CATEGORIES.some((c) => c.slug === "ban-dan")).toBe(true);
-    expect(NEWS_CATEGORIES.some((c) => c.slug === "chuoi-cung-ung")).toBe(true);
+  it("fullToNews: bài cũ (lead+paragraphs) và bài Markdown mới", () => {
+    const old = fullToNews({ ...summary({}), body: { lead: "Mở đầu", paragraphs: ["P1", "P2"], takeaways: ["K"] } } as CmsArticle);
+    expect(old.leadParagraph).toBe("Mở đầu");
+    expect(old.contentParagraphs).toEqual(["P1", "P2"]);
+    expect(old.keyTakeaways).toEqual(["K"]);
+    const md = fullToNews({ ...summary({}), body: { markdown: "Đoạn một\n\nĐoạn hai\n\nĐoạn ba" } } as CmsArticle);
+    expect(md.leadParagraph).toBe("Đoạn một");
+    expect(md.contentParagraphs).toEqual(["Đoạn hai", "Đoạn ba"]);
   });
 });
 
-describe("NewsPage Component (/tin-tuc)", () => {
-  afterEach(() => {
+describe("NewsPage (/tin-tuc) đọc từ CMS", () => {
+  beforeEach(() => { list.mockReset().mockResolvedValue(page); });
+  afterEach(cleanup);
+
+  it("hiển thị bài, tab danh mục động và lọc theo danh mục", async () => {
+    render(<NewsPage />);
+    expect((await screen.findAllByText("Diễn đàn Go Global")).length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: /Chuỗi cung ứng & ESG/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Bán dẫn & công nghệ cao/ }));
+    await waitFor(() => expect(screen.queryByText("Diễn đàn Go Global")).not.toBeInTheDocument());
+    expect(screen.getAllByText("Ra mắt Hội Bán dẫn").length).toBeGreaterThan(0);
+  });
+
+  it("tìm kiếm không có kết quả → thông báo; lỗi API → nút thử lại", async () => {
+    render(<NewsPage />);
+    await screen.findAllByText("Diễn đàn Go Global");
+    fireEvent.change(screen.getByPlaceholderText(/Tìm kiếm/i), { target: { value: "khong-co-bai-nao" } });
+    expect(await screen.findByText("Không tìm thấy bài viết nào")).toBeInTheDocument();
     cleanup();
-  });
 
-  it("renders news page header and article cards", () => {
+    list.mockRejectedValue(new Error("boom"));
     render(<NewsPage />);
-
-    expect(
-      screen.getByRole("heading", { name: /Tin Tức & Sự Kiện Hiệp Hội/i })
-    ).toBeInTheDocument();
-
-    const matches = screen.getAllByText(/Go Global/i);
-    expect(matches.length).toBeGreaterThan(0);
-  });
-
-  it("filters articles when searching by keyword", () => {
-    render(<NewsPage />);
-
-    const searchInput = screen.getByPlaceholderText(/Tìm kiếm tin tức/i);
-    fireEvent.change(searchInput, { target: { value: "Skyworks" } });
-
-    const matches = screen.getAllByText(/Skyworks/i);
-    expect(matches.length).toBeGreaterThan(0);
+    expect(await screen.findByText(/Không tải được danh sách tin tức/)).toBeInTheDocument();
   });
 });
 
-describe("NewsDetailPage Component (/tin-tuc/[slug])", () => {
-  afterEach(() => {
-    cleanup();
+describe("NewsDetailPage (/tin-tuc/[slug]) đọc từ CMS", () => {
+  beforeEach(() => {
+    mockSlug = "go-global-2026";
+    list.mockReset().mockResolvedValue(page);
+    one.mockReset().mockResolvedValue({ ...page.data[0], body: { lead: "Dẫn nhập chi tiết", paragraphs: ["Nội dung đoạn 1"], takeaways: ["Điểm chính A"], gallery: [] } });
+  });
+  afterEach(cleanup);
+
+  it("hiển thị nội dung và bài liên quan (loại trừ chính nó)", async () => {
+    render(<NewsDetailPage />);
+    expect(await screen.findByText(/Dẫn nhập chi tiết/)).toBeInTheDocument();
+    expect(screen.getByText("Nội dung đoạn 1")).toBeInTheDocument();
+    expect(screen.getByText("Điểm chính A")).toBeInTheDocument();
+    expect(one).toHaveBeenCalledWith("go-global-2026");
+    expect(await screen.findByText("Ra mắt Hội Bán dẫn")).toBeInTheDocument();
   });
 
-  it("renders full article content when valid slug is provided", () => {
-    mockSlug = "dien-dan-go-global-bac-ninh-2026-ket-noi-chuoi-cung-ung-toan-cau";
+  it("slug không tồn tại → trang 'Không tìm thấy bài viết'", async () => {
+    mockSlug = "khong-ton-tai";
+    one.mockRejectedValue(new Error("Không tìm thấy bài viết."));
     render(<NewsDetailPage />);
-
-    const headings = screen.getAllByRole("heading", {
-      name: /Diễn Đàn Go Global Bắc Ninh 2026/i,
-    });
-    expect(headings.length).toBeGreaterThan(0);
-
-    expect(screen.getByText(/Nội Dung Trọng Tâm & Kết Quả Đạt Được/i)).toBeInTheDocument();
-  });
-
-  it("renders 404 message when slug does not exist", () => {
-    mockSlug = "bai-viet-khong-ton-tai";
-    render(<NewsDetailPage />);
-
-    expect(screen.getByText(/Không tìm thấy bài viết/i)).toBeInTheDocument();
+    expect(await screen.findByText("Không tìm thấy bài viết")).toBeInTheDocument();
   });
 });

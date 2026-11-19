@@ -48,6 +48,7 @@ export default function TechmartEventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [events, setEvents] = useState<TechmartEvent[]>([]);
+  const [eventsTotal, setEventsTotal] = useState<number | null>(null);
   const [eventsState, setEventsState] = useState<AsyncState>("loading");
   const [loadVersion, setLoadVersion] = useState(0);
 
@@ -70,6 +71,7 @@ export default function TechmartEventsPage() {
       const statusParam = activeTab === "upcoming" ? "UPCOMING" : "CLOSED";
       const result = await portalClient.listEvents(statusParam, 1, 20);
       setEvents(result.data);
+      setEventsTotal(result.total ?? result.data.length);
       if (result.data.length === 0) {
         setEventsState("empty");
       } else {
@@ -187,21 +189,15 @@ export default function TechmartEventsPage() {
             </div>
           </div>
 
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-3 gap-3 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15 shrink-0">
-            <div className="text-center px-3">
-              <div className="text-2xl font-black text-teal-300">15</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Sự Kiện &amp; Phiên B2B</div>
+          {/* Quick Metrics — CR-BACLINK-008 · BR-BL08-NO-UNSOURCED-STATS-002: chỉ hiển thị số đếm từ API */}
+          {eventsTotal !== null && (
+            <div className="bg-white/10 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/15 shrink-0 text-center">
+              <div className="text-2xl font-black text-teal-300">{eventsTotal}</div>
+              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">
+                {activeTab === "upcoming" ? "Sự kiện đang/sắp mở" : "Sự kiện đã diễn ra"}
+              </div>
             </div>
-            <div className="text-center px-3 border-x border-white/20">
-              <div className="text-2xl font-black text-emerald-300">84</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Doanh Nghiệp Kết Nối</div>
-            </div>
-            <div className="text-center px-3">
-              <div className="text-2xl font-black text-amber-300">320+</div>
-              <div className="text-xs text-slate-300 font-semibold uppercase mt-0.5">Đại Biểu Đăng Ký</div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

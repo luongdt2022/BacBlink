@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Navbar } from "./navbar";
 import { authClient } from "@/lib/auth-client";
+import { MAIN_NAV, JOIN_HREF, SEARCH_HREF } from "@/lib/constants/navigation";
+import { ORG } from "@/lib/constants/organization";
 
 const push = vi.fn();
 
@@ -68,128 +70,62 @@ describe("Navbar account menu", () => {
     expect(push).toHaveBeenCalledWith("/");
   });
 
-  it("renders Cố vấn dropdown containing E-Learning and expert catalog links", () => {
+  // ===== CR-BACLINK-008 · REQ-BL08-IA-001 / REQ-BL08-HEADER-002 =====
+  it("renders exactly 7 top-level menus in the customer-approved order", () => {
     render(<Navbar />);
-
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
-    expect(expertTrigger).toHaveAttribute("href", "/experts");
-
-    // Sub-items inside Cố vấn dropdown
-    const elearningLink = within(mainNav).getByRole("link", { name: /E-Learning & Đào tạo/i });
-    expect(elearningLink).toHaveAttribute("href", "/elearning");
-    expect(within(elearningLink).getByText("LMS")).toBeInTheDocument();
-
-    const expertCatalogLink = within(mainNav).getByRole("link", { name: /^Mạng lưới Chuyên gia/i });
-    expect(expertCatalogLink).toHaveAttribute("href", "/experts");
-
-    const expertUpgradeLink = within(mainNav).getByRole("link", { name: /^Đăng ký Chuyên gia/i });
-    expect(expertUpgradeLink).toHaveAttribute("href", "/profile/upgrade/expert");
+    const triggers = within(mainNav).getAllByRole("link").filter((a) => a.hasAttribute("aria-haspopup"));
+    expect(triggers.map((a) => a.textContent?.trim())).toEqual(MAIN_NAV.map((m) => m.label));
+    expect(triggers).toHaveLength(7);
   });
 
-  it("renders Nhu cầu dropdown with marketplace link and excludes survey forms", () => {
+  it("every sub-menu link from MAIN_NAV is rendered and no internal page is exposed", () => {
     render(<Navbar />);
-
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const demandTrigger = within(mainNav).getByRole("link", { name: /^Nhu cầu$/i });
-    expect(demandTrigger).toHaveAttribute("href", "/nhu-cau-cong-nghe");
-
-    const demandListLink = within(mainNav).getByRole("link", { name: /Bảng Nhu cầu Mua & Đặt hàng/i });
-    expect(demandListLink).toHaveAttribute("href", "/nhu-cau-cong-nghe");
-
-    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
+    const hrefs = within(mainNav).getAllByRole("link").map((a) => a.getAttribute("href"));
+    MAIN_NAV.flatMap((m) => m.children).forEach((c) => expect(hrefs).toContain(c.href));
+    expect(hrefs).not.toContain("/wireframes");
+    expect(hrefs).not.toContain("/matrix");
+    expect(hrefs.some((h) => h?.startsWith("/assessments") || h?.startsWith("/khao-sat"))).toBe(false);
   });
 
-  it("renders Chào bán công nghệ dropdown with marketplace, registration and excludes supply survey", () => {
+  it("header shows search, language and the join CTA for a PUBLIC_USER", () => {
     render(<Navbar />);
-
-    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
-    expect(offerTrigger).toHaveAttribute("href", "/chao-ban-cong-nghe");
-
-    const createOfferLink = within(mainNav).getByRole("link", { name: /Đăng Chào bán Công nghệ mới/i });
-    expect(createOfferLink).toHaveAttribute("href", "/portal/seller/technologies/create");
-
-    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Tìm kiếm" })).toHaveAttribute("href", SEARCH_HREF);
+    expect(screen.getByText("Ngôn ngữ")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Hoàn tất hồ sơ hội viên|Hội viên/ }).some((a) => a.getAttribute("href") === JOIN_HREF)).toBe(true);
   });
 
-  it("renders Hội viên dropdown with catalog and excludes legacy surveys", () => {
+  it("guest sees Đăng nhập and Gia nhập BACLINK", () => {
+    authClient.clearSession();
     render(<Navbar />);
-
-    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const enterpriseTrigger = within(mainNav).getByRole("link", { name: /^Hội viên$/i });
-    expect(enterpriseTrigger).toHaveAttribute("href", "/doanh-nghiep-dmst");
-
-    expect(within(mainNav).getByRole("link", { name: /Danh bạ Doanh nghiệp$/i })).toBeInTheDocument();
-    expect(within(mainNav).queryByRole("link", { name: /Khảo sát/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Đăng nhập$/ })).toHaveAttribute("href", "/login");
+    expect(screen.getAllByRole("link", { name: /Gia nhập BACLINK/ })[0]).toHaveAttribute("href", JOIN_HREF);
   });
 
-  it("renders Dịch vụ khác dropdown containing SHTT, valuation, FDI supply chain consulting and Radar links", () => {
+  it("không còn thanh trên cùng (hotline/email) ở đầu trang", () => {
     render(<Navbar />);
-
-    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const servicesTrigger = within(mainNav).getByRole("link", { name: /^Dịch vụ$/i });
-    expect(servicesTrigger).toHaveAttribute("href", "/dich-vu-khac");
-
-    const shttLink = within(mainNav).getByRole("link", { name: /Tư vấn & Bảo hộ SHTT/i });
-    expect(shttLink).toHaveAttribute("href", "/dich-vu-khac");
-
-    const valuationLink = within(mainNav).getByRole("link", { name: /Thẩm định & Định giá Công nghệ/i });
-    expect(valuationLink).toHaveAttribute("href", "/dich-vu-khac#dinh-gia-cong-nghe");
-
-    const fdiChainLink = within(mainNav).getByRole("link", { name: /Tư vấn Chuẩn hóa Chuỗi cung ứng FDI/i });
-    expect(fdiChainLink).toHaveAttribute("href", "/dich-vu-khac#chuoi-cung-ung-fdi");
-
-    const radarLink = within(mainNav).getByRole("link", { name: /Radar Ghép nối Cung - Cầu/i });
-    expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
-    expect(within(radarLink).getByText("AI")).toBeInTheDocument();
+    const header = screen.getByRole("banner");
+    expect(within(header).queryByText(new RegExp(ORG.motto))).not.toBeInTheDocument();
+    expect(within(header).queryByRole("link", { name: /Zalo/ })).not.toBeInTheDocument();
   });
 
-  it("handles mouse hover and click toggle on Cố vấn dropdown", async () => {
+  it("handles mouse hover and click toggle on a dropdown", () => {
     render(<Navbar />);
-
     const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-    const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
-
-    // Initial state: aria-expanded is false
-    expect(expertTrigger).toHaveAttribute("aria-expanded", "false");
-
-    // Mouse enter on trigger
-    fireEvent.mouseEnter(expertTrigger.closest(".relative")!);
-    expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
-
-    // Click trigger toggles dropdown off
-    fireEvent.click(expertTrigger);
-    expect(expertTrigger).toHaveAttribute("aria-expanded", "false");
-
-    // Click trigger toggles dropdown back on
-    fireEvent.click(expertTrigger);
-    expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
+    const trigger = within(mainNav).getByRole("link", { name: /^Hội viên$/ });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    fireEvent.mouseEnter(trigger.closest(".relative")!);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("renders Giới thiệu dropdown containing guide, wireframes, and legal framework, and excludes top-level Hướng dẫn", () => {
-    render(<Navbar />);
-
-    const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-
-    // Top-level item Hướng dẫn must be removed
-    expect(within(mainNav).queryByRole("link", { name: /^Hướng dẫn$/i })).not.toBeInTheDocument();
-
-    // Giới thiệu trigger exists
-    const aboutTrigger = within(mainNav).getByRole("link", { name: /^Giới thiệu$/i });
-    expect(aboutTrigger).toHaveAttribute("href", "/gioi-thieu");
-
-    // Contains the 2 moved items and original items
-    const guideLink = within(mainNav).getByRole("link", { name: /Trung tâm Hướng dẫn Toàn trình/i });
-    expect(guideLink).toHaveAttribute("href", "/huong-dan");
-
-    const wireframesLink = within(mainNav).getByRole("link", { name: /Sơ đồ Kiến trúc Chức năng/i });
-    expect(wireframesLink).toHaveAttribute("href", "/wireframes");
-
-    const aboutSubLink = within(mainNav).getByRole("link", { name: /Về Hiệp hội BACLINK/i });
-    expect(aboutSubLink).toHaveAttribute("href", "/gioi-thieu");
-
-    const matrixLink = within(mainNav).getByRole("link", { name: /Khung Pháp lý & Chuẩn mực/i });
-    expect(matrixLink).toHaveAttribute("href", "/matrix");
+  it("menu cấp 1 vẫn sáng khi ở trang con không nằm trong danh sách menu con (activePrefixes)", () => {
+    const m = MAIN_NAV.find((x) => x.label === "Cơ hội kinh doanh")!;
+    expect(m.activePrefixes).toEqual(expect.arrayContaining(["/chao-ban-cong-nghe", "/nhu-cau-cong-nghe"]));
+    MAIN_NAV.forEach((x) => expect(x.activePrefixes?.length ?? 0).toBeGreaterThan(0));
   });
 });

@@ -1,50 +1,38 @@
 import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
-import { Footer } from "./footer";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
-}));
+const open = vi.fn();
+vi.mock("@/lib/contact-client", () => ({ openContactModal: (...a: unknown[]) => open(...a) }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+vi.mock("./i18n-provider", () => ({ useI18n: () => ({ lang: "vi", t: (k: string) => k }) }));
 
-vi.mock("./i18n-provider", () => ({
-  useI18n: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        ministry_title: "UBND TỈNH BẮC NINH",
-        institute_title: "HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)",
-        footer_address: "Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP. Bắc Ninh, Tỉnh Bắc Ninh",
-        footer_contact: "Email: contact@baclink.org.vn | Hotline: 0222.3888.686",
-        footer_rights: "© 2026 BACLINK - Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh. QĐ thành lập số 1652/QĐ-UBND.",
-        footer_system_status: "Hệ thống kết nối chuỗi cung ứng công nghiệp Bắc Ninh.",
-      };
-      return translations[key] || key;
-    },
-  }),
-}));
+import { Footer, FOOTER_LINKS } from "./footer";
+import { ORG } from "@/lib/constants/organization";
 
-describe("Footer Component (BACLINK Official Portal Style)", () => {
-  afterEach(() => {
-    cleanup();
-  });
-  it("renders authoritative owner and contact info", () => {
+describe("Footer BACLINK dạng gọn (CR-BACLINK-008)", () => {
+  afterEach(() => { cleanup(); open.mockReset(); });
+
+  it("hiển thị chủ quản, địa chỉ, QĐ từ ORG; bố cục 2 cột gọn", () => {
     render(<Footer />);
-
-    expect(screen.getByText(/Đơn vị chủ quản:/i)).toBeInTheDocument();
-    expect(screen.getByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH \(BACLINK\)/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Cơ quan thành lập:/i)).not.toBeInTheDocument();
-
-    expect(screen.getByText(/Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP. Bắc Ninh, Tỉnh Bắc Ninh/i)).toBeInTheDocument();
-    expect(screen.getByText(/Điện thoại: 0222.3888.686/i)).toBeInTheDocument();
-    expect(screen.getByText(/E-mail: contact@baclink.org.vn/i)).toBeInTheDocument();
+    expect(screen.getByText(ORG.fullNameUpper)).toBeInTheDocument();
+    expect(screen.getByText(ORG.address)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(ORG.decision.number))).toBeInTheDocument();
+    expect(screen.getByText(ORG.motto)).toBeInTheDocument();
   });
 
-  it("renders copyright, live visitor counter and system testing phase notice", () => {
-    render(<Footer />);
+  it("không công bố điện thoại/email/Zalo và không có số liệu không nguồn", () => {
+    const { container } = render(<Footer />);
+    expect(container.querySelector('a[href^="tel:"], a[href^="mailto:"], a[href*="zalo"]')).toBeNull();
+    expect(screen.queryByText(/Lượt truy cập|NCSC|2\.689\.450/)).not.toBeInTheDocument();
+  });
 
-    expect(screen.getByText(/© 2026 BACLINK/i)).toBeInTheDocument();
-    expect(screen.getByText(/Lượt truy cập:/i)).toBeInTheDocument();
-    expect(screen.getByText("2.689.450")).toBeInTheDocument();
-    expect(screen.getByText(/Hiệp hội thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
+  it("nút liên hệ mở biểu mẫu; chỉ liên kết tới trang đang tồn tại", () => {
+    render(<Footer />);
+    fireEvent.click(screen.getByRole("button", { name: "Liên hệ & gửi yêu cầu" }));
+    expect(open).toHaveBeenCalledTimes(1);
+    const hrefs = FOOTER_LINKS.map((l) => l.href);
+    ["/wireframes", "/matrix", "/dieu-khoan", "/bao-mat"].forEach((h) => expect(hrefs).not.toContain(h));
+    hrefs.forEach((h) => expect(screen.getAllByRole("link").some((a) => a.getAttribute("href") === h)).toBe(true));
   });
 });

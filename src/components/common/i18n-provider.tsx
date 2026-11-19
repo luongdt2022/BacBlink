@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Globe } from "lucide-react";
+import { ORG } from "@/lib/constants/organization";
 
 export type Language = "vi" | "en";
 
@@ -31,9 +32,8 @@ const dictionary: Record<Language, Record<string, string>> = {
     search_placeholder: "Tìm kiếm năng lực sản xuất, linh kiện, nhà máy, cố vấn...",
     ministry_title: "UBND TỈNH BẮC NINH",
     institute_title: "HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH (BACLINK)",
-    footer_address: "Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP. Bắc Ninh, Tỉnh Bắc Ninh",
-    footer_contact: "Email: contact@baclink.org.vn | Hotline: 0222.3888.686",
-    footer_rights: "© 2026 BACLINK - Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh. QĐ thành lập số 1652/QĐ-UBND.",
+    footer_address: `Địa chỉ: ${ORG.address}`,
+    footer_rights: `© 2026 BACLINK - ${ORG.fullName}. QĐ thành lập số ${ORG.decision.number}.`,
     footer_system_status: "Hệ thống kết nối chuỗi cung ứng công nghiệp Bắc Ninh.",
   },
   en: {
@@ -61,9 +61,8 @@ const dictionary: Record<Language, Record<string, string>> = {
     search_placeholder: "Search manufacturing capabilities, parts, factories, advisors...",
     ministry_title: "PEOPLE'S COMMITTEE OF BAC NINH PROVINCE",
     institute_title: "BAC NINH ASSOCIATION OF INDUSTRIAL MANUFACTURING (BACLINK)",
-    footer_address: "Address: No. 7 Ly Thai To, Suoi Hoa Ward, Bac Ninh City, Vietnam",
-    footer_contact: "Email: contact@baclink.org.vn | Hotline: +84.222.3888.686",
-    footer_rights: "© 2026 BACLINK - Bac Ninh Association of Industrial Manufacturing. Decision No. 1652/QD-UBND.",
+    footer_address: `Address: ${ORG.addressEn}`,
+    footer_rights: `© 2026 BACLINK - ${ORG.fullNameEn}. Decision No. ${ORG.decision.numberEn}.`,
     footer_system_status: "Bac Ninh industrial supply chain portal.",
   },
 };
@@ -111,6 +110,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       {children}
     </I18nContext.Provider>
   );
+}
+
+/** Ngôn ngữ hiện tại; không ném lỗi khi không có Provider (trang/test dựng độc lập) — mặc định "vi". */
+export function useOptionalLang(): Language {
+  return useContext(I18nContext)?.lang ?? "vi";
 }
 
 export function useI18n() {

@@ -1,3 +1,4 @@
+import { ORG } from "@/lib/constants/organization";
 export interface GuideRole {
   id: string;
   code: string;
@@ -245,7 +246,7 @@ export const GUIDE_SCREENS: GuideScreen[] = [
     moduleName: "Cổng Thông Tin Công Khai, Tin Tức & Dịch Vụ Hội Viên",
     roles: ["PUBLIC_USER", "ENTERPRISE", "ADMIN"],
     route: "/gioi-thieu",
-    description: "Giới thiệu Quyết định thành lập số 1652/QĐ-UBND ngày 16/06/2025, cơ cấu Ban Chấp hành khóa I (2025–2028) và 3 trụ cột kết nối chuỗi cung ứng FDI – Nội địa.",
+    description: `Giới thiệu Quyết định thành lập số ${ORG.decision.number} ngày ${ORG.decision.date}, cơ cấu Ban Chấp hành khóa I (2025–2028) và 3 trụ cột kết nối chuỗi cung ứng FDI – Nội địa.`,
     steps: [
       "Tìm hiểu tôn chỉ hoạt động và cơ sở pháp lý thành lập của Hiệp hội BACLINK.",
       "Xem thông tin trụ sở chính thức, Ban lãnh đạo và mạng lưới 13+ KCN trọng điểm Bắc Ninh.",

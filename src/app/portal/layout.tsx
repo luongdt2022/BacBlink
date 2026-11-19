@@ -21,6 +21,8 @@ import {
   Rocket,
   ShieldCheck,
   FileText,
+  BadgeCheck,
+  MessageSquare,
 } from "lucide-react";
 import * as authClientModule from "@/lib/auth-client";
 const { authClient } = authClientModule;
@@ -105,6 +107,8 @@ const buyerNavItems: NavItem[] = [
     icon: Building2,
     section: "Hồ sơ Hội viên",
   },
+  { href: "/portal/membership", label: "Tư cách hội viên", icon: BadgeCheck },
+  { href: "/portal/requests", label: "Yêu cầu & kiến nghị của tôi", icon: MessageSquare },
 ];
 
 // 2. Nhà Cung Ứng Công Nghệ (SELLER) - Quản lý sản phẩm/công nghệ, đón nhận liên hệ & giao dịch (3 nhóm đồng bộ với Bên Mua)
@@ -127,6 +131,8 @@ const sellerNavItems: NavItem[] = [
 
   // Khối 3: Hồ sơ
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2, section: "Hồ sơ Hội viên" },
+  { href: "/portal/membership", label: "Tư cách hội viên", icon: BadgeCheck },
+  { href: "/portal/requests", label: "Yêu cầu & kiến nghị của tôi", icon: MessageSquare },
 ];
 
 // 3. Chuyên Gia KH&CN (EXPERT / VERIFIED_EXPERT) - Thuần chất LLKH, tư vấn & đồng hành
@@ -166,6 +172,8 @@ const innovationEntityNavItems: NavItem[] = [
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles },
   { href: "/portal/opportunities/pipeline", label: "Tiến trình Hợp tác", icon: Kanban },
   { href: "/portal/enterprise/profile", label: "Hồ sơ Doanh nghiệp", icon: Building2, section: "Hồ sơ Hội viên" },
+  { href: "/portal/membership", label: "Tư cách hội viên", icon: BadgeCheck },
+  { href: "/portal/requests", label: "Yêu cầu & kiến nghị của tôi", icon: MessageSquare },
 ];
 
 // 5. Thành Viên Đại Chúng (PUBLIC_USER / USER) - Khám phá và hub đăng ký nâng hạng (CR-TASK-03-DELTA-01: T-03.DEL-03, CR-TASK-03-DELTA-02)
@@ -174,7 +182,7 @@ const publicNavItems: NavItem[] = [
   { href: "/portal/buyer/demands", label: "Nhu cầu công nghệ", icon: ShoppingBag },
   { href: "/portal/buyer/consultations", label: "Tư Vấn Chuyên Gia", icon: Inbox },
   { href: "/portal/matching/radar", label: "Radar Ghép Nối AI", icon: Sparkles, badge: "Mới", badgeType: "new" },
-  { href: "/profile/upgrade", label: "Đăng ký Nâng hạng Vai trò", icon: Rocket },
+  { href: "/hoi-vien/gia-nhap", label: "Đăng ký hội viên BACLINK", icon: Rocket },
   { href: "/settings", label: "Cài đặt Tài khoản", icon: FileCheck },
 ];
 

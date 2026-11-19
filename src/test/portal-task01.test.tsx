@@ -137,9 +137,8 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     render(<HomePage />);
 
     // 1. Kiểm tra thanh tìm kiếm phẳng và danh mục tìm kiếm
-    expect(screen.getByPlaceholderText(/Nhập từ khóa tìm kiếm/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Tìm kiếm/i })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: /Từ khóa tìm kiếm/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /^Tìm kiếm$/i })).toBeInTheDocument();
 
     // 2. Kiểm tra các thẻ Metric Card có link chuyển trang (Không còn là thẻ chết)
     await waitFor(() => {
@@ -167,22 +166,11 @@ describe("TASK-01: Portal Home, Live Stats & Techmart Showcase", () => {
     expect(screen.queryByRole("link", { name: /Làm Khảo Sát ĐMST Ngay/i })).not.toBeInTheDocument();
 
     // 4. KIỂM THỬ TƯƠNG TÁC THỰC: Submit form tìm kiếm phải gọi router.push
-    const searchInput = screen.getByPlaceholderText(/Nhập từ khóa tìm kiếm/i);
+    // CR-BACLINK-008: ô tìm kiếm hero dẫn tới trang tìm kiếm chung /tim-kiem
+    const searchInput = screen.getByRole("textbox", { name: /Từ khóa tìm kiếm/i });
     fireEvent.change(searchInput, { target: { value: "Robot Laser" } });
-    const searchButton = screen.getByRole("button", { name: /Tìm kiếm/i });
-    fireEvent.click(searchButton);
-
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringMatching(/\/chao-ban-cong-nghe\?q=Robot(\+|%20)Laser/)
-    );
-
-    // 5. KIỂM THỬ TƯƠNG TÁC THỰC: Đổi danh mục tìm kiếm sang Nhu cầu Mua & Đặt hàng và submit form
-    const categorySelect = screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i });
-    fireEvent.change(categorySelect, { target: { value: "nhu-cau" } });
-    fireEvent.click(searchButton);
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringMatching(/\/nhu-cau-cong-nghe\?q=Robot(\+|%20)Laser/)
-    );
+    fireEvent.click(screen.getByRole("button", { name: /^Tìm kiếm$/i }));
+    expect(mockPush).toHaveBeenCalledWith("/tim-kiem?q=Robot%20Laser");
   });
 
   it("AIAssistantWidget renders floating FAB and opens chat conversation", async () => {

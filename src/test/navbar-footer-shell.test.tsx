@@ -1,4 +1,5 @@
 import React from "react";
+import { ORG } from "@/lib/constants/organization";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, within, waitFor } from "@testing-library/react";
 import { Navbar } from "@/components/common/navbar";
@@ -187,11 +188,11 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
   // 2. KIỂM THỬ MEGA DROPDOWNS & DISMISSIBLE (ESCAPE & CLICK OUTSIDE)
   // =========================================================================
   describe("2. Kiểm thử Mega Dropdowns & Cơ chế đóng tự động (Dismissible)", () => {
-    it("2.1 Mở dropdown Chào bán công nghệ và đóng khi bấm phím Escape", async () => {
+    it("2.1 Mở dropdown Cơ hội kinh doanh và đóng khi bấm phím Escape", async () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerTrigger = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
+      const offerTrigger = within(mainNav).getByRole("link", { name: /^Cơ hội kinh doanh$/i });
 
       expect(offerTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -200,18 +201,18 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       expect(offerTrigger).toHaveAttribute("aria-expanded", "true");
 
       // Verify sub-links present
-      expect(within(mainNav).getByRole("link", { name: /Đăng Chào bán Công nghệ mới/i })).toBeInTheDocument();
+      expect(within(mainNav).getByRole("link", { name: /Đăng sản phẩm \/ năng lực mới/i })).toBeInTheDocument();
 
       // Press Escape key -> Dropdown closes
       fireEvent.keyDown(document, { key: "Escape" });
       expect(offerTrigger).toHaveAttribute("aria-expanded", "false");
     });
 
-    it("2.2 Mở dropdown Chuyên gia và đóng khi click bên ngoài navigation", async () => {
+    it("2.2 Mở dropdown Về BACLINK và đóng khi click bên ngoài navigation", async () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Về BACLINK$/i });
 
       expect(expertTrigger).toHaveAttribute("aria-expanded", "false");
 
@@ -228,12 +229,12 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const expertTrigger = within(mainNav).getByRole("link", { name: /^Cố vấn$/i });
+      const expertTrigger = within(mainNav).getByRole("link", { name: /^Dịch vụ$/i });
 
       fireEvent.click(expertTrigger);
       expect(expertTrigger).toHaveAttribute("aria-expanded", "true");
 
-      const elearningLink = within(mainNav).getByRole("link", { name: /E-Learning & Đào tạo/i });
+      const elearningLink = within(mainNav).getByRole("link", { name: /Đào tạo & phát triển nhân lực/i });
       fireEvent.click(elearningLink);
 
       // Dropdown closes after selecting sub-item
@@ -245,19 +246,16 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
   // 3. KIỂM THỬ ACTIVE INDICATOR VẠCH GẠCH CHÂN MỜ THEO ROUTE
   // =========================================================================
   describe("3. Kiểm thử Active Indicator vạch gạch chân mờ theo Route", () => {
-    it("3.1 Hiển thị vạch gạch chân mờ trang nhã khi ở Trang chủ '/'", () => {
+    it("3.1 Ở Trang chủ '/' không menu cấp đầu nào active (logo là lối về trang chủ)", () => {
       mockPathname = "/";
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const homeLink = within(mainNav).getByRole("link", { name: /^Trang chủ$/i });
-
-      // Active styling assertions: vạch trắng mờ tinh tế, không chói neon cyan
-      expect(homeLink.className).toContain("text-white");
-      expect(homeLink.className).toContain("font-bold");
-      expect(homeLink.className).toContain("after:bg-white/40");
-      expect(homeLink.className).toContain("after:rounded-full");
-      expect(homeLink.className).not.toContain("after:bg-cyan-400");
+      within(mainNav)
+        .getAllByRole("link")
+        .filter((a) => a.hasAttribute("aria-haspopup"))
+        .forEach((a) => expect(a.className).not.toContain("after:bg-white/40"));
+      expect(screen.getByTitle("Trang chủ BACLINK")).toHaveAttribute("href", "/");
     });
 
     it("3.2 Hiển thị vạch gạch chân mờ khi ở trang Chào bán công nghệ '/chao-ban-cong-nghe'", () => {
@@ -265,7 +263,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const offerLink = within(mainNav).getByRole("link", { name: /^Cung ứng$/i });
+      const offerLink = within(mainNav).getByRole("link", { name: /^Cơ hội kinh doanh$/i });
 
       expect(offerLink.className).toContain("text-white");
       expect(offerLink.className).toContain("font-bold");
@@ -278,7 +276,7 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
       renderWithShell(<Navbar />);
 
       const mainNav = screen.getByRole("navigation", { name: "Điều hướng chính" });
-      const newsLink = within(mainNav).getByRole("link", { name: /^Tin tức$/i });
+      const newsLink = within(mainNav).getByRole("link", { name: /^Sự kiện & tin tức$/i });
 
       expect(newsLink.className).toContain("after:bg-white/40");
       expect(newsLink.className).not.toContain("after:bg-cyan-400");
@@ -354,22 +352,19 @@ describe("Global Shell & Navigation Test Suite (Task T-00.108)", () => {
   // 5. KIỂM THỬ FOOTER 4 CỘT & ZERO BROKEN LINKS
   // =========================================================================
   describe("5. Kiểm thử Footer Tối giản & Zero Broken Links", () => {
-    it("5.1 Hiển thị đầy đủ thông tin chuẩn hóa của Footer tối giản", () => {
+    it("5.1 Footer hiển thị pháp nhân từ ORG và không có số liệu không nguồn (CR-BACLINK-008)", () => {
       renderWithShell(<Footer />);
 
-      // Thông tin Đơn vị chủ quản theo chuẩn BACLINK (Owner là BACLINK)
-      expect(screen.getByText(/Đơn vị chủ quản:/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH \(BACLINK\)/i).length).toBeGreaterThanOrEqual(1);
-      expect(screen.queryByText(/Cơ quan thành lập:/i)).not.toBeInTheDocument();
-      expect(screen.getByText(/Địa chỉ: Số 7 Lý Thái Tổ, Phường Suối Hoa, TP\. Bắc Ninh, Tỉnh Bắc Ninh/i)).toBeInTheDocument();
-      expect(screen.getByText(/Hiệp hội thành lập theo Quyết định số 1652\/QĐ-UBND/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/HIỆP HỘI SẢN XUẤT CÔNG NGHIỆP TỈNH BẮC NINH/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(ORG.address)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`Thành lập theo Quyết định số ${ORG.decision.number.replace("/", "\\/")}`))).toBeInTheDocument();
 
-      // Hotline & Văn phòng Hiệp hội BACLINK
-      expect(screen.getByText("Văn phòng Hiệp hội BACLINK")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "0222.3888.686" })).toHaveAttribute("href", "tel:02223888686");
-      expect(screen.getByText(/Hotline B2B: 1900 6886/i)).toBeInTheDocument();
-      expect(screen.getByText("2.689.450")).toBeInTheDocument();
-      expect(screen.getByText(/Chứng nhận an toàn thông tin Cấp độ 3 \(NCSC\)/i)).toBeInTheDocument();
+      // BR-BL08-NO-UNSOURCED-STATS-002
+      expect(screen.queryByText(/Lượt truy cập/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/online/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/NCSC/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Sitemap/i })).not.toBeInTheDocument();
+      expect(document.querySelector('a[href^="tel:"], a[href^="mailto:"]')).toBeNull();
     });
 
     it("5.2 Zero Broken Links: 100% liên kết trong Footer có đích đến hợp lệ và an toàn", () => {

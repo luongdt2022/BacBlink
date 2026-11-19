@@ -88,6 +88,8 @@ interface ApprovalItem {
   charterCapital?: string;
   businessLicenseUrl?: string;
   innovationCertUrl?: string;
+  /** CR-BACLINK-008: chi tiết hồ sơ gia nhập hội viên. */
+  joinDetails?: { label: string; value: string }[];
 }
 
 interface CentralQueueApiItem {
@@ -123,6 +125,8 @@ interface LegacyApprovalDto {
   slaOverdueHours?: number;
   isOverride?: boolean;
   overrideReason?: string;
+  /** CR-BACLINK-008: chi tiết hồ sơ gia nhập hội viên (wizard /hoi-vien/gia-nhap). */
+  joinDetails?: { label: string; value: string }[];
 }
 
 function parseItem(raw: unknown): ApprovalItem {
@@ -138,6 +142,7 @@ function parseItem(raw: unknown): ApprovalItem {
     ACCOUNT: "ACCOUNT",
     ENTERPRISE: "ACCOUNT",
     ENTERPRISE_VERIFICATION: "ACCOUNT",
+    ENTERPRISE_MEMBERSHIP: "ACCOUNT",
     FACILITY: "FACILITY",
     INSTITUTION: "FACILITY",
     INNOVATION_ENTITY: "FACILITY",
@@ -165,12 +170,13 @@ function parseItem(raw: unknown): ApprovalItem {
   const submitterName =
     String(item.submitterName || "") ||
     str("enterprise_name") ||
+    str("companyname") ||
     str("fullname") ||
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     "Chưa có tên chủ thể";
 
   const titleOrOrg =
-    (str("tax_code") ? `MST: ${str("tax_code")}` : "") ||
+    (str("tax_code") || str("taxcode") ? `MST: ${str("tax_code") || str("taxcode")}` : "") ||
     str("organizationname") ||
     user?.organization ||
     str("technologytitle") ||
@@ -209,9 +215,27 @@ function parseItem(raw: unknown): ApprovalItem {
     slaDeadlineUtc: item.slaDeadlineUtc as string | undefined,
     isNationalPriority: Boolean(item.isNationalPriority),
     taxCode: str("tax_code") || str("taxcode") || (item.taxCode as string) || undefined,
-    legalRepresentative: str("legal_representative") || str("legalrepresentative") || str("representative") || undefined,
+    legalRepresentative:
+      str("legal_representative") || str("legalrepresentative") || str("representative") ||
+      [str("representativesalutation"), str("representativename"), str("representativetitle") && `— ${str("representativetitle")}`].filter(Boolean).join(" ") ||
+      undefined,
     charterCapital: str("charter_capital") || str("chartercapital") || undefined,
-    businessLicenseUrl: str("business_license_url") || str("license_url") || undefined,
+    businessLicenseUrl: str("business_license_url") || str("license_url") || str("legaldocurl") || undefined,
+    joinDetails: str("tiercode")
+      ? [
+          ["Loại hội viên đăng ký", str("tiercode")],
+          ["Địa bàn · KCN", [str("district"), str("industrialzone")].filter(Boolean).join(" · ")],
+          ["Quy mô lao động", str("workforcescale")],
+          ["Liên hệ đại diện", [str("representativephone"), str("representativeemail")].filter(Boolean).join(" · ")],
+          ["Trợ lý / thư ký", [str("assistantname"), str("assistantphone"), str("assistantemail")].filter(Boolean).join(" · ")],
+          ["Sản phẩm nổi bật", str("highlightproducts")],
+          ["Website", str("website")],
+          ["Giới thiệu", str("description")],
+          ["Tán thành Điều lệ", str("acceptedcharterat") ? new Date(str("acceptedcharterat")).toLocaleString("vi-VN") : ""],
+        ]
+          .filter(([, v]) => v)
+          .map(([label, value]) => ({ label, value }))
+      : undefined,
     innovationCertUrl: str("innovation_cert_url") || str("cert_url") || undefined,
   };
 }
@@ -875,11 +899,25 @@ function AdminApprovalsContent() {
                         </div>
                         <div>
                           <span className="text-slate-500 block">Giấy phép ĐKKD:</span>
-                          <span className="font-semibold text-emerald-600 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> Đã xác thực
-                          </span>
+                          {selectedItem.businessLicenseUrl ? (
+                            <a href={selectedItem.businessLicenseUrl} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-700 underline flex items-center gap-1 dark:text-cyan-300">
+                              <CheckCircle2 className="w-3 h-3" /> Xem tệp đính kèm
+                            </a>
+                          ) : (
+                            <span className="font-semibold text-amber-600">Chưa đính kèm</span>
+                          )}
                         </div>
                       </div>
+                      {selectedItem.joinDetails && selectedItem.joinDetails.length > 0 && (
+                        <dl className="grid grid-cols-1 gap-1.5 border-t border-brand-200/60 pt-2 text-xs dark:border-brand-800">
+                          {selectedItem.joinDetails.map((d) => (
+                            <div key={d.label} className="flex gap-2">
+                              <dt className="w-36 shrink-0 text-slate-500">{d.label}:</dt>
+                              <dd className="font-semibold text-slate-900 dark:text-slate-100 whitespace-pre-line">{d.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
                       <div className="pt-1.5 border-t border-brand-200/60 dark:border-brand-800 flex items-center justify-between text-xs">
                         <span className="text-slate-600 dark:text-slate-400">Hồ sơ Hội viên BACLINK:</span>
                         <span className="font-bold text-brand-700 dark:text-cyan-300">Chờ duyệt 1 cấp</span>
@@ -888,8 +926,8 @@ function AdminApprovalsContent() {
                   )}
 
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2 text-xs">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span className="text-slate-500">Đã đối soát định danh & tính pháp lý</span>
+                    <ShieldCheck className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span className="text-slate-500">Cán bộ duyệt cần đối chiếu MST và giấy phép trước khi phê duyệt.</span>
                   </div>
                 </div>
 

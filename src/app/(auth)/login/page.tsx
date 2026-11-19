@@ -5,6 +5,13 @@ import { AppButton } from "@/components/ui/design-system";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient, getRedirectPathByRole, UserContext } from "@/lib/auth-client";
+
+/** CR-BACLINK-008: hỗ trợ ?redirect=/duong-dan-noi-bo (chặn open-redirect: chỉ nhận đường dẫn bắt đầu bằng 1 dấu "/"). */
+function safeRedirect(fallback: string): string {
+  if (typeof window === "undefined") return fallback;
+  const r = new URLSearchParams(window.location.search).get("redirect");
+  return r && r.startsWith("/") && !r.startsWith("//") ? r : fallback;
+}
 import { API_BASE, readApiError, userFacingRequestError } from "@/lib/api-client";
 import { useToast } from "@/components/common/toast";
 import { LogIn, KeyRound, Mail, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
@@ -23,7 +30,7 @@ export default function LoginPage() {
     const user = authClient.getUser();
     const token = authClient.getToken();
     if (user && token) {
-      router.replace(getRedirectPathByRole(user.role));
+      router.replace(safeRedirect(getRedirectPathByRole(user.role)));
     }
   }, [router]);
 
@@ -56,7 +63,7 @@ export default function LoginPage() {
         throw new Error("Phản hồi đăng nhập không hợp lệ. Vui lòng thử lại.");
       }
       authClient.setSession(data.accessToken, data.user);
-      router.push(getRedirectPathByRole(data.user.role));
+      router.push(safeRedirect(getRedirectPathByRole(data.user.role)));
     } catch (err: unknown) {
       authClient.clearSession();
       const message = userFacingRequestError(err, "Không thể kết nối tới hệ thống đăng nhập.");

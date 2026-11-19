@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { ORG } from "@/lib/constants/organization";
 import { vi, describe, expect, it, beforeEach } from "vitest";
 import type { ReactNode } from "react";
 import ExpertAccountPage from "./page";
@@ -109,7 +110,7 @@ describe("ExpertAccountPage - Workspace Tài Khoản Chuyên Gia (Phase 20 Delta
     expect(screen.getByText(/GS. TS. Nguyễn Văn An/i)).toBeInTheDocument();
     expect(screen.getByText(/Đại học Bách Khoa Hà Nội/i)).toBeInTheDocument();
     expect(screen.getByText(/Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh \(BACLINK\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/1652\/QĐ-UBND/i)).toBeInTheDocument();
+    expect(screen.getByText(new RegExp(`Số QĐ: ${ORG.decision.number}`))).toBeInTheDocument();
     expect(screen.getByText(/Nghị định 13\/2023\/NĐ-CP \(PDPD\)/i)).toBeInTheDocument();
 
     // Khối 2: Cài đặt tiếp nhận tư vấn Doanh nghiệp

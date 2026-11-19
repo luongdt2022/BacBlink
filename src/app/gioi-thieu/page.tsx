@@ -19,10 +19,12 @@ import {
   Briefcase,
   GraduationCap
 } from "lucide-react";
+import { ORG, ORG_DECISION_TEXT } from "@/lib/constants/organization";
+import { JOIN_HREF } from "@/lib/constants/navigation";
 
 export const metadata = {
   title: "Giới Thiệu Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)",
-  description: "Thành lập theo Quyết định số 1652/QĐ-UBND ngày 16/06/2025 của Chủ tịch UBND tỉnh Bắc Ninh. Trụ sở: Số 7 Lý Thái Tổ, P. Suối Hoa, TP. Bắc Ninh.",
+  description: `Thành lập theo ${ORG_DECISION_TEXT}. Trụ sở: ${ORG.address}.`,
 };
 
 export default function GioiThieuPage() {
@@ -33,7 +35,7 @@ export default function GioiThieuPage() {
         <div className="max-w-7xl mx-auto space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 text-brand-100 border border-white/20 text-xs font-semibold backdrop-blur-sm">
             <Landmark className="w-4 h-4 text-brand-200" />
-            <span>Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh • Quyết định số 1652/QĐ-UBND ngày 16/06/2025</span>
+            <span>{ORG.fullName} • Quyết định số {ORG.decision.number} ngày {ORG.decision.date}</span>
           </div>
 
           <h1 className="type-page-title text-white">
@@ -60,6 +62,33 @@ export default function GioiThieuPage() {
               <span>Ban Cố Vấn Kỹ Thuật</span>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* CR-BACLINK-008 · REQ-BL08-ABOUT-010: Tầm nhìn – Sứ mệnh – Cơ sở pháp lý */}
+      <section id="tam-nhin-su-menh" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="font-bold text-base text-slate-900 dark:text-white">Tầm nhìn</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            Trở thành ngôi nhà chung, đầu mối kết nối uy tín của cộng đồng doanh nghiệp sản xuất công nghiệp Bắc Ninh, góp phần xây dựng thương hiệu &ldquo;{ORG.tagline}&rdquo;.
+          </p>
+        </div>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="font-bold text-base text-slate-900 dark:text-white">Sứ mệnh</h2>
+          <ul className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed list-disc pl-5 space-y-1">
+            <li>Đại diện, bảo vệ quyền lợi hợp pháp và phản ánh kiến nghị của hội viên.</li>
+            <li>Kết nối chuỗi cung ứng giữa doanh nghiệp FDI và doanh nghiệp nội địa.</li>
+            <li>Hỗ trợ đào tạo, xúc tiến thương mại, chuyển đổi số và chuyển đổi xanh.</li>
+          </ul>
+        </div>
+        <div id="co-so-phap-ly" className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="font-bold text-base text-slate-900 dark:text-white">Cơ sở pháp lý</h2>
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            {ORG.legalForm}, thành lập theo {ORG_DECISION_TEXT}.
+          </p>
+          <Link href="/gioi-thieu/co-cau-to-chuc" className="inline-flex text-sm font-bold text-brand-700 hover:underline dark:text-cyan-300">
+            Xem cơ cấu tổ chức & 9 ban chuyên môn →
+          </Link>
         </div>
       </section>
 
@@ -121,7 +150,7 @@ export default function GioiThieuPage() {
               Cơ Cấu Tổ Chức Nhiệm Kỳ I (2025 – 2028)
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh được thành lập theo Quyết định số 1652/QĐ-UBND ngày 16/06/2025 của Chủ tịch UBND tỉnh Bắc Ninh. Đại hội lần thứ I đã bầu ra Ban Chấp hành gồm 28 thành viên đại diện cho các doanh nghiệp công nghiệp tiêu biểu.
+              Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh được thành lập theo {ORG_DECISION_TEXT}. Đại hội lần thứ I đã bầu ra Ban Chấp hành gồm 28 thành viên đại diện cho các doanh nghiệp công nghiệp tiêu biểu.
             </p>
           </div>
 
@@ -138,7 +167,7 @@ export default function GioiThieuPage() {
               <Building className="w-6 h-6 text-emerald-600" />
               <h3 className="font-bold text-sm text-slate-900 dark:text-white">Trụ Sở Chính Thức</h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Số 7 Lý Thái Tổ, Phường Suối Hoa, Thành phố Bắc Ninh, Tỉnh Bắc Ninh. Vị trí trung tâm kết nối các KCN trên toàn tỉnh.
+                {ORG.address}.
               </p>
             </div>
 
@@ -163,7 +192,7 @@ export default function GioiThieuPage() {
         </p>
         <div className="flex justify-center gap-3">
           <Link
-            href="/register"
+            href={JOIN_HREF}
             className="px-6 py-2.5 rounded-xl bg-brand-700 text-white font-bold text-xs shadow-md hover:bg-brand-800 transition"
           >
             Đăng Ký Hội Viên Ngay

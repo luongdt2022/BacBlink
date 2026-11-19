@@ -1137,7 +1137,7 @@ export function EnterprisesDirectoryView(props: EnterprisesDirectoryProps = {}) 
                     required
                     value={connectContact}
                     onChange={(e) => setConnectContact(e.target.value)}
-                    placeholder="VD: contact@baclink.org.vn / 0912345678"
+                    placeholder="VD: lienhe@congty.vn / 0912345678"
                     className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 dark:bg-slate-800 p-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>

@@ -230,7 +230,7 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
         }
       >
         {data && (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-red-50 border-2 border-red-500 rounded-2xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300">
                 <thead className="bg-slate-50 dark:bg-slate-800/60 uppercase font-bold text-slate-500 border-b border-slate-200 dark:border-slate-700">
@@ -270,7 +270,7 @@ export function LmsManagementWorkspace({ portalRole }: LmsManagementWorkspacePro
                             <span className="truncate">{item.title}</span>
                             {item.hasAiKnowledge && (
                               <span title="Đã nạp tri thức AI RAG">
-                                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                <Sparkles className="w-3.5 h-3.5 text-red-600 font-bold shrink-0" />
                               </span>
                             )}
                           </div>

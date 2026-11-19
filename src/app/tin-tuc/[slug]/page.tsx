@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -22,11 +22,9 @@ import {
   Newspaper,
   ArrowRight,
 } from "lucide-react";
-import {
-  getNewsBySlug,
-  BACLINK_NEWS_ARTICLES,
-  NewsArticle,
-} from "@/lib/news-data";
+import { cmsClient } from "@/lib/cms-client";
+import { fullToNews, summaryToNews, type NewsArticle } from "@/lib/cms-news";
+import { Async, type AsyncState } from "@/components/ui/async";
 import { useToast } from "@/components/common/toast";
 
 export default function NewsDetailPage() {
@@ -37,7 +35,31 @@ export default function NewsDetailPage() {
 
   const [copied, setCopied] = useState(false);
 
-  const article = getNewsBySlug(slug);
+  const [article, setArticle] = useState<NewsArticle | null>(null);
+  const [related, setRelated] = useState<NewsArticle[]>([]);
+  const [loadState, setLoadState] = useState<AsyncState>("loading");
+
+  const load = useCallback(() => {
+    if (!slug) return;
+    setLoadState("loading");
+    cmsClient
+      .article(slug)
+      .then(async (a) => {
+        setArticle(fullToNews(a));
+        setLoadState("success");
+        try {
+          const r = await cmsClient.articles({ category: a.categorySlug, limit: 5 });
+          setRelated(r.data.filter((x) => x.slug !== a.slug).slice(0, 3).map(summaryToNews));
+        } catch {
+          setRelated([]);
+        }
+      })
+      .catch((e: unknown) => {
+        setArticle(null);
+        setLoadState(e instanceof Error && /không tìm thấy|not found/i.test(e.message) ? "empty" : "error");
+      });
+  }, [slug]);
+  useEffect(load, [load]);
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
@@ -47,6 +69,16 @@ export default function NewsDetailPage() {
       setTimeout(() => setCopied(false), 2500);
     }
   };
+
+  if (loadState === "loading" || loadState === "error") {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+        <Async state={loadState} onRetry={load} errorMessage="Không tải được bài viết. Vui lòng thử lại.">
+          <span />
+        </Async>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -76,9 +108,7 @@ export default function NewsDetailPage() {
   }
 
   // Related articles (excluding current)
-  const relatedArticles = BACLINK_NEWS_ARTICLES.filter(
-    (a) => a.id !== article.id && a.slug !== article.slug
-  ).slice(0, 3);
+  const relatedArticles = related;
 
   return (
     <div className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-800 dark:text-slate-100">

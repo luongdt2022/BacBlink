@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
+import { ORG } from "@/lib/constants/organization";
 
 interface SitemapLink {
   title: string;
@@ -66,7 +67,7 @@ const SITEMAP_SECTIONS: SitemapSection[] = [
   {
     id: "about-guide",
     title: "2. Giới Thiệu Hiệp Hội & Cẩm Nang Hướng Dẫn",
-    subtitle: "Thông tin pháp lý Quyết định 1652/QĐ-UBND, dịch vụ hỗ trợ hội viên và tài liệu hướng dẫn",
+    subtitle: `Thông tin pháp lý Quyết định ${ORG.decision.number}, dịch vụ hỗ trợ hội viên và tài liệu hướng dẫn`,
     icon: Compass,
     accentClass: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800",
     links: [

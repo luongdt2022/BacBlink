@@ -32,18 +32,14 @@ describe("CR-2026-005 dynamic cross-surface sectors", () => {
     }
   });
 
-  it("Home workflow displays 8-industry AI Radar and supply chain connect", () => {
+  it("Home shows 'Bạn đang cần gì?' router and 8 service cards (CR-BACLINK-008)", () => {
     render(<HomePage />);
-    expect(screen.getByText(/Thuật toán Radar AI Matching phân tích ma trận 8 ngành IND_\*/i)).toBeInTheDocument();
-    expect(screen.getByText(/Gợi ý thông minh theo 8 ngành công nghiệp & KCN/i)).toBeInTheDocument();
-  });
-
-  it("Home search categories include technology, demands, and BACLINK entities", () => {
-    render(<HomePage />);
-    expect(screen.getByRole("combobox", { name: /Chọn danh mục tìm kiếm/i })).toBeInTheDocument();
-    expect(screen.getByText("Công nghệ chào bán")).toBeInTheDocument();
-    expect(screen.getByText("Nhu cầu Mua & Đặt hàng")).toBeInTheDocument();
-    expect(screen.getByText("Doanh nghiệp Hội viên")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Bạn đang cần gì?" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Tìm nhà cung cấp/ })).toHaveAttribute("href", "/enterprises");
+    expect(screen.getByRole("heading", { name: "Dịch vụ dành cho doanh nghiệp" })).toBeInTheDocument();
+    ["Hỗ trợ & tư vấn chính sách", "Kết nối cung – cầu", "Chuyển đổi xanh & ESG", "Hợp tác quốc tế"].forEach((t) =>
+      expect(screen.getByRole("heading", { name: t })).toBeInTheDocument()
+    );
   });
 
   it("global UI sweep contains no obsolete SEC taxonomy codes", () => {

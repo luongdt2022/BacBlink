@@ -22,6 +22,8 @@ export default function ExpoRegistrationPage() {
   const [successCode, setSuccessCode] = useState<string | null>(null);
   const [events, setEvents] = useState<TechmartEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
+  const selectedEvent = events.find((ev) => ev.id === selectedEventId) ?? null;
+  const formatDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('vi-VN') : '');
 
   React.useEffect(() => {
     portalClient
@@ -93,7 +95,7 @@ export default function ExpoRegistrationPage() {
               Đăng Ký Tham Quan Triển Lãm Thành Công!
             </h2>
             <p className="text-text-secondary dark:text-slate-300 text-xs sm:text-sm mt-1 max-w-md mx-auto">
-              Cảm ơn Quý khách đã đăng ký tham quan tại VIMEXPO & VIETNAM AUTOEXPO 2026. Ban tổ chức đã phát hành mã vé của Quý khách.
+              Cảm ơn Quý khách đã đăng ký tham dự {selectedEvent?.title ?? 'sự kiện của BACLINK'}. Ban tổ chức đã phát hành mã vé của Quý khách.
             </p>
           </div>
 
@@ -143,17 +145,18 @@ export default function ExpoRegistrationPage() {
             CỔNG ĐĂNG KÝ VÉ THAM QUAN KẾT NỐI CUNG CẦU
           </div>
           <h1 className="type-page-title text-white">
-            Triển Lãm Quốc Tế VIMEXPO & VIETNAM AUTOEXPO 2026
+            {selectedEvent?.title ?? 'Đăng ký tham dự sự kiện BACLINK'}
           </h1>
           <p className="text-white/80 text-xs sm:text-sm max-w-xl mx-auto leading-relaxed">
-            Quy tụ hơn 300+ Gian hàng Công nghiệp hỗ trợ, Cơ khí chế tạo và Doanh nghiệp sản xuất công nghiệp.
-            Đăng ký vé điện tử miễn phí trước ngày 10/06/2026 để nhận mã QR Check-in nhanh tại quầy VIP.
+            Chọn sự kiện bên dưới và điền thông tin để nhận mã vé điện tử miễn phí từ Hiệp hội BACLINK.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-2 text-xs text-brand-100">
-            <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-brand-200" /> Ngày 11-13/06/2026</span>
-            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-brand-200" /> Cung VHLĐ Hữu Nghị Việt Xô (I.C.E Hà Nội)</span>
-          </div>
+          {selectedEvent && (
+            <div className="flex flex-wrap justify-center gap-4 pt-2 text-xs text-brand-100">
+              <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-brand-200" /> {formatDate(selectedEvent.startDate)}{selectedEvent.endDate && selectedEvent.endDate !== selectedEvent.startDate ? ` – ${formatDate(selectedEvent.endDate)}` : ''}</span>
+              <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-brand-200" /> {selectedEvent.location}</span>
+            </div>
+          )}
         </div>
       </section>
 

@@ -74,7 +74,7 @@ describe("SettingsLayout - Retaining Left Workspace Sidebar Menu", () => {
     expect(screen.getByRole("link", { name: /^Trang tổng quan$/i })).toHaveAttribute("href", "/portal");
     expect(screen.getByRole("link", { name: /Nhu cầu công nghệ/i })).toHaveAttribute("href", "/portal/buyer/demands");
     expect(screen.getByRole("link", { name: /Radar Ghép Nối AI/i })).toHaveAttribute("href", "/portal/matching/radar");
-    expect(screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i })).toHaveAttribute("href", "/profile/upgrade");
+    expect(screen.getByRole("link", { name: /Đăng ký hội viên BACLINK/i })).toHaveAttribute("href", "/hoi-vien/gia-nhap");
 
     // 3. 'Cài đặt Tài khoản' link is present and highlighted as active
     const settingsLink = screen.getByRole("link", { name: /Cài đặt Tài khoản/i });

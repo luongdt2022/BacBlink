@@ -329,9 +329,9 @@ describe("Portal Navigation Delta v11 (CR-2026-014) QC Verification Suite", () =
     expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
     expect(screen.getByText("Mới")).toBeInTheDocument();
 
-    const upgradeLink = screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i });
+    const upgradeLink = screen.getByRole("link", { name: /Đăng ký hội viên BACLINK/i });
     expect(upgradeLink).toBeInTheDocument();
-    expect(upgradeLink).toHaveAttribute("href", "/profile/upgrade");
+    expect(upgradeLink).toHaveAttribute("href", "/hoi-vien/gia-nhap");
 
     const settingsLink = screen.getByRole("link", { name: /Cài đặt Tài khoản/i });
     expect(settingsLink).toBeInTheDocument();

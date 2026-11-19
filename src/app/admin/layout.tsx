@@ -19,6 +19,8 @@ import {
   Search,
   X,
   ChevronsUpDown,
+  BadgeCheck,
+  Newspaper,
 } from "lucide-react";
 
 interface MenuItem {
@@ -66,6 +68,12 @@ const MENU_GROUPS: MenuGroup[] = [
     title: "3. Quản Trị Danh Mục & Phân Quyền",
     items: [
       {
+        href: "/admin/members",
+        label: "Quản lý hội viên",
+        icon: BadgeCheck,
+        keywords: "hoi vien membership hoi phi gia han chung nhan tieu bieu tam ngung hang",
+      },
+      {
         href: "/admin/users",
         label: "Quản lý người dùng",
         icon: Users,
@@ -95,6 +103,18 @@ const MENU_GROUPS: MenuGroup[] = [
     key: "group4",
     title: "4. Giám Sát & Vận Hành",
     items: [
+      {
+        href: "/admin/cms",
+        label: "Quản lý nội dung",
+        icon: Newspaper,
+        keywords: "noi dung cms tin tuc bai viet tai lieu thu vien faq doi tac chinh sach dieu le",
+      },
+      {
+        href: "/admin/contact-requests",
+        label: "Hộp thư liên hệ",
+        icon: Inbox,
+        keywords: "hop thu lien he yeu cau ho tro kien nghi hop tac bao chi contact",
+      },
       {
         href: "/admin/audit-logs",
         label: "Nhật ký kiểm toán",

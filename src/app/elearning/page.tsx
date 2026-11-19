@@ -223,7 +223,7 @@ export default function ElearningCatalogPage() {
               {isManagementAllowed && (
                 <Link
                   href={managementHref}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#042142] font-bold text-xs shadow-md transition"
                 >
                   <ShieldCheck className="w-4 h-4 text-slate-900" />
                   <span>Quản Trị Học Liệu</span>

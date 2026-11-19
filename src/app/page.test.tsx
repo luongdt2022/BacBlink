@@ -47,7 +47,37 @@ vi.mock("@/lib/portal-client", () => ({
   portalClient: {
     getStats: vi.fn(),
     getPublicDemands: vi.fn().mockResolvedValue([]),
+    listEvents: vi.fn().mockResolvedValue({ data: [], total: 0 }),
   },
+}));
+
+vi.mock("@/lib/api/lms", () => ({
+  fetchLmsCatalog: vi.fn().mockResolvedValue({ materials: { items: [] } }),
+}));
+
+vi.mock("@/lib/cms-client", async (orig) => {
+  const real = await orig<typeof import("@/lib/cms-client")>();
+  return {
+    ...real,
+    cmsClient: {
+      ...real.cmsClient,
+      articles: vi.fn(async (p?: { category?: string }) => ({
+        data: p?.category === "chinh-sach-moi"
+          ? [{ id: "a1", slug: "chinh-sach-1", title: "Chính sách ưu đãi mới", categorySlug: "chinh-sach-moi", excerpt: "Tóm tắt", isFeatured: false, status: "PUBLISHED", publishedAt: "2026-11-01T00:00:00Z", tags: [] }]
+          : [],
+        total: 0, page: 1, totalPages: 1, categories: [],
+      })),
+      partners: vi.fn().mockResolvedValue([]),
+    },
+  };
+});
+
+vi.mock("@/lib/membership-client", () => ({
+  membershipClient: { featured: vi.fn().mockResolvedValue([]) },
+}));
+
+vi.mock("@/lib/enterprise-client", () => ({
+  fetchEnterprises: vi.fn().mockResolvedValue({ items: [] }),
 }));
 
 describe("HomePage Component (TASK-01 Home Architecture & 4 Realtime Metrics)", () => {
@@ -144,5 +174,31 @@ describe("HomePage Component (TASK-01 Home Architecture & 4 Realtime Metrics)", 
     expect(headerOverlay?.className).toContain("justify-between");
     expect(headerOverlay?.className).toContain("left-2.5");
     expect(headerOverlay?.className).toContain("right-2.5");
+  });
+
+  // ===== CR-BACLINK-008 · REQ-BL08-HOME-003 =====
+  it("renders the 8 customer-approved blocks in order and drops removed sections", async () => {
+    vi.spyOn(portalClient, "getStats").mockResolvedValue({
+      totalOffers: 1, totalDemands: 1, totalEnterprises: 1, totalExperts: 1, totalProvinces: 1,
+      totalSuccessfulConnections: 0, totalEstimatedValueMillionVnd: 0, updatedAt: new Date().toISOString(),
+    });
+    render(<HomePage />);
+    const order = [
+      /KẾT NỐI CHUỖI CUNG ỨNG/i,
+      /^Bạn đang cần gì\?$/,
+      /^Tìm doanh nghiệp hoặc nhà cung cấp$/,
+      /^Cơ hội kinh doanh mới nhất$/,
+      /^Dịch vụ dành cho doanh nghiệp$/,
+      /^Chính sách và thông tin ngành mới nhất$/,
+      /^Quyền lợi khi trở thành hội viên$/,
+    ];
+    await screen.findByRole("heading", { name: /Chính sách và thông tin ngành mới nhất/ }); // khối này tải bất đồng bộ từ CMS
+    const headings = await screen.findAllByRole("heading");
+    const idx = order.map((re) => headings.findIndex((h) => re.test(h.textContent ?? "")));
+    idx.forEach((i) => expect(i).toBeGreaterThanOrEqual(0));
+    expect([...idx].sort((a, b) => a - b)).toEqual(idx);
+    expect(screen.queryByText(/Quy Trình Kết Nối/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Samsung Electronics/i)).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Gia nhập BACLINK/i }).length).toBeGreaterThan(0);
   });
 });

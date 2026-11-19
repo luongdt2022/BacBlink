@@ -189,8 +189,8 @@ describe("CR-2026-006 / Delta v10: Comprehensive Gate 4 Verification Suite", () 
       expect(item3).toHaveAttribute("href", "/portal/matching/radar");
       expect(screen.getByText("Mới")).toBeInTheDocument();
 
-      const item4 = screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i });
-      expect(item4).toHaveAttribute("href", "/profile/upgrade");
+      const item4 = screen.getByRole("link", { name: /Đăng ký hội viên BACLINK/i });
+      expect(item4).toHaveAttribute("href", "/hoi-vien/gia-nhap");
 
       const item5 = screen.getByRole("link", { name: /Cài đặt Tài khoản/i });
       expect(item5).toHaveAttribute("href", "/settings");

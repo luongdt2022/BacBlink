@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ORG, BACLINK_COMMITTEES } from "@/lib/constants/organization";
 import {
   Calendar,
   MapPin,
@@ -19,21 +20,39 @@ import {
   ChevronRight,
   Filter,
 } from "lucide-react";
-import {
-  BACLINK_NEWS_ARTICLES,
-  NEWS_CATEGORIES,
-  getFeaturedNews,
-  NewsArticle,
-} from "@/lib/news-data";
+import { cmsClient, categoryLabel } from "@/lib/cms-client";
+import { summaryToNews, type NewsArticle } from "@/lib/cms-news";
+import { Async, type AsyncState } from "@/components/ui/async";
 
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const featuredArticle = useMemo(() => getFeaturedNews(), []);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [categorySlugs, setCategorySlugs] = useState<{ slug: string; count: number }[]>([]);
+  const [loadState, setLoadState] = useState<AsyncState>("loading");
+
+  const load = useCallback(() => {
+    setLoadState("loading");
+    cmsClient
+      .articles({ limit: 100 })
+      .then((r) => {
+        setArticles(r.data.map(summaryToNews));
+        setCategorySlugs(r.categories);
+        setLoadState(r.data.length ? "success" : "empty");
+      })
+      .catch(() => setLoadState("error"));
+  }, []);
+  useEffect(load, [load]);
+
+  const NEWS_CATEGORIES = useMemo(
+    () => [{ slug: "all", label: "Tất cả tin tức" }, ...categorySlugs.map((c) => ({ slug: c.slug, label: categoryLabel(c.slug) }))],
+    [categorySlugs]
+  );
+  const featuredArticle = useMemo(() => articles.find((a) => a.featured) ?? articles[0], [articles]);
 
   const filteredArticles = useMemo(() => {
-    return BACLINK_NEWS_ARTICLES.filter((article) => {
+    return articles.filter((article) => {
       const matchesCategory =
         selectedCategory === "all" || article.categorySlug === selectedCategory;
       const matchesSearch =
@@ -41,11 +60,11 @@ export default function NewsPage() {
         article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
         article.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        article.location.toLowerCase().includes(searchQuery.toLowerCase());
+        (article.location ?? "").toLowerCase().includes(searchQuery.toLowerCase());
 
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [articles, selectedCategory, searchQuery]);
 
   const getCategoryColor = (slug: string) => {
     switch (slug) {
@@ -108,20 +127,21 @@ export default function NewsPage() {
 
           {/* Quick Statistics Strip */}
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6 border-t border-white/15">
+            {/* CR-BACLINK-008 · BR-BL08-NO-UNSOURCED-STATS-002: chỉ số đếm từ dữ liệu thật */}
             <div className="bg-white/5 rounded-xl p-3 border border-white/10 backdrop-blur-xs">
-              <div className="text-xl sm:text-2xl font-black text-amber-400">605+</div>
-              <div className="text-xs text-white/70">Doanh nghiệp theo dõi</div>
+              <div className="text-xl sm:text-2xl font-black text-amber-400">{articles.length}</div>
+              <div className="text-xs text-white/70">Bài viết & hoạt động</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/10 backdrop-blur-xs">
               <div className="text-xl sm:text-2xl font-black text-cyan-300">28</div>
               <div className="text-xs text-white/70">Ủy viên Ban Chấp Hành</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/10 backdrop-blur-xs">
-              <div className="text-xl sm:text-2xl font-black text-white">40+</div>
-              <div className="text-xs text-white/70">Nhà máy phụ trợ hạt nhân</div>
+              <div className="text-xl sm:text-2xl font-black text-white">{BACLINK_COMMITTEES.length}</div>
+              <div className="text-xs text-white/70">Ban chuyên môn</div>
             </div>
             <div className="bg-white/5 rounded-xl p-3 border border-white/10 backdrop-blur-xs">
-              <div className="text-xl sm:text-2xl font-black text-emerald-400">1652</div>
+              <div className="text-xl sm:text-2xl font-black text-emerald-400">{ORG.decision.number.split("/")[0]}</div>
               <div className="text-xs text-white/70">QĐ Thành Lập UBND Tỉnh</div>
             </div>
           </div>
@@ -271,15 +291,25 @@ export default function NewsPage() {
         )}
 
         {/* News Cards Grid */}
-        <section className="space-y-6">
+        <section className="space-y-6 py-2">
           <div className="flex items-center justify-between">
             <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Newspaper className="size-5 text-[#053567] dark:text-cyan-400" />
+              <Newspaper className="size-5 text-brand-700 dark:text-cyan-400" />
               <span>Danh Sách Tin Tức & Hoạt Động</span>
             </h2>
           </div>
 
-          {filteredArticles.length === 0 ? (
+          {loadState !== "success" ? (
+            <Async
+              state={loadState}
+              onRetry={load}
+              emptyTitle="Chưa có bài viết nào"
+              emptyMessage="Tin tức và hoạt động của Hiệp hội sẽ được cập nhật tại đây."
+              errorMessage="Không tải được danh sách tin tức. Vui lòng thử lại."
+            >
+              <span />
+            </Async>
+          ) : filteredArticles.length === 0 ? (
             <div className="bg-white dark:bg-slate-900 rounded-2xl p-12 text-center border border-slate-200 dark:border-slate-800 space-y-4">
               <div className="size-16 rounded-full bg-slate-100 dark:bg-slate-800 mx-auto grid place-items-center text-slate-400">
                 <Search className="size-8" />
@@ -397,7 +427,7 @@ export default function NewsPage() {
             <div className="pt-2 flex flex-wrap gap-3">
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md"
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#042142] text-xs sm:text-sm font-bold transition shadow-md"
               >
                 Đăng ký Hội viên BACLINK
               </Link>

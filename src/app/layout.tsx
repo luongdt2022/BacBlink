@@ -9,6 +9,8 @@ import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { AIAssistantWidget } from "@/components/home/AIAssistantWidget";
 import { NavigationProgress } from "@/components/common/navigation-progress";
+import { ContactModalHost } from "@/components/common/contact-modal";
+import { ORG, ORG_DECISION_TEXT } from "@/lib/constants/organization";
 
 const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["vietnamese", "latin"],
@@ -26,7 +28,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "BACLINK — Cổng Thông Tin & Kết Nối Chuỗi Cung Ứng Công Nghiệp Bắc Ninh",
-  description: "Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK) - Thành lập theo Quyết định số 1652/QĐ-UBND của UBND tỉnh Bắc Ninh",
+  description: `${ORG.fullName} (BACLINK) - Thành lập theo ${ORG_DECISION_TEXT}`,
   icons: {
     icon: [
       { url: "/favicon.png", type: "image/png" },
@@ -52,7 +54,8 @@ export default function RootLayout({
               <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
-              {/* Trợ lý ảo AI NacentTwin nổi toàn hệ thống trên tất cả các màn hình */}
+              {/* CR-BACLINK-008: Gọi · Zalo · Lên đầu trang (trái) + Trợ lý AI (phải) */}
+              <ContactModalHost />
               <AIAssistantWidget />
             </ToastProvider>
           </I18nProvider>

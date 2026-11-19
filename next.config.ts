@@ -19,9 +19,11 @@ const config: NextConfig = {
   },
   async redirects() {
     return [
+      // CR-BACLINK-008: mở lại /trien-lam làm "Lịch sự kiện" (góp ý khách hàng: Sự kiện sắp tới).
+      // CR-BACLINK-008 GĐ1: luồng 2 bước cũ → wizard gia nhập 1 luồng
       {
-        source: "/trien-lam",
-        destination: "/tin-tuc",
+        source: "/profile/upgrade",
+        destination: "/hoi-vien/gia-nhap",
         permanent: false,
       },
       {

@@ -34,6 +34,7 @@ import {
   ExpertPrivateDetail,
   ExpertCompleteness,
 } from "@/lib/expert-detail";
+import { ORG } from "@/lib/constants/organization";
 
 export default function ExpertAccountPage() {
   return (
@@ -402,7 +403,7 @@ function ExpertAccountContent() {
                 <span>Hiệp hội Sản xuất Công nghiệp tỉnh Bắc Ninh (BACLINK)</span>
               </div>
               <div className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
-                <span>Số QĐ: 1652/QĐ-UBND &bull; Phê duyệt: Ban Quản trị BACLINK</span>
+                <span>Số QĐ: {ORG.decision.number} &bull; Phê duyệt: Ban Quản trị BACLINK</span>
               </div>
             </div>
           </div>

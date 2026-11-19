@@ -318,7 +318,7 @@ describe("PortalLayout PO-Approved Role-Tailored Navigation", () => {
     expect(radarLink).toHaveAttribute("href", "/portal/matching/radar");
     expect(screen.getByText("Mới")).toBeInTheDocument();
 
-    expect(screen.getByRole("link", { name: /Đăng ký Nâng hạng Vai trò/i })).toHaveAttribute("href", "/profile/upgrade");
+    expect(screen.getByRole("link", { name: /Đăng ký hội viên BACLINK/i })).toHaveAttribute("href", "/hoi-vien/gia-nhap");
     expect(screen.getByRole("link", { name: /Cài đặt Tài khoản/i })).toHaveAttribute("href", "/settings");
 
     // 3. Zero legal entity modules
